@@ -9,8 +9,7 @@ import {
 	Legend,
 	Tooltip,
 } from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
-import { lineChartData } from "../../../data/sourceData";
+import { Bar } from "react-chartjs-2";
 
 ChartJS.defaults.color = "#ffffff";
 ChartJS.defaults.borderColor = "#c9c9c9";
@@ -23,7 +22,7 @@ ChartJS.register(
 	Legend,
 	Tooltip
 );
-const BarChart = () => {
+const BarChart = ({ data }) => {
 	const options = {
 		plugins: {
 			legend: {
@@ -37,7 +36,7 @@ const BarChart = () => {
 	return (
 		<div className="md:w-[500px] lg:w-auto  absolute -top-4 left-1/2 transform -translate-x-1/2">
 			<Bar
-				data={lineChartData}
+				data={data}
 				className="bg-linear-green p-4 rounded-2xl box-shadow"
 				options={options}
 			/>
