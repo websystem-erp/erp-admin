@@ -4,13 +4,15 @@ import { Icon } from "@iconify/react";
 const Card = (props) => {
 	return (
 		<>
-			<div className=" bg-white md:w-[200px] w-full h-auto mx-4 my-8 card-shadow">
-				<div className="flex justify-end items-center relative">
-					<div className="w-1/2  h-full">
-						<div
-							className={` h-16 w-16 flex items-center justify-center rounded-2xl absolute -top-4 left-4 ${props.iconClass} ${props.iconColor}`}
-						>
-							<Icon icon={props.icon} height={36} />
+			<div className=" bg-white md:w-[200px] w-[150px] h-auto mx-4 my-8 card-shadow">
+				<div className="flex justify-end items-center ">
+					<div className="w-1/2  h-full bg-black ">
+						<div className="relative w-16">
+							<div
+								className={` h-16 w-16 flex items-center justify-center rounded-2xl absolute -top-12 left-2 ${props.iconClass} ${props.iconColor}`}
+							>
+								<Icon icon={props.icon} height={36} />
+							</div>
 						</div>
 					</div>
 					<div className="w-1/2 p-4">

@@ -38,3 +38,24 @@ export const pieChartData = {
 		},
 	],
 };
+export const attendance = {
+	labels: ["Jul", "Aug", "Sep"],
+	datasets: [
+		{
+			label: "Present",
+			data: [90, 80, 95],
+			fill: false,
+			borderColor: "#02864a",
+			backgroundColor: "#02864a",
+			tension: 0.5,
+		},
+		{
+			label: "Absent",
+			data: [10, 20, 5],
+			fill: false,
+			borderColor: "#e8083e",
+			backgroundColor: "#e8083e",
+			tension: 0.5,
+		},
+	],
+};

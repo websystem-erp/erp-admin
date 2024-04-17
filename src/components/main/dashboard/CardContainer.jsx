@@ -4,7 +4,7 @@ import Card from "./Card";
 const CardContainer = () => {
 	return (
 		<>
-			<div className="flex flex-wrap justify-center items-center p-4">
+			<div className="flex flex-wrap justify-center items-center">
 				<Card
 					icon={"clarity:employee-group-solid"}
 					title={"Total Employees"}

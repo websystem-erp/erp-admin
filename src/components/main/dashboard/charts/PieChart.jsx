@@ -23,14 +23,12 @@ const PieChart = () => {
 		},
 	};
 	return (
-		<div className="box-shadow bg-white lg:w-[360px] w-full h-auto relative rounded-2xl mx-4 my-8">
-			<div className="md:w-[500px] lg:w-auto  ">
-				<Pie
-					data={pieChartData}
-					className="bg-linear-red p-4 rounded-2xl box-shadow"
-					options={options}
-				/>
-			</div>
+		<div className="md:w-[500px] lg:w-auto  my-8">
+			<Pie
+				data={pieChartData}
+				className="bg-linear-red p-4 rounded-2xl box-shadow"
+				options={options}
+			/>
 		</div>
 	);
 };
