@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react";
 const ChartWrapper = ({ chartType, title, desc, icon, update }) => {
 	return (
 		<>
-			<div className="box-shadow bg-white lg:w-[360px] w-full h-auto relative rounded-2xl mx-4 my-8">
+			<div className="box-shadow bg-white lg:w-[360px] w-full relative rounded-2xl mx-4 my-8">
 				{chartType}
 				<div className="lg:pt-[160px] md:pt-[250px] pt-[160px] text-neutral-500 text-xs">
 					<div className="px-4">
