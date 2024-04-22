@@ -66,23 +66,6 @@ const Navigation = () => {
 							</p>
 						</NavLink>
 					</li>
-					{/* <NavItems navIcon={"ic:round-dashboard"} navTitle={"Dashboard"} />
-					<NavItems
-						navIcon={"clarity:employee-group-solid"}
-						navTitle={"Employees"}
-					/>
-					<NavItems
-						navIcon={"solar:square-academic-cap-bold"}
-						navTitle={"Students"}
-					/>
-					<NavItems
-						navIcon={"material-symbols:Event Management-mode-rounded"}
-						navTitle={"Finance"}
-					/>
-					<NavItems
-						navIcon={"material-symbols:event"}
-						navTitle={"Event Management"}
-					/> */}
 				</ul>
 			</nav>
 		</>

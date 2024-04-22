@@ -33,7 +33,7 @@ const LineChart = () => {
 		},
 	};
 	return (
-		<div className="md:w-[500px] lg:w-auto  absolute -top-4 left-1/2 transform -translate-x-1/2">
+		<div className="md:w-[500px] lg:w-auto absolute -top-4 left-1/2 transform -translate-x-1/2">
 			<Line
 				data={lineChartData}
 				className="bg-linear-black p-4 rounded-2xl box-shadow"
