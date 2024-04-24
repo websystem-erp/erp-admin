@@ -3,7 +3,7 @@ import CardContainer from "../main/dashboard/CardContainer";
 import ChartContainer from "../main/dashboard/charts/ChartContainer";
 import EmployeesDetailsContainer from "../main/dashboard/employeesDetails/EmployeesDetailsContainer";
 
-const Home = () => {
+const Dashboard = () => {
 	return (
 		<>
 			<CardContainer />
@@ -13,4 +13,4 @@ const Home = () => {
 	);
 };
 
-export default Home;
+export default Dashboard;
