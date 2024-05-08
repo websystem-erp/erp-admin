@@ -28,7 +28,7 @@ const Employees = () => {
 	return (
 		<>
 			<div className="p-4 flex flex-wrap">
-				<div className="lg:w-3/5 w-full ">
+				<div className="lg:w-3/4 w-full ">
 					<h3 className="font-bold text-2xl">Attendance</h3>
 					<div className="flex flex-wrap justify-between px-8">
 						<ChartWrapper
@@ -45,16 +45,9 @@ const Employees = () => {
 							icon={"tabler:clock-filled"}
 							update={"updated 4 min ago"}
 						/>
-						<ChartWrapper
-							chartType={<BarChart data={attendance} />}
-							title={"Attendance"}
-							desc={"(-10%) increase in this month"}
-							icon={"tabler:clock-filled"}
-							update={"updated 4 min ago"}
-						/>
 					</div>
 				</div>
-				<div className="lg:w-2/5 w-full">
+				<div className="lg:w-1/4 w-full">
 					<h3 className="font-bold text-2xl">Request</h3>
 					<div className="flex flex-wrap md:justify-between justify-center w-full p-4">
 						{employeeReq.slice(0, 2).map((req, ind) => {
@@ -63,7 +56,7 @@ const Employees = () => {
 									key={req.id}
 									userDP={photos[ind % photos.length]}
 									userName={photoNames[ind % photoNames.length]}
-									userReq={req.body}
+									userReq={"Lorem Ipsum is simply dummy"}
 								/>
 							);
 						})}
