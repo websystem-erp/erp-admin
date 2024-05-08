@@ -1,11 +1,11 @@
 import React from "react";
 
-const CreateEventForm = () => {
+const CreateEventForm = ({ onClose }) => {
 	return (
 		<div className="w-full h-full">
 			<form>
 				<div className="flex flex-col my-2">
-					<label>Event Name</label>
+					<label className="text-white">Event Name</label>
 					<input
 						className="my-2 rounded-lg p-4"
 						type="text"
@@ -13,7 +13,7 @@ const CreateEventForm = () => {
 					/>
 				</div>
 				<div className="flex flex-col my-2">
-					<label>Target Amount</label>
+					<label className="text-white">Target Amount</label>
 					<input
 						className="my-2 rounded-lg p-4"
 						type="number"
@@ -21,7 +21,7 @@ const CreateEventForm = () => {
 					/>
 				</div>
 				<div className="flex flex-col my-2">
-					<label>Collection End Date</label>
+					<label className="text-white">Collection End Date</label>
 					<input
 						className="my-2 rounded-lg p-4"
 						type="date"
@@ -29,7 +29,7 @@ const CreateEventForm = () => {
 					/>
 				</div>
 				<div className="flex flex-col my-2">
-					<label>Event Details</label>
+					<label className="text-white">Event Details</label>
 					<textarea
 						className="my-2 rounded-lg p-4"
 						rows="4"
@@ -39,7 +39,10 @@ const CreateEventForm = () => {
 					/>
 				</div>
 				<div className="flex justify-end items-center">
-					<button className="px-4 py-2 me-4 text-white border-red-500 border-2 rounded-lg">
+					<button
+						className="px-4 py-2 me-4 text-white border-red-500 border-2 rounded-lg"
+						onClick={onClose}
+					>
 						Cancel
 					</button>
 					<button
