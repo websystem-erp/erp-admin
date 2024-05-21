@@ -1,34 +1,66 @@
-import React from "react";
-import EmployeeSetionButtons from "./EmployeeSetionButtons";
+import React, { useState, useEffect } from "react";
+import anju from "../../../../assets/user/anju.jpg";
+import akriti from "../../../../assets/user/akriti.jpg";
+import ankur from "../../../../assets/user/ankur.jpg";
+import vikas from "../../../../assets/user/vikas.jpg";
+import ListTable from "../../../List/ListTable";
+import CommonTable from "../../../List/CommonTable";
 
-const Employee = ({ profile, name, role, id }) => {
+const Employee = () => {
+	const [teachers, setTeachers] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
+
+	const imageMap = {
+		anju: anju,
+		akriti: akriti,
+		ankur: ankur,
+		vikas: vikas,
+	};
+
+	useEffect(() => {
+		const api =
+			"https://erp-system-backend.onrender.com/api/v1/teacher/1/fetchAll";
+
+		fetch(api)
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error("Network response was not ok");
+				}
+				return response.json();
+			})
+			.then((data) => {
+				if (Array.isArray(data.data)) {
+					setTeachers(data.data);
+				} else {
+					console.error("Unexpected data format:", data);
+				}
+			})
+			.catch((error) => console.error("Error: ", error))
+			.finally(() => setIsLoading(false));
+	}, []);
+
 	return (
 		<>
-			<tr>
-				<td className="px-2 py-5 bg-white text-sm md:text-base">
-					<div className="flex justify-center items-center">
-						<div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden">
-							<img className="" src={profile} alt="" />
-						</div>
-						<div className="ml-3">
-							<p className="text-gray-900 whitespace-no-wrap">{name}</p>
-						</div>
-					</div>
-				</td>
-				<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
-					<p className="text-gray-900 whitespace-no-wrap">{role}</p>
-				</td>
-				<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
-					<p className="text-gray-900 whitespace-no-wrap">{id}</p>
-				</td>
-				<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
-					<EmployeeSetionButtons
-						text={"View profile"}
-						buttonColor={"bg-linear-green"}
-						borderRadius={"rounded"}
-					/>
-				</td>
-			</tr>
+			{isLoading ? (
+				<p>Loading...</p>
+			) : (
+				<ListTable
+					pageTitle={"Employee Details"}
+					ListName={"Name"}
+					ListRole={"Role"}
+					ListID={"ID"}
+					ListAction={"Actions"}
+					showDataList={teachers.map((teacher) => (
+						<CommonTable
+							key={teacher.id}
+							profile={imageMap[teacher.profileImage] || akriti} // Default to 'akriti' if no matching image
+							name={teacher.name}
+							role={teacher.role}
+							id={teacher.id}
+						/>
+					))}
+				/>
+			)}
 		</>
 	);
 };
