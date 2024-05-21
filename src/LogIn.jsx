@@ -87,12 +87,6 @@ const LogIn = ({ setIsLoggedIn }) => {
 						<p className="text-red-500 text-xs mt-2">{errorMessage}</p>
 					)}
 				</form>
-				<Link
-					className="text-blue-700 text-center text-sm"
-					to="/forgot-password"
-				>
-					Forgot password?
-				</Link>
 			</div>
 		</div>
 	);
