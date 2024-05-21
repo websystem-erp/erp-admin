@@ -10,7 +10,8 @@ const EmployeesDetailsContainer = () => {
 	const [teachers, setTeachers] = useState([]);
 
 	useEffect(() => {
-		const api = "https://erp-system-backend.onrender.com/api/v1/teacher/1/fetch/5";
+		const api =
+			"https://erp-system-backend.onrender.com/api/v1/teacher/1/fetchAll";
 
 		fetch(api)
 			.then((response) => {
@@ -20,10 +21,10 @@ const EmployeesDetailsContainer = () => {
 				return response.json();
 			})
 			.then((data) => {
-				console.log("Fetched data:", data);
-				if (Array.isArray(data)) {
-					setTeachers(data);
+				if (Array.isArray(data.data)) {
+					setTeachers(data.data);
 				} else {
+					// console.log(data.data);
 					console.error("Unexpected data format:", data);
 				}
 			})
@@ -76,7 +77,7 @@ const EmployeesDetailsContainer = () => {
 								<tbody>
 									{teachers.map((teacher) => (
 										<Employee
-											key={teacher.id} // Add a key to each item
+											key={teacher.id}
 											profile={akriti}
 											name={teacher.name}
 											role={teacher.role}

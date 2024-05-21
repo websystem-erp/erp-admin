@@ -1,32 +1,146 @@
-import React from "react";
-import { Icon } from "@iconify/react";
-
-const Card = (props) => {
+import { useState } from "react";
+import {
+	CardTitle,
+	CardDescription,
+	CardHeader,
+	CardContent,
+	Card,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+export default function Login() {
+	const navigate = useNavigate();
+	const [formData, setFormData] = useState({
+		email: "",
+		password: "",
+	});
+	const [errors, setErrors] = useState({});
+	const [submitting, setSubmitting] = useState(false);
+	const handleChange = (e) => {
+		setFormData({
+			...formData,
+			[e.target.id]: e.target.value,
+		});
+		// Clear errors when user starts typing
+		setErrors({
+			...errors,
+			[e.target.id]: "",
+		});
+	};
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		setSubmitting(true);
+		// Simple validation
+		const errors = {};
+		if (!formData.email) {
+			errors.email = "Email is required";
+		} else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+			errors.email = "Email is invalid";
+		}
+		if (!formData.password) {
+			errors.password = "Password is required";
+		}
+		if (Object.keys(errors).length > 0) {
+			setErrors(errors);
+			setSubmitting(false);
+			return;
+		}
+		// Call login API using Axios
+		try {
+			const response = await axios.post(
+				"https://erp-system-backend.onrender.com/api/v1/student/1/login",
+				formData
+			);
+			const data = response.data;
+			// Check if login successful
+			if (data.message === "Login successfully!") {
+				// Store token in local storage
+				localStorage.setItem("token", data.token); // Assuming token is in response
+				// Redirect user to home page
+				navigate("/");
+			}
+		} catch (error) {
+			console.error("Error logging in:", error);
+			if (error.response) {
+				const { status, data } = error.response;
+				if (status === 400) {
+					setErrors({
+						email: "Incorrect email or password",
+						password: "Incorrect email or password",
+					});
+				} else {
+					setErrors({
+						email: "An unexpected error occurred. Please try again later.",
+						password: "",
+					});
+				}
+			} else {
+				setErrors({
+					email: "An unexpected error occurred. Please try again later.",
+					password: "",
+				});
+			}
+		} finally {
+			setSubmitting(false);
+		}
+	};
 	return (
-		<>
-			<div className=" bg-white md:w-[200px] w-fit h-auto mx-4 my-8 card-shadow">
-				<div className="flex justify-end items-center relative">
-					<div className="w-1/2  h-full">
-						<div
-							className={` h-16 w-16 flex items-center justify-center rounded-2xl absolute -top-4 left-4 ${props.iconClass} ${props.iconColor}`}
-						>
-							<Icon icon={props.icon} height={36} />
+		<div className="flex justify-center items-center h-screen">
+			<Card
+				className="max-w-sm"
+				style={{ marginLeft: "500px", marginRight: "auto" }}
+			>
+				<CardHeader className="space-y-1">
+					<CardTitle className="text-2xl font-bold">Login</CardTitle>
+					<CardDescription>
+						Please enter your username and password.
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<form onSubmit={handleSubmit}>
+						<div className="space-y-2">
+							<Label htmlFor="email">Email</Label>
+							<Input
+								id="email"
+								placeholder="Email"
+								value={formData.email}
+								onChange={handleChange}
+								required
+								type="email"
+							/>
+							{errors.email && <p className="text-red-500">{errors.email}</p>}
 						</div>
-					</div>
-					<div className="w-1/2 p-4">
-						<h4 className="card-title font-bold text-2xl text-right">
-							{props.number}
-						</h4>
-					</div>
-				</div>
-				<div className="border-t-2 py-2">
-					<h4 className="card-title text-sm font-bold text-[#7B809A] text-center">
-						{props.title}
-					</h4>
-				</div>
-			</div>
-		</>
+						<div className="space-y-2">
+							<Label htmlFor="password">Password</Label>
+							<Input
+								id="password"
+								placeholder="Password"
+								value={formData.password}
+								onChange={handleChange}
+								required
+								type="password"
+							/>
+							{errors.password && (
+								<p className="text-red-500">{errors.password}</p>
+							)}
+						</div>
+						<Button
+							className="w-full"
+							type="submit"
+							style={{
+								marginTop: "50px",
+								backgroundColor: "#000",
+								color: "#fff",
+							}}
+						>
+							{submitting ? "Logging in..." : "Log In"}
+						</Button>
+					</form>
+				</CardContent>
+			</Card>
+		</div>
 	);
-};
-
-export default Card;
+}

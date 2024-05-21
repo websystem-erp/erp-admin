@@ -1,33 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
-const LogIn = ({ onLogin }) => {
+const LogIn = ({ setIsLoggedIn }) => {
+	const [credentials, setCredentials] = useState({ email: "", password: "" });
+	const [errorMessage, setErrorMessage] = useState("");
 	const navigate = useNavigate();
 
-	const [credentials, setCredentials] = useState({
-		username: "",
-		password: "",
-	});
-	const [errorMessage, setErrorMessage] = useState("");
-
-	const dummyCredentials = { username: "test@test.com", password: "qwerty" };
-
-	const handleSubmit = (event) => {
-		event.preventDefault();
-		if (
-			credentials.username === dummyCredentials.username &&
-			credentials.password === dummyCredentials.password
-		) {
-			onLogin();
+	useEffect(() => {
+		// Check if user is already logged in when the component mounts
+		const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
+		if (storedIsLoggedIn === "true") {
+			setIsLoggedIn(true);
 			navigate("/");
-		} else {
-			setErrorMessage("Invalid username or password");
 		}
+	}, [setIsLoggedIn, navigate]);
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setCredentials({ ...credentials, [name]: value });
 	};
 
-	const handleChange = (event) => {
-		const { name, value } = event.target;
-		setCredentials({ ...credentials, [name]: value });
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		try {
+			const response = await axios.post(
+				"https://erp-system-backend.onrender.com/api/v1/admin/login",
+				credentials
+			);
+			if (response.status === 202) {
+				setIsLoggedIn(true);
+				localStorage.setItem("isLoggedIn", "true");
+				navigate("/");
+			}
+		} catch (error) {
+			if (error.response && error.response.status === 401) {
+				setErrorMessage("Credentials input incorrect, please try again");
+			} else {
+				setErrorMessage("An error occurred. Please try again later.");
+			}
+		}
 	};
 
 	return (
@@ -38,16 +50,16 @@ const LogIn = ({ onLogin }) => {
 				</span>
 				<form className="mb-4" onSubmit={handleSubmit}>
 					<div className="mb-4 md:w-full">
-						<label htmlFor="username" className="block text-xs mb-1">
+						<label htmlFor="email" className="block text-xs mb-1">
 							Username or Email
 						</label>
 						<input
 							className="w-full border rounded p-2 outline-none focus:shadow-outline"
 							type="text"
-							name="username"
-							id="username"
+							name="email"
+							id="email"
 							placeholder="Username or Email"
-							value={credentials.username}
+							value={credentials.email}
 							onChange={handleChange}
 						/>
 					</div>
@@ -75,7 +87,10 @@ const LogIn = ({ onLogin }) => {
 						<p className="text-red-500 text-xs mt-2">{errorMessage}</p>
 					)}
 				</form>
-				<Link className="text-blue-700 text-center text-sm" to="/">
+				<Link
+					className="text-blue-700 text-center text-sm"
+					to="/forgot-password"
+				>
 					Forgot password?
 				</Link>
 			</div>

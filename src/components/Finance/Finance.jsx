@@ -23,6 +23,7 @@ const Finance = () => {
 			<h3 className="font-bold text-2xl">Finance</h3>
 			<div className="flex my-8">
 				{tabs.map((tab, ind) => {
+					console.log(tab);
 					return (
 						<Link
 							key={ind}
@@ -38,7 +39,6 @@ const Finance = () => {
 				})}
 			</div>
 			<div>
-				{/* Render content based on activeTab */}
 				{activeTab === "Summary" && <Summary />}
 				{activeTab === "Transactions" && <Transactions />}
 				{activeTab === "student-fees" && <StudentFees />}
