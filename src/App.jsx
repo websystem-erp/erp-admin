@@ -9,7 +9,7 @@ function App() {
 
 	useEffect(() => {
 		// Check if user is logged in when the component mounts
-		const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
+		const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn");
 		if (storedIsLoggedIn === "true") {
 			setIsLoggedIn(true);
 		}

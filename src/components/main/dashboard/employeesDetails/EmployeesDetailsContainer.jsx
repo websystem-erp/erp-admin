@@ -53,7 +53,7 @@ const EmployeesDetailsContainer = () => {
 					showDataList={teachers.map((teacher) => (
 						<CommonTable
 							key={teacher.id}
-							profile={imageMap[teacher.profileImage] || akriti} // Default to 'akriti' if no matching image
+							profile={imageMap[teacher.profileImage] || akriti}
 							name={teacher.name}
 							role={teacher.role}
 							id={teacher.id}

@@ -9,7 +9,7 @@ const LogIn = ({ setIsLoggedIn }) => {
 
 	useEffect(() => {
 		// Check if user is already logged in when the component mounts
-		const storedIsLoggedIn = localStorage.getItem("isLoggedIn");
+		const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn");
 		if (storedIsLoggedIn === "true") {
 			setIsLoggedIn(true);
 			navigate("/");
@@ -30,7 +30,7 @@ const LogIn = ({ setIsLoggedIn }) => {
 			);
 			if (response.status === 202) {
 				setIsLoggedIn(true);
-				localStorage.setItem("isLoggedIn", "true");
+				sessionStorage.setItem("isLoggedIn", "true");
 				navigate("/");
 			}
 		} catch (error) {
