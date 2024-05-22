@@ -12,6 +12,7 @@ import Summary from "./components/Finance/Summary";
 import Transactions from "./components/Finance/Transactions";
 import StudentFees from "./components/Finance/StudentFees";
 import Payroll from "./components/Finance/Payroll";
+import Department from "./components/Department/Department";
 
 const Layout = () => {
 	return (
@@ -32,6 +33,7 @@ const Layout = () => {
 						<Route path="payroll" element={<Payroll />} />
 					</Route>
 					<Route path="/Event" element={<EventManagement />} />
+					<Route path="/Department" element={<Department />} />
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</main>

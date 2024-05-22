@@ -2,7 +2,6 @@ import React from "react";
 import ListTableBtn from "./ListTableBtn";
 
 const ListTable = ({
-	pageTitle,
 	ListName,
 	ListRole,
 	ListID,
@@ -11,26 +10,7 @@ const ListTable = ({
 }) => {
 	return (
 		<>
-			<div className="bg-white p-8 rounded-md w-fit sm:w-full">
-				<div className="flex items-center justify-between pb-6">
-					<div>
-						<h2 className="text-gray-600 font-semibold">{pageTitle}</h2>
-					</div>
-					<div className="flex items-center justify-between">
-						<div className="flex flex-col gap-2">
-							<ListTableBtn
-								text={"Add Data"}
-								buttonColor={"bg-linear-green"}
-								borderRadius={"rounded"}
-							/>
-							<ListTableBtn
-								text={"Delete"}
-								buttonColor={"bg-linear-red"}
-								borderRadius={"rounded"}
-							/>
-						</div>
-					</div>
-				</div>
+			<div>
 				<div>
 					<div className="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
 						<div className="inline-block min-w-full shadow rounded-lg overflow-hidden">

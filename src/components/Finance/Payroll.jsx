@@ -3,7 +3,7 @@ import anju from "../../assets/user/anju.jpg";
 import akriti from "../../assets/user/akriti.jpg";
 import ankur from "../../assets/user/ankur.jpg";
 import vikas from "../../assets/user/vikas.jpg";
-import EmployeesDetailsContainer from "../main/dashboard/employeesDetails/EmployeesDetailsContainer";
+import Employee from "../main/dashboard/employeesDetails/Employee";
 
 const Payroll = () => {
 	const [employeeReq, setEmployeeReq] = useState([]);
@@ -24,7 +24,7 @@ const Payroll = () => {
 	return (
 		<>
 			<h3 className="font-bold text-2xl">Individual Records</h3>
-			<EmployeesDetailsContainer />
+			<Employee />
 		</>
 	);
 };

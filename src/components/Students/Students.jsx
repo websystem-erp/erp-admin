@@ -11,21 +11,6 @@ import CommonCard from "../List/CommonCard";
 import StudentList from "./StudentList";
 
 const Students = () => {
-	const [studentReq, setStudentReq] = useState([]);
-	const photos = [anju, akriti, ankur, vikas];
-	const photoNames = ["Anju", "Akriti", "Ankur", "Vikas"];
-
-	useEffect(() => {
-		const api = "https://jsonplaceholder.typicode.com/comments";
-
-		axios
-			.get(api)
-			.then((response) => {
-				setStudentReq(response.data);
-			})
-			.catch((error) => console.log("Error: ", error));
-	}, []);
-
 	return (
 		<>
 			<div className="p-4 flex flex-wrap">
@@ -46,21 +31,6 @@ const Students = () => {
 							icon={"tabler:clock-filled"}
 							update={"updated 4 min ago"}
 						/>
-					</div>
-				</div>
-				<div className="lg:w-1/4 w-full">
-					<h3 className="font-bold text-2xl">Request</h3>
-					<div className="flex flex-wrap md:justify-between justify-center w-full p-4">
-						{studentReq.slice(0, 2).map((req, ind) => {
-							return (
-								<CommonCard
-									key={req.id}
-									userDP={photos[ind % photos.length]}
-									userName={photoNames[ind % photoNames.length]}
-									userReq={"Lorem Ipsum is simply dummy"}
-								/>
-							);
-						})}
 					</div>
 				</div>
 			</div>

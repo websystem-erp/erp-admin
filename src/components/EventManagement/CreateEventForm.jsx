@@ -1,46 +1,95 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
 const CreateEventForm = ({ onClose }) => {
+	const [formData, setFormData] = useState({
+		title: "",
+		description: "",
+		date: "",
+	});
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setFormData({ ...formData, [name]: value });
+	};
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+
+		// Ensure all fields are filled out
+		if (!formData.title || !formData.description || !formData.date) {
+			alert("Please fill out all fields.");
+			return;
+		}
+
+		// Format the date to ISO string
+		const formattedDate = new Date(formData.date).toISOString();
+
+		try {
+			const response = await axios.post(
+				"https://erp-system-backend.onrender.com/api/v1/event/create",
+				{
+					title: formData.title,
+					description: formData.description,
+					date: formattedDate,
+				}
+			);
+			console.log("Event created successfully:", response.data);
+			onClose();
+		} catch (error) {
+			console.error("Error creating event:", error);
+			if (error.response) {
+				console.error("Error response data:", error.response.data);
+				console.error("Error response status:", error.response.status);
+				console.error("Error response headers:", error.response.headers);
+			} else if (error.request) {
+				console.error("Error request data:", error.request);
+			} else {
+				console.error("Error message:", error.message);
+			}
+		}
+	};
+
 	return (
 		<div className="w-full h-full">
-			<form>
+			<form onSubmit={handleSubmit}>
 				<div className="flex flex-col my-2">
 					<label className="text-white">Event Name</label>
 					<input
+						name="title"
 						className="my-2 rounded-lg p-4"
 						type="text"
 						placeholder="e.g., Annual function, football match"
+						value={formData.title}
+						onChange={handleChange}
 					/>
 				</div>
 				<div className="flex flex-col my-2">
-					<label className="text-white">Target Amount</label>
+					<label className="text-white">Event Date</label>
 					<input
-						className="my-2 rounded-lg p-4"
-						type="number"
-						placeholder="₹ 2,000"
-					/>
-				</div>
-				<div className="flex flex-col my-2">
-					<label className="text-white">Collection End Date</label>
-					<input
+						name="date"
 						className="my-2 rounded-lg p-4"
 						type="date"
-						placeholder="mm/dd/yyyy"
+						value={formData.date}
+						onChange={handleChange}
 					/>
 				</div>
 				<div className="flex flex-col my-2">
 					<label className="text-white">Event Details</label>
 					<textarea
+						name="description"
 						className="my-2 rounded-lg p-4"
 						rows="4"
 						cols="50"
-						type="text"
 						placeholder="Let everyone know why you're collecting money, and what you'll do with it. This is your chance to tell your story."
+						value={formData.description}
+						onChange={handleChange}
 					/>
 				</div>
 				<div className="flex justify-end items-center">
 					<button
 						className="px-4 py-2 me-4 text-white border-red-500 border-2 rounded-lg"
+						type="button"
 						onClick={onClose}
 					>
 						Cancel

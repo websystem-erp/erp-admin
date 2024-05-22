@@ -5,6 +5,7 @@ import ankur from "../../../../assets/user/ankur.jpg";
 import vikas from "../../../../assets/user/vikas.jpg";
 import ListTable from "../../../List/ListTable";
 import CommonTable from "../../../List/CommonTable";
+import ListTableBtn from "../../../List/ListTableBtn";
 
 const Employee = () => {
 	const [teachers, setTeachers] = useState([]);
@@ -44,22 +45,41 @@ const Employee = () => {
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (
-				<ListTable
-					pageTitle={"Employee Details"}
-					ListName={"Name"}
-					ListRole={"Role"}
-					ListID={"ID"}
-					ListAction={"Actions"}
-					showDataList={teachers.map((teacher) => (
-						<CommonTable
-							key={teacher.id}
-							profile={imageMap[teacher.profileImage] || akriti} // Default to 'akriti' if no matching image
-							name={teacher.name}
-							role={teacher.role}
-							id={teacher.id}
+				<>
+					<div className="bg-white p-8 rounded-md w-fit sm:w-full">
+						<div className="flex items-center justify-between pb-6">
+							<div>
+								<h2 className="text-gray-600 font-semibold">
+									Employee Details
+								</h2>
+							</div>
+							<div className="flex items-center justify-between">
+								<div className="flex flex-col gap-2">
+									<ListTableBtn
+										text={"Add Employee"}
+										buttonColor={"bg-linear-green"}
+										borderRadius={"rounded"}
+									/>
+								</div>
+							</div>
+						</div>
+						<ListTable
+							ListName={"Name"}
+							ListRole={"Role"}
+							ListID={"ID"}
+							ListAction={"Actions"}
+							showDataList={teachers.map((teacher) => (
+								<CommonTable
+									key={teacher.id}
+									profile={imageMap[teacher.profileImage] || akriti} // Default to 'akriti' if no matching image
+									name={teacher.name}
+									role={teacher.role}
+									id={teacher.id}
+								/>
+							))}
 						/>
-					))}
-				/>
+					</div>
+				</>
 			)}
 		</>
 	);

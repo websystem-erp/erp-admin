@@ -23,7 +23,7 @@ const CommonTable = ({ profile, name, role, id }) => {
 				</td>
 				<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
 					<ListTableBtn
-						text={"View profile"}
+						text={"Action"}
 						buttonColor={"bg-linear-green"}
 						borderRadius={"rounded"}
 					/>
