@@ -8,11 +8,13 @@ import CommonTable from "../../../List/CommonTable";
 import ListTableBtn from "../../../List/ListTableBtn";
 import Modal from "../../../popup/Modal";
 import ModalDetails from "../../../popup/ModalDetails";
+import EmployeeAddForm from "../../../Forms/EmployeeAddForm";
 
 const Employee = () => {
 	const [teachers, setTeachers] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [modalOpen, setModalOpen] = useState(false);
+	const [formModalOpen, setFormModalOpen] = useState(false);
 	const [selectedProfile, setSelectedProfile] = useState(null);
 
 	const imageMap = {
@@ -66,6 +68,11 @@ const Employee = () => {
 			.catch((error) => console.error("Error: ", error));
 	};
 
+	const handleFormModal = () => {
+		console.log("working");
+		setFormModalOpen(true);
+	};
+
 	return (
 		<>
 			{isLoading ? (
@@ -78,8 +85,15 @@ const Employee = () => {
 							text={"Add Employee"}
 							buttonColor={"bg-linear-green"}
 							borderRadius={"rounded"}
-							onClick={() => setModalOpen(true)} // Open modal when button is clicked
+							onClick={handleFormModal}
 						/>
+						<Modal
+							modalOpen={formModalOpen}
+							setModalOpen={setFormModalOpen}
+							responsiveWidth={"md:w-fit"}
+						>
+							<EmployeeAddForm />
+						</Modal>
 					</div>
 					<ListTable
 						ListName={"Name"}
@@ -93,6 +107,10 @@ const Employee = () => {
 								name={teacher.name}
 								role={teacher.role}
 								id={teacher.id}
+								dangerAction={"Remove"}
+								action1={"View Profile"}
+								action2={"Edit Profile"}
+								buttonHide={"hidden"}
 								onViewProfile={() =>
 									handleViewProfile({
 										profile: imageMap[teacher.profileImage] || akriti,
@@ -113,14 +131,18 @@ const Employee = () => {
 					/>
 
 					{selectedProfile && (
-						<Modal modalOpen={modalOpen} setModalOpen={setModalOpen}>
+						<Modal
+							modalOpen={modalOpen}
+							setModalOpen={setModalOpen}
+							responsiveWidth={"md:w-fit"}
+						>
 							<div>
 								<img
 									src={selectedProfile.profile}
 									alt={selectedProfile.name}
 									className="w-32 h-32 mx-auto rounded-full"
 								/>
-								<h3 className="text-xl font-semibold">
+								<h3 className="text-xl font-semibold my-4">
 									{selectedProfile.name}
 								</h3>
 								<ModalDetails

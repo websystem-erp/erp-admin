@@ -1,0 +1,52 @@
+<h4>Subjects :</h4>
+
+							{/* subjects */}
+
+							<FormItems
+								formLabel={"Subject Name"}
+								formType={"text"}
+								formPlaceholder={"Enter Subject Name"}
+							/>
+							<FormItems
+								formLabel={"Subject Code"}
+								formType={"text"}
+								formPlaceholder={"Enter Suject code"}
+							/>
+							<FormItems
+								formLabel={"Total Lectures"}
+								formType={"number"}
+								formPlaceholder={"Enter Total Lectures"}
+							/>
+
+							<h4>Teachers</h4>
+
+							{/* teachers */}
+							<FormItems
+								formLabel={"Teacher ID"}
+								formType={"text"}
+								formPlaceholder={"Enter Teacher ID"}
+							/>
+							<FormItems
+								formLabel={"Teacher Name"}
+								formType={"text"}
+								formPlaceholder={"Enter Teacher Name"}
+							/>
+							<FormItems
+								formLabel={"Teacher Email"}
+								formType={"email"}
+								formPlaceholder={"Enter Teacher email"}
+							/>
+							<FormItems
+								formLabel={"Teacher Role"}
+								formType={"text"}
+								formPlaceholder={"Enter Teacher Rol"}
+							/>
+
+							<h4>Students</h4>
+
+							{/* students */}
+							<FormItems
+								formLabel={"Course Duration"}
+								formType={"text"}
+								formPlaceholder={"Enter Course Duration"}
+							/>

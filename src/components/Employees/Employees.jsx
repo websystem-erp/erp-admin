@@ -39,19 +39,12 @@ const Employees = () => {
 							icon={"tabler:clock-filled"}
 							update={"updated 4 min ago"}
 						/>
-						<ChartWrapper
-							chartType={<BarChart data={attendance} />}
-							title={"Attendance"}
-							desc={"(-10%) increase in this month"}
-							icon={"tabler:clock-filled"}
-							update={"updated 4 min ago"}
-						/>
 					</div>
 				</div>
 				<div className="lg:w-1/4 w-full">
 					<h3 className="font-bold text-2xl">Request</h3>
 					<div className="flex flex-wrap md:justify-between justify-center w-full p-4">
-						{employeeReq.slice(0, 2).map((req, ind) => {
+						{/* {employeeReq.slice(0, 2).map((req, ind) => {
 							return (
 								<CommonCard
 									key={req.id}
@@ -60,7 +53,8 @@ const Employees = () => {
 									userReq={"Lorem Ipsum is simply dummy"}
 								/>
 							);
-						})}
+						})} */}
+						<p> No leave requests received</p>
 					</div>
 				</div>
 			</div>

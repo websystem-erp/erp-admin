@@ -1,9 +1,8 @@
 import React from "react";
 import Card from "./Card";
 import { Link } from "react-router-dom";
-import Employees from "../../Employees/Employees";
 
-const CardContainer = () => {
+const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 	return (
 		<>
 			<div className="flex flex-wrap justify-center items-center">
@@ -13,23 +12,27 @@ const CardContainer = () => {
 						title={"Total Employees"}
 						number={300}
 						iconClass={"salary-icon"}
-						iconColor={"bg-linear-black"}
+						iconColor={"bg-linear-blue"}
 					/>
 				</Link>
-				<Card
-					icon={"ri:money-rupee-circle-line"}
-					title={"Average Salay"}
-					number={"₹25k"}
-					iconClass={"salary-icon"}
-					iconColor={"bg-linear-blue"}
-				/>
-				<Card
-					icon={"lets-icons:chat"}
-					title={"Pending Request"}
-					number={50}
-					iconClass={"salary-icon"}
-					iconColor={"bg-linear-red"}
-				/>
+				<button onClick={onDueFeesClick}>
+					<Card
+						icon={"ri:money-rupee-circle-line"}
+						title={"Due Fees"}
+						number={"₹25k"}
+						iconClass={"salary-icon"}
+						iconColor={"bg-linear-red"}
+					/>
+				</button>
+				<button onClick={onPendingRequestClick}>
+					<Card
+						icon={"lets-icons:chat"}
+						title={"Pending Request"}
+						number={0}
+						iconClass={"salary-icon"}
+						iconColor={"bg-linear-red"}
+					/>
+				</button>
 				<Card
 					icon={"solar:square-academic-cap-bold"}
 					title={"Total Students"}

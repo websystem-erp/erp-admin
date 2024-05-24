@@ -7,6 +7,7 @@ const ListTable = ({
 	ListID,
 	ListAction,
 	showDataList,
+	hide,
 }) => {
 	return (
 		<>
@@ -17,23 +18,25 @@ const ListTable = ({
 							<table className="min-w-full leading-normal table-auto table-styling">
 								<thead>
 									<tr>
-										<th className="px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
+										<th className="w-fit px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
 											{ListName}
 										</th>
-										<th className="px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
+										<th className="w-fit px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
 											{ListRole}
 										</th>
-										<th className="px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
+										<th className="w-fit px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
 											{ListID}
 										</th>
-										<th className="px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
+										<th className="w-fit px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
 											{ListAction}
 										</th>
 									</tr>
 								</thead>
 								<tbody>{showDataList}</tbody>
 							</table>
-							<div className="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between">
+							<div
+								className={`px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between ${hide}`}
+							>
 								<span className="text-xs xs:text-sm text-gray-900">
 									Showing 1 to 4 of 50 Entries
 								</span>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import CreateEventForm from "./CreateEventForm";
-// import ListTableBtn from "../List/ListTableBtn";
 
 const EventManagement = () => {
 	const [showCreateEventForm, setShowCreateEventForm] = useState(false);
@@ -37,12 +36,16 @@ const EventManagement = () => {
 		setShowCreateEventForm(false);
 	};
 
+	const handleAddEvent = (newEvent) => {
+		setEvents((prevEvents) => [newEvent, ...prevEvents]);
+		setShowCreateEventForm(false);
+	};
+
 	const handleDeleteEvent = async (eventId) => {
 		try {
 			await axios.delete(
 				`https://erp-system-backend.onrender.com/api/v1/event/delete-event/${eventId}`
 			);
-			// Filter out the deleted event from the events array
 			const updatedEvents = events.filter((event) => event.id !== eventId);
 			setEvents(updatedEvents);
 			console.log("Event deleted successfully.");
@@ -107,7 +110,10 @@ const EventManagement = () => {
 				>
 					<div className="flex justify-center items-center w-full h-screen ">
 						<div className="w-fit bg-linear-black p-8 rounded-xl">
-							<CreateEventForm onClose={handleCloseForm} />
+							<CreateEventForm
+								onClose={handleCloseForm}
+								onAddEvent={handleAddEvent}
+							/>
 						</div>
 					</div>
 				</div>

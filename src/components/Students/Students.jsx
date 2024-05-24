@@ -24,13 +24,6 @@ const Students = () => {
 							icon={"tabler:clock-filled"}
 							update={"updated 4 min ago"}
 						/>
-						<ChartWrapper
-							chartType={<BarChart data={attendance} />}
-							title={"Attendance"}
-							desc={"(-10%) increase in this month"}
-							icon={"tabler:clock-filled"}
-							update={"updated 4 min ago"}
-						/>
 					</div>
 				</div>
 			</div>

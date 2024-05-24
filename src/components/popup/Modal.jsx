@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const Modal = ({ modalOpen, setModalOpen, children }) => {
+const Modal = ({ modalOpen, setModalOpen, children, responsiveWidth }) => {
 	const modalRef = useRef(null);
 
 	// Close on click outside
@@ -31,18 +31,17 @@ const Modal = ({ modalOpen, setModalOpen, children }) => {
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center glassmorphism-dark z-10">
-			<div
-				ref={modalRef}
-				className="w-full max-w-[570px] rounded-[20px] bg-white px-8 py-12 text-center dark:bg-dark-2 md:px-[70px] md:py-[60px]"
-			>
-				{children}
+			<div ref={modalRef} className={`w-full ${responsiveWidth}  text-center `}>
 				<div className="flex justify-end mt-4">
 					<button
 						onClick={() => setModalOpen(false)}
 						className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-700"
 					>
-						Close
+						Close (X)
 					</button>
+				</div>
+				<div className="bg-white px-8 py-12 dark:bg-dark-2 md:px-[70px] md:py-[60px] rounded-[20px]">
+					{children}
 				</div>
 			</div>
 		</div>

@@ -40,6 +40,10 @@ const StudentList = () => {
 			.finally(() => setIsLoading(false));
 	}, []);
 
+	const handleFormModal = () => {
+		console.log("working");
+	};
+
 	return (
 		<>
 			{isLoading ? (
@@ -53,6 +57,7 @@ const StudentList = () => {
 						<div className="flex items-center justify-between">
 							<div className="flex flex-col gap-2">
 								<ListTableBtn
+									onClick={handleFormModal}
 									text={"Add Student"}
 									buttonColor={"bg-linear-green"}
 									borderRadius={"rounded"}

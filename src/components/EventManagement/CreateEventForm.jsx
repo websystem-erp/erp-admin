@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const CreateEventForm = ({ onClose }) => {
+const CreateEventForm = ({ onClose, onAddEvent }) => {
 	const [formData, setFormData] = useState({
 		title: "",
 		description: "",
@@ -16,13 +16,11 @@ const CreateEventForm = ({ onClose }) => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
-		// Ensure all fields are filled out
 		if (!formData.title || !formData.description || !formData.date) {
 			alert("Please fill out all fields.");
 			return;
 		}
 
-		// Format the date to ISO string
 		const formattedDate = new Date(formData.date).toISOString();
 
 		try {
@@ -34,8 +32,9 @@ const CreateEventForm = ({ onClose }) => {
 					date: formattedDate,
 				}
 			);
+			const newEvent = response.data.data; // Assuming the API response contains the new event data
+			onAddEvent(newEvent);
 			console.log("Event created successfully:", response.data);
-			onClose();
 		} catch (error) {
 			console.error("Error creating event:", error);
 			if (error.response) {

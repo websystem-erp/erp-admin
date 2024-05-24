@@ -1,7 +1,20 @@
 import React from "react";
 import DropdownMenu from "./DropdownMenu";
 
-const CommonTable = ({ profile, name, role, id, onViewProfile, onDelete }) => {
+const CommonTable = ({
+	profile,
+	name,
+	role,
+	id,
+	onViewProfile,
+	onDelete,
+	action1,
+	action2,
+	dangerAction,
+	responsiveWidth,
+	hideDropDown,
+	buttonHide,
+}) => {
 	return (
 		<tr>
 			<td className="px-2 py-5 bg-white text-sm md:text-base">
@@ -21,7 +34,21 @@ const CommonTable = ({ profile, name, role, id, onViewProfile, onDelete }) => {
 				<p className="text-gray-900 whitespace-no-wrap">{id}</p>
 			</td>
 			<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
-				<DropdownMenu onViewProfile={onViewProfile} onDelete={onDelete} />
+				<DropdownMenu
+					onViewProfile={onViewProfile}
+					onDelete={onDelete}
+					dangerAction={dangerAction}
+					action1={action1}
+					action2={action2}
+					responsiveWidth={responsiveWidth}
+					hideDropDown={hideDropDown}
+				/>
+				<button
+					onClick={onViewProfile}
+					className={`border rounded-md px-4 py-2 text-sm/none text-gray-600 hover:bg-gray-50 hover:text-gray-700 ${buttonHide}`}
+				>
+					View Profile
+				</button>
 			</td>
 		</tr>
 	);
