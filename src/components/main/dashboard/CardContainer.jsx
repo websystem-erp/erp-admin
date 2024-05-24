@@ -1,17 +1,21 @@
 import React from "react";
 import Card from "./Card";
+import { Link } from "react-router-dom";
+import Employees from "../../Employees/Employees";
 
 const CardContainer = () => {
 	return (
 		<>
 			<div className="flex flex-wrap justify-center items-center">
-				<Card
-					icon={"clarity:employee-group-solid"}
-					title={"Total Employees"}
-					number={300}
-					iconClass={"salary-icon"}
-					iconColor={"bg-linear-black"}
-				/>
+				<Link to="../../Employees">
+					<Card
+						icon={"clarity:employee-group-solid"}
+						title={"Total Employees"}
+						number={300}
+						iconClass={"salary-icon"}
+						iconColor={"bg-linear-black"}
+					/>
+				</Link>
 				<Card
 					icon={"ri:money-rupee-circle-line"}
 					title={"Average Salay"}
@@ -27,9 +31,9 @@ const CardContainer = () => {
 					iconColor={"bg-linear-red"}
 				/>
 				<Card
-					icon={"fa6-solid:file-pen"}
-					title={"New Admission"}
-					number={800}
+					icon={"solar:square-academic-cap-bold"}
+					title={"Total Students"}
+					number={"15K"}
 					iconClass={"salary-icon"}
 					iconColor={"bg-linear-green"}
 				/>

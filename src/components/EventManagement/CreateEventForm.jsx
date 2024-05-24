@@ -52,7 +52,7 @@ const CreateEventForm = ({ onClose }) => {
 
 	return (
 		<div className="w-full h-full">
-			<form onSubmit={handleSubmit}>
+			<form onSubmit={handleSubmit} className="text-black">
 				<div className="flex flex-col my-2">
 					<label className="text-white">Event Name</label>
 					<input
@@ -68,7 +68,7 @@ const CreateEventForm = ({ onClose }) => {
 					<label className="text-white">Event Date</label>
 					<input
 						name="date"
-						className="my-2 rounded-lg p-4"
+						className="my-2 rounded-lg p-4 "
 						type="date"
 						value={formData.date}
 						onChange={handleChange}

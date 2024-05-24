@@ -101,12 +101,12 @@ const EventManagement = () => {
 				</div>
 
 				<div
-					className={`absolute top-0 left-0 popup-bg h-screen w-full ${
+					className={`absolute top-0 left-0 glassmorphism-dark  h-screen w-full ${
 						showCreateEventForm ? "block" : "hidden"
 					} `}
 				>
-					<div className="flex justify-center items-center w-full h-screen">
-						<div className="w-fit">
+					<div className="flex justify-center items-center w-full h-screen ">
+						<div className="w-fit bg-linear-black p-8 rounded-xl">
 							<CreateEventForm onClose={handleCloseForm} />
 						</div>
 					</div>
