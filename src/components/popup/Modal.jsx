@@ -30,7 +30,7 @@ const Modal = ({ modalOpen, setModalOpen, children, responsiveWidth }) => {
 	if (!modalOpen) return null;
 
 	return (
-		<div className="fixed inset-0 flex items-center justify-center glassmorphism-dark z-10">
+		<div className="fixed inset-0 flex items-center justify-center glassmorphism-dark z-10 min-h-screen">
 			<div ref={modalRef} className={`w-full ${responsiveWidth}  text-center `}>
 				<div className="flex justify-end mt-4">
 					<button

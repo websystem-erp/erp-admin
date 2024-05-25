@@ -25,52 +25,50 @@ const Employee = () => {
 	};
 
 	useEffect(() => {
-		const api =
-			"https://erp-system-backend.onrender.com/api/v1/teacher/1/fetchAll";
-
-		fetch(api)
-			.then((response) => {
-				if (!response.ok) {
-					throw new Error("Network response was not ok");
-				}
-				return response.json();
-			})
-			.then((data) => {
-				if (Array.isArray(data.data)) {
-					setTeachers(data.data);
-				} else {
-					console.error("Unexpected data format:", data);
-				}
-			})
-			.catch((error) => console.error("Error: ", error))
-			.finally(() => setIsLoading(false));
+		fetchTeachers();
 	}, []);
+
+	const fetchTeachers = async () => {
+		try {
+			const response = await fetch(
+				"https://erp-system-backend.onrender.com/api/v1/teacher/1/fetchAll"
+			);
+			if (!response.ok) throw new Error("Network response was not ok");
+			const data = await response.json();
+			if (Array.isArray(data.data)) setTeachers(data.data);
+			else console.error("Unexpected data format:", data);
+		} catch (error) {
+			console.error("Error: ", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const handleViewProfile = (profile) => {
 		setSelectedProfile(profile);
 		setModalOpen(true);
 	};
 
-	const handleDeleteProfile = (id) => {
-		fetch(
-			`https://erp-system-backend.onrender.com/api/v1/teacher/1/delete/${id}`,
-			{
-				method: "DELETE",
-			}
-		)
-			.then((response) => {
-				if (!response.ok) {
-					throw new Error("Network response was not ok");
-				}
-				// Remove the deleted teacher from the local state
-				setTeachers(teachers.filter((teacher) => teacher.id !== id));
-			})
-			.catch((error) => console.error("Error: ", error));
+	const handleDeleteProfile = async (id) => {
+		try {
+			const response = await fetch(
+				`https://erp-system-backend.onrender.com/api/v1/teacher/1/delete/${id}`,
+				{ method: "DELETE" }
+			);
+			if (!response.ok) throw new Error("Network response was not ok");
+			setTeachers(teachers.filter((teacher) => teacher.id !== id));
+		} catch (error) {
+			console.error("Error: ", error);
+		}
 	};
 
 	const handleFormModal = () => {
-		console.log("working");
 		setFormModalOpen(true);
+	};
+
+	const handleEmployeeAdded = () => {
+		fetchTeachers();
+		setFormModalOpen(false);
 	};
 
 	return (
@@ -92,7 +90,7 @@ const Employee = () => {
 							setModalOpen={setFormModalOpen}
 							responsiveWidth={"md:w-fit"}
 						>
-							<EmployeeAddForm />
+							<EmployeeAddForm onEmployeeAdded={handleEmployeeAdded} />
 						</Modal>
 					</div>
 					<ListTable
@@ -113,7 +111,7 @@ const Employee = () => {
 								buttonHide={"hidden"}
 								onViewProfile={() =>
 									handleViewProfile({
-										profile: imageMap[teacher.profileImage] || akriti,
+										profile: imageMap[teacher.profileImage] || akriti, // Default to 'akriti' if no matching image
 										name: teacher.name,
 										role: teacher.role,
 										id: teacher.id,
@@ -125,11 +123,10 @@ const Employee = () => {
 										currentAddress: teacher.currentAddress,
 									})
 								}
-								onDelete={() => handleDeleteProfile(teacher.id)} // Pass delete function to CommonTable
+								onDelete={() => handleDeleteProfile(teacher.id)}
 							/>
 						))}
 					/>
-
 					{selectedProfile && (
 						<Modal
 							modalOpen={modalOpen}

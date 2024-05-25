@@ -1,14 +1,23 @@
 import React from "react";
 
-const FloatingInput = ({ type, id, formTitle, value, onChange }) => {
+const FloatingInput = ({
+	type,
+	id,
+	formTitle,
+	value,
+	handleChange,
+	formName,
+	xtraClass,
+}) => {
 	return (
 		<div>
-			<div className="relative mt-2 w-full">
+			<div className={`relative mt-2  w-full ${xtraClass}`}>
 				<input
 					type={type}
 					id={id}
+					name={formName}
 					value={value}
-					onChange={onChange}
+					onChange={handleChange}
 					className="border-1 peer block w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm text-gray-900 focus:border-blue-600 focus:outline-none focus:ring-0"
 					placeholder=" "
 				/>
