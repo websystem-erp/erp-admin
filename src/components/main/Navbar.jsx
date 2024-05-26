@@ -2,7 +2,7 @@ import React from "react";
 import { Icon } from "@iconify/react";
 import ProfileDropDown from "./ProfileDropDown";
 
-const Navbar = ({ logout }) => {
+const Navbar = ({ logout, userData }) => {
 	return (
 		<section className="flex items-center justify-between mt-0 mb-4 mx-0 p-2 glassmorphism w-full ">
 			<div className="bg-white p-2 rounded-full block lg:hidden">
@@ -20,7 +20,7 @@ const Navbar = ({ logout }) => {
 					</div>
 				</div>
 				<div className="flex items-center justify-center">
-					<ProfileDropDown logout={logout} />
+					<ProfileDropDown logout={logout} userData={userData} />
 				</div>
 			</div>
 		</section>

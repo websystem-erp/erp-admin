@@ -34,25 +34,6 @@ const ListTable = ({
 								</thead>
 								<tbody>{showDataList}</tbody>
 							</table>
-							<div
-								className={`px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between ${hide}`}
-							>
-								<span className="text-xs xs:text-sm text-gray-900">
-									Showing 1 to 4 of 50 Entries
-								</span>
-								<div className="inline-flex mt-2 xs:mt-0">
-									<ListTableBtn
-										text={"prev"}
-										buttonColor={"bg-linear-blue"}
-										borderRadius={"rounded-l"}
-									/>
-									<ListTableBtn
-										text={"Next"}
-										buttonColor={"bg-linear-blue"}
-										borderRadius={"rounded-r"}
-									/>
-								</div>
-							</div>
 						</div>
 					</div>
 				</div>

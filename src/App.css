@@ -114,3 +114,11 @@
     width: 25%;
     text-align: center;
 }
+
+.chart-container {
+    width: 50%;
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }

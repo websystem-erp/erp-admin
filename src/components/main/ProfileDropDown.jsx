@@ -1,24 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import UserImg from "../../assets/User.png";
 
-const ProfileDropDown = ({ logout }) => {
+const ProfileDropDown = ({ logout, userData }) => {
 	const [isOpen, setIsOpen] = useState(false);
+	const dropdownRef = useRef(null);
 
 	const toggleDropdown = () => {
 		setIsOpen(!isOpen);
 	};
 
+	const handleClickOutside = (event) => {
+		if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+			setIsOpen(false);
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
-		<div className="hs-dropdown relative inline-flex">
+		<div ref={dropdownRef} className="hs-dropdown relative inline-flex">
 			<button
 				id="hs-dropdown-custom-trigger"
 				type="button"
 				className="hs-dropdown-toggle py-1 ps-1 pe-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-full border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none "
 				onClick={toggleDropdown}
 			>
-				<img className="w-8 h-auto rounded-full" src={UserImg} alt="Amit" />
+				<img
+					className="w-8 h-auto rounded-full"
+					src={UserImg}
+					alt={userData?.name || "User"}
+				/>
 				<span className="text-gray-600 font-medium truncate max-w-[7.5rem] ">
-					Amit
+					{userData?.name || "User"}
 				</span>
 				<svg
 					className={`hs-dropdown-open:rotate-180 size-4 transition-transform ${

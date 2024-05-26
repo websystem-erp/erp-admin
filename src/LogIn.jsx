@@ -1,26 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Correct import with curly brackets
 
-const LogIn = ({ setIsLoggedIn, setToken }) => {
+const LogIn = ({ setIsLoggedIn, setToken, setUserData }) => {
 	const [credentials, setCredentials] = useState({ email: "", password: "" });
 	const [errorMessage, setErrorMessage] = useState("");
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		const token = localStorage.getItem("token");
-		if (token) {
+		const storedUserData = localStorage.getItem("userData");
+		if (token && storedUserData) {
 			const decodedToken = jwtDecode(token);
 			if (decodedToken.exp * 1000 > Date.now()) {
 				setIsLoggedIn(true);
 				setToken(token);
+				setUserData(JSON.parse(storedUserData));
 				navigate("/");
 			} else {
 				localStorage.removeItem("token");
+				localStorage.removeItem("userData");
 			}
 		}
-	}, [setIsLoggedIn, setToken, navigate]);
+	}, [setIsLoggedIn, setToken, setUserData, navigate]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -38,6 +41,8 @@ const LogIn = ({ setIsLoggedIn, setToken }) => {
 				setIsLoggedIn(true);
 				setToken(response.data.token);
 				localStorage.setItem("token", response.data.token);
+				localStorage.setItem("userData", JSON.stringify(response.data.data)); // Store user data
+				setUserData(response.data.data);
 				navigate("/");
 			}
 		} catch (error) {

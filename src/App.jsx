@@ -8,17 +8,20 @@ import "./App.css";
 function App() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [token, setToken] = useState(null);
+	const [userData, setUserData] = useState(null);
 	const timeoutRef = useRef(null);
 
 	const logout = () => {
 		setIsLoggedIn(false);
 		setToken(null);
+		setUserData(null);
 		localStorage.removeItem("token");
+		localStorage.removeItem("userData");
 	};
 
 	const setLogoutTimer = (expirationTime) => {
 		const currentTime = Date.now();
-		const timeLeft = expirationTime * 1000 - currentTime; // Convert expiration time to milliseconds
+		const timeLeft = expirationTime * 1000 - currentTime;
 
 		if (timeoutRef.current) {
 			clearTimeout(timeoutRef.current);
@@ -29,11 +32,13 @@ function App() {
 
 	useEffect(() => {
 		const token = localStorage.getItem("token");
-		if (token) {
+		const storedUserData = localStorage.getItem("userData");
+		if (token && storedUserData) {
 			const decodedToken = jwtDecode(token);
 			if (decodedToken.exp * 1000 > Date.now()) {
 				setIsLoggedIn(true);
 				setToken(token);
+				setUserData(JSON.parse(storedUserData)); // Parse the stored user data
 				setLogoutTimer(decodedToken.exp);
 			} else {
 				logout();
@@ -65,12 +70,22 @@ function App() {
 		<Routes>
 			<Route
 				path="/login"
-				element={<LogIn setIsLoggedIn={setIsLoggedIn} setToken={setToken} />}
+				element={
+					<LogIn
+						setIsLoggedIn={setIsLoggedIn}
+						setToken={setToken}
+						setUserData={setUserData}
+					/>
+				}
 			/>
 			<Route
 				path="/*"
 				element={
-					isLoggedIn ? <Layout logout={logout} /> : <Navigate to="/login" />
+					isLoggedIn ? (
+						<Layout logout={logout} userData={userData} />
+					) : (
+						<Navigate to="/login" />
+					)
 				}
 			/>
 		</Routes>
