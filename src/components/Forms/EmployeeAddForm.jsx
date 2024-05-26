@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import FloatingInput from "./FloatingInput";
 
-const EmployeeAddForm = () => {
+const EmployeeAddForm = ({ onEmployeeAdded }) => {
 	const [formData, setFormData] = useState({
 		name: "",
 		email: "",
@@ -49,6 +49,7 @@ const EmployeeAddForm = () => {
 				formData
 			);
 			console.log("Response:", response.data);
+			onEmployeeAdded();
 		} catch (error) {
 			console.error("Error:", error);
 		}

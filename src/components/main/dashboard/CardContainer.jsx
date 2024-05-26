@@ -33,13 +33,15 @@ const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 						iconColor={"bg-linear-red"}
 					/>
 				</button>
-				<Card
-					icon={"solar:square-academic-cap-bold"}
-					title={"Total Students"}
-					number={"15K"}
-					iconClass={"salary-icon"}
-					iconColor={"bg-linear-green"}
-				/>
+				<Link to="../../Students">
+					<Card
+						icon={"solar:square-academic-cap-bold"}
+						title={"Total Students"}
+						number={"15K"}
+						iconClass={"salary-icon"}
+						iconColor={"bg-linear-green"}
+					/>
+				</Link>
 			</div>
 		</>
 	);
