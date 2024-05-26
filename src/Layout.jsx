@@ -26,7 +26,7 @@ const Layout = ({ logout, userData }) => {
 					<Route path="/" element={<Dashboard />} />
 					<Route path="/employees" element={<Employees />} />
 					<Route path="/students" element={<Students />} />
-					<Route path="/finance" element={<Finance />}>
+					<Route path="/finance/*" element={<Finance />}>
 						<Route path="summary" element={<Summary />} />
 						<Route path="transactions" element={<Transactions />} />
 						<Route path="student-fees" element={<StudentFees />} />

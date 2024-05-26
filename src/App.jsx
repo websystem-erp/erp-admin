@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Remove the destructuring
 import LogIn from "./LogIn";
 import Layout from "./Layout";
 import "./App.css";
@@ -38,7 +38,7 @@ function App() {
 			if (decodedToken.exp * 1000 > Date.now()) {
 				setIsLoggedIn(true);
 				setToken(token);
-				setUserData(JSON.parse(storedUserData)); // Parse the stored user data
+				setUserData(JSON.parse(storedUserData));
 				setLogoutTimer(decodedToken.exp);
 			} else {
 				logout();

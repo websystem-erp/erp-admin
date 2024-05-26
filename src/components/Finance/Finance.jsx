@@ -1,48 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import {
+	Link,
+	Routes,
+	Route,
+	useLocation,
+	useNavigate,
+	Navigate,
+} from "react-router-dom";
 import Summary from "./Summary";
 import Transactions from "./Transactions";
 import StudentFees from "./StudentFees";
 import Payroll from "./Payroll";
 
 const Finance = () => {
-	const tabs = ["Summary", "Transactions", "student-fees", "Payroll"];
-	const [activeTab, setActiveTab] = useState("Summary");
+	const tabs = ["summary", "transactions", "student-fees", "payroll"];
+	const location = useLocation();
+	const navigate = useNavigate();
 
-	const handleTabClick = (tab) => {
-		setActiveTab(tab);
-	};
-
-	// Set "Summary" as active tab when Finance component mounts
 	useEffect(() => {
-		handleTabClick("Summary");
-	}, []); // Empty dependency array ensures the effect runs only once when component mounts
+		const currentTab = location.pathname.split("/")[2] || "summary";
+		if (!tabs.includes(currentTab)) {
+			navigate("/finance/summary");
+		}
+	}, [location, navigate, tabs]);
 
 	return (
 		<>
 			<h3 className="font-bold text-2xl">Finance</h3>
 			<div className="flex my-8">
-				{tabs.map((tab, ind) => {
-					console.log(tab);
-					return (
-						<Link
-							key={ind}
-							to={`/Finance/${tab.toLowerCase()}`}
-							onClick={() => handleTabClick(tab)}
-							className={`border-2 rounded-full cursor-pointer px-4 py-2 mx-2 ${
-								activeTab === tab ? "active" : ""
-							}`}
-						>
-							{tab}
-						</Link>
-					);
-				})}
+				{tabs.map((tab, ind) => (
+					<Link
+						key={ind}
+						to={`/finance/${tab}`}
+						className={`border-2 rounded-full cursor-pointer px-4 py-2 mx-2 ${
+							location.pathname.includes(tab) ? "active" : ""
+						}`}
+					>
+						{tab.charAt(0).toUpperCase() + tab.slice(1)}
+					</Link>
+				))}
 			</div>
 			<div>
-				{activeTab === "Summary" && <Summary />}
-				{activeTab === "Transactions" && <Transactions />}
-				{activeTab === "student-fees" && <StudentFees />}
-				{activeTab === "Payroll" && <Payroll />}
+				<Routes>
+					<Route path="/" element={<Navigate to="summary" />} />
+					<Route path="summary" element={<Summary />} />
+					<Route path="transactions" element={<Transactions />} />
+					<Route path="student-fees" element={<StudentFees />} />
+					<Route path="payroll" element={<Payroll />} />
+				</Routes>
 			</div>
 		</>
 	);

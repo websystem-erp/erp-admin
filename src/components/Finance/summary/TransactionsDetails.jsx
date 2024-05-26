@@ -1,7 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const TransactionsDetails = () => {
+	const navigate = useNavigate(); // Initialize useNavigate hook
 	const fakeData = [
 		{
 			status: "Cancelled",
@@ -29,24 +30,25 @@ const TransactionsDetails = () => {
 		},
 	];
 
+	const handleSeeAllTransactions = () => {
+		navigate("/finance/transactions"); // Navigate to Transactions route
+	};
+
 	return (
 		<>
 			<div className="bg-white p-8 rounded-md w-fit sm:w-full">
-				<div className=" flex items-center justify-between pb-6">
+				<div className="flex items-center justify-between pb-6">
 					<div>
 						<h2 className="text-gray-600 font-semibold">Transactions</h2>
-						<span className="text-xs">
-							Lorem ipsum dolor sit amet, consectetur adipis.
-						</span>
 					</div>
 					<div className="flex items-center justify-between">
 						<div className="flex flex-col gap-2">
-							<Link
-								to="/Finance/Transactions"
+							<button
+								onClick={handleSeeAllTransactions}
 								className="text-sm text-black transition duration-150 hover:text-white hover:bg-indigo-500 font-semibold py-2 px-4 border-2 border-indigo-500 rounded-full"
 							>
 								See All Transactions
-							</Link>
+							</button>
 						</div>
 					</div>
 				</div>
