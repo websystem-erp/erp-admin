@@ -14,14 +14,14 @@ import StudentFees from "./components/Finance/StudentFees";
 import Payroll from "./components/Finance/Payroll";
 import Department from "./components/Department/Department";
 
-const Layout = () => {
+const Layout = ({ logout }) => {
 	return (
 		<div className="grid lg:grid-cols-[300px_1fr] gap-4 bg-[#F0F2F5]">
 			<aside className="h-screen p-4 hidden lg:block">
 				<Navigation />
 			</aside>
 			<main className="w-full">
-				<Navbar />
+				<Navbar logout={logout} />
 				<Routes>
 					<Route path="/" element={<Dashboard />} />
 					<Route path="/Employees" element={<Employees />} />

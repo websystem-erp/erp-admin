@@ -2,10 +2,27 @@
     background: linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25));
     color: rgb(255, 255, 255);
 }
+
+.hover\:bg-linear-black:hover {
+    background: linear-gradient(195deg, rgb(66, 66, 74), rgb(25, 25, 25));
+    color: rgb(255, 255, 255);
+}
+
 .bg-linear-blue {
     background: linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232));
     color: rgb(255, 255, 255);
 }
+
+.hover\:bg-linear-blue:hover {
+    background: linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232));
+    color: rgb(255, 255, 255);
+}
+
+.hover\:bg-linear-red:hover {
+    background: linear-gradient(195deg, rgb(236, 64, 122), rgb(216, 27, 96));
+    color: rgb(255, 255, 255);
+}
+
 
 .bg-linear-red {
     background: linear-gradient(195deg, rgb(236, 64, 122), rgb(216, 27, 96));
@@ -16,6 +33,12 @@
     background: linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71));
     color: rgb(255, 255, 255);
 }
+
+.hover\:bg-linear-green:hover {
+    background: linear-gradient(195deg, rgb(102, 187, 106), rgb(67, 160, 71));
+    color: rgb(255, 255, 255);
+}
+
 
 .employee-icon {
     color: rgb(255, 255, 255);
@@ -91,11 +114,3 @@
     width: 25%;
     text-align: center;
 }
-
-/* .popup-bg {
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    background-color: rgba(17, 25, 40, 0.75);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.125);
-} */

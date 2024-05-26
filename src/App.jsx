@@ -46,7 +46,9 @@ function App() {
 			<Route path="/login" element={<LogIn setIsLoggedIn={setIsLoggedIn} />} />
 			<Route
 				path="/*"
-				element={isLoggedIn ? <Layout /> : <Navigate to="/login" />}
+				element={
+					isLoggedIn ? <Layout logout={logout} /> : <Navigate to="/login" />
+				}
 			/>
 		</Routes>
 	);
