@@ -1,7 +1,7 @@
 import React from "react";
+import { Routes, Route } from "react-router-dom";
 import Navigation from "./components/Sidebar/Navigation";
 import Navbar from "./components/main/Navbar";
-import { Routes, Route } from "react-router-dom";
 import Dashboard from "./components/Dashboard/Dashboard";
 import Employees from "./components/Employees/Employees";
 import Students from "./components/Students/Students";
@@ -24,16 +24,16 @@ const Layout = ({ logout }) => {
 				<Navbar logout={logout} />
 				<Routes>
 					<Route path="/" element={<Dashboard />} />
-					<Route path="/Employees" element={<Employees />} />
-					<Route path="/Students" element={<Students />} />
-					<Route path="/Finance" element={<Finance />}>
+					<Route path="/employees" element={<Employees />} />
+					<Route path="/students" element={<Students />} />
+					<Route path="/finance" element={<Finance />}>
 						<Route path="summary" element={<Summary />} />
 						<Route path="transactions" element={<Transactions />} />
 						<Route path="student-fees" element={<StudentFees />} />
 						<Route path="payroll" element={<Payroll />} />
 					</Route>
-					<Route path="/Event" element={<EventManagement />} />
-					<Route path="/Department" element={<Department />} />
+					<Route path="/event" element={<EventManagement />} />
+					<Route path="/department" element={<Department />} />
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</main>

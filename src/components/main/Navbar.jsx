@@ -10,18 +10,13 @@ const Navbar = ({ logout }) => {
 			</div>
 
 			<div className="flex items-center w-full justify-end">
-				{/* <div className="flex w-fit md:w-64 bg-white rounded-full p-2 border">
+				<div className="flex w-fit md:w-64 bg-white rounded-full p-2 border">
 					<Icon icon="ic:round-search" height={24} />
 					<span className="hidden md:block">Search</span>
-				</div> */}
+				</div>
 				<div className="flex border-gray-400 border-e me-2">
-					<div className="rounded-full border bg-white p-2 h-10 w-10 mx-1 relative">
-						<Icon
-							icon="zondicons:notification"
-							height={24}
-							className="text-gray-600"
-						/>
-						<div className="w-2 h-2 rounded-full bg-red-500 absolute top-2 right-2"></div>
+					<div className="rounded-full border bg-white p-2 h-10 w-10 mx-1">
+						<Icon icon="zondicons:notification" height={24} />
 					</div>
 				</div>
 				<div className="flex items-center justify-center">

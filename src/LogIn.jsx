@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-const LogIn = ({ setIsLoggedIn }) => {
+const LogIn = ({ setIsLoggedIn, setToken }) => {
 	const [credentials, setCredentials] = useState({ email: "", password: "" });
 	const [errorMessage, setErrorMessage] = useState("");
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		// Check if user is already logged in when the component mounts
-		const storedIsLoggedIn = sessionStorage.getItem("isLoggedIn");
-		if (storedIsLoggedIn === "true") {
-			setIsLoggedIn(true);
-			navigate("/");
+		const token = localStorage.getItem("token");
+		if (token) {
+			const decodedToken = jwtDecode(token);
+			if (decodedToken.exp * 1000 > Date.now()) {
+				setIsLoggedIn(true);
+				setToken(token);
+				navigate("/");
+			} else {
+				localStorage.removeItem("token");
+			}
 		}
-	}, [setIsLoggedIn, navigate]);
+	}, [setIsLoggedIn, setToken, navigate]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -28,9 +34,10 @@ const LogIn = ({ setIsLoggedIn }) => {
 				"https://erp-system-backend.onrender.com/api/v1/admin/login",
 				credentials
 			);
-			if (response.status === 202) {
+			if (response.data.success) {
 				setIsLoggedIn(true);
-				sessionStorage.setItem("isLoggedIn", "true");
+				setToken(response.data.token);
+				localStorage.setItem("token", response.data.token);
 				navigate("/");
 			}
 		} catch (error) {
