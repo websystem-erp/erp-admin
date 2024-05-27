@@ -15,8 +15,8 @@ const API_ENDPOINTS = {
 	// admin
 	CREATE_ADMIN: `${API_BASE_URL}/admin/reg`,
 	VERIFY_EMAIL: `${API_BASE_URL}/admin/verify-email/1`,
-	ADMIN_LOGIN: `${API_BASE_URL}admin/login`,
-	UPDATE_ADMIN: `${API_BASE_URL}admin/${userId}`,
+	ADMIN_LOGIN: `${API_BASE_URL}/admin/login`,
+	UPDATE_ADMIN: `${API_BASE_URL}/admin/${userId}`,
 	FETCH_ALL_ADMIN: `${API_BASE_URL}/admin`,
 	ADMIN_FORGOT_PASSWORD: `${API_BASE_URL}/admin/forget-password`,
 	ADMIN_RESET_PASSWORD: `${API_BASE_URL}/admin/reset-password/(token-value)`,
