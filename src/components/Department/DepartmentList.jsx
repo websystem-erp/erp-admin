@@ -1,4 +1,3 @@
-// DepartmentList.jsx
 import React from "react";
 import DepartmentItem from "./DepartmentItem";
 

@@ -63,10 +63,6 @@ const DepartmentForm = ({ onSubmit, onClose }) => {
 					onChange={handleChange}
 					placeholder="Enter Campus ID"
 				/>
-
-				{/* Inputs and labels for subjects, teachers, students */}
-				{/* Add/remove buttons for subjects, teachers, students */}
-
 				<div className="flex justify-end items-center mt-4">
 					<button
 						className="px-4 py-2 me-4 border-red-500 border-2 rounded-lg"

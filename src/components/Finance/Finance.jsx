@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import Summary from "./Summary";
 import Transactions from "./Transactions";
-import StudentFees from "./StudentFees";
+import StudentFees from "./student/StudentFees";
 import Payroll from "./Payroll";
 
 const Finance = () => {

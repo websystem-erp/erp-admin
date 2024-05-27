@@ -9,6 +9,7 @@ import ListTableBtn from "../../../List/ListTableBtn";
 import Modal from "../../../popup/Modal";
 import ModalDetails from "../../../popup/ModalDetails";
 import EmployeeAddForm from "../../../Forms/EmployeeAddForm";
+import API_ENDPOINTS from "../../../../API/apiEndpoints";
 
 const Employee = () => {
 	const [teachers, setTeachers] = useState([]);
@@ -30,15 +31,13 @@ const Employee = () => {
 
 	const fetchTeachers = async () => {
 		try {
-			const response = await fetch(
-				"https://erp-system-backend.onrender.com/api/v1/teacher/1/fetchAll"
-			);
+			const response = await fetch(API_ENDPOINTS.FETCH_ALL_TEACHERS);
 			if (!response.ok) throw new Error("Network response was not ok");
 			const data = await response.json();
 			if (Array.isArray(data.data)) setTeachers(data.data);
 			else console.error("Unexpected data format:", data);
 		} catch (error) {
-			console.error("Error: ", error);
+			console.error("Error fetching teachers:", error);
 		} finally {
 			setIsLoading(false);
 		}
@@ -52,13 +51,13 @@ const Employee = () => {
 	const handleDeleteProfile = async (id) => {
 		try {
 			const response = await fetch(
-				`https://erp-system-backend.onrender.com/api/v1/teacher/1/delete/${id}`,
+				API_ENDPOINTS.DELETE_TEACHERS.replace(":id", id),
 				{ method: "DELETE" }
 			);
 			if (!response.ok) throw new Error("Network response was not ok");
 			setTeachers(teachers.filter((teacher) => teacher.id !== id));
 		} catch (error) {
-			console.error("Error: ", error);
+			console.error("Error deleting teacher:", error);
 		}
 	};
 

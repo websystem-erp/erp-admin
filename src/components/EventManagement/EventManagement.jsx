@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import API_ENDPOINTS from "../../API/apiEndpoints";
 import CreateEventForm from "./CreateEventForm";
 
 const EventManagement = () => {
@@ -10,9 +11,7 @@ const EventManagement = () => {
 	useEffect(() => {
 		const fetchEvents = async () => {
 			try {
-				const response = await axios.get(
-					"https://erp-system-backend.onrender.com/api/v1/event/fetchAll"
-				);
+				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_EVENTS);
 				const sortedEvents = response.data.data.sort(
 					(a, b) => new Date(b.created_at) - new Date(a.created_at)
 				);
@@ -40,12 +39,9 @@ const EventManagement = () => {
 		setEvents((prevEvents) => [newEvent, ...prevEvents]);
 		setShowCreateEventForm(false);
 	};
-
 	const handleDeleteEvent = async (eventId) => {
 		try {
-			await axios.delete(
-				`https://erp-system-backend.onrender.com/api/v1/event/delete-event/${eventId}`
-			);
+			await axios.delete(API_ENDPOINTS.DELETE_EVENT(eventId));
 			const updatedEvents = events.filter((event) => event.id !== eventId);
 			setEvents(updatedEvents);
 			console.log("Event deleted successfully.");

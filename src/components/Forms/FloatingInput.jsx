@@ -1,5 +1,3 @@
-import React from "react";
-
 const FloatingInput = ({
 	type,
 	id,
@@ -11,7 +9,7 @@ const FloatingInput = ({
 }) => {
 	return (
 		<div>
-			<div className={`relative mt-2  w-full ${xtraClass}`}>
+			<div className={`relative mt-2 w-full ${xtraClass}`}>
 				<input
 					type={type}
 					id={id}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import ListTableBtn from "../List/ListTableBtn";
+import axios from "axios";
+import API_ENDPOINTS from "../../API/apiEndpoints";
 import DepartmentCourseList from "./DepartmentCourseList";
 import FormItems from "../Forms/FormItems";
 
@@ -9,17 +10,13 @@ const Department = () => {
 	const [openForm, setOpenForm] = useState(false);
 
 	useEffect(() => {
-		const api =
-			"https://erp-system-backend.onrender.com/api/v1/department/fetchAll";
-
-		fetch(api)
+		axios
+			.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS)
 			.then((response) => {
-				if (!response.ok) {
+				if (response.status !== 200) {
 					throw new Error("Network response was not ok");
 				}
-				return response.json();
-			})
-			.then((data) => {
+				const data = response.data;
 				if (Array.isArray(data.data)) {
 					setPrograms(data.data);
 				} else {

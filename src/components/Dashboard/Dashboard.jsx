@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import API_ENDPOINTS from "../../API/apiEndpoints";
 import CardContainer from "../main/dashboard/CardContainer";
 import ChartContainer from "../main/dashboard/charts/ChartContainer";
 import Employee from "../main/dashboard/employeesDetails/Employee";
@@ -24,17 +26,13 @@ const Dashboard = () => {
 	};
 
 	useEffect(() => {
-		const api =
-			"https://erp-system-backend.onrender.com/api/v1/student/1/fetchAll";
-
-		fetch(api)
+		axios
+			.get(API_ENDPOINTS.FETCH_ALL_STUDENTS)
 			.then((response) => {
-				if (!response.ok) {
+				if (response.status !== 200) {
 					throw new Error("Network response was not ok");
 				}
-				return response.json();
-			})
-			.then((data) => {
+				const data = response.data;
 				if (Array.isArray(data.data)) {
 					setStudents(data.data);
 				} else {

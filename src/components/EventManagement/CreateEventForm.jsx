@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import API_ENDPOINTS from "../../API/apiEndpoints";
 
 const CreateEventForm = ({ onClose, onAddEvent }) => {
 	const [formData, setFormData] = useState({
@@ -24,14 +25,11 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 		const formattedDate = new Date(formData.date).toISOString();
 
 		try {
-			const response = await axios.post(
-				"https://erp-system-backend.onrender.com/api/v1/event/create",
-				{
-					title: formData.title,
-					description: formData.description,
-					date: formattedDate,
-				}
-			);
+			const response = await axios.post(API_ENDPOINTS.CREATE_EVENT, {
+				title: formData.title,
+				description: formData.description,
+				date: formattedDate,
+			});
 			const newEvent = response.data.data; // Assuming the API response contains the new event data
 			onAddEvent(newEvent);
 			console.log("Event created successfully:", response.data);

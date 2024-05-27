@@ -1,5 +1,4 @@
 import React from "react";
-import ListTableBtn from "./ListTableBtn";
 
 const ListTable = ({
 	ListName,

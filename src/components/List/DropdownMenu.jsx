@@ -61,7 +61,7 @@ const DropdownMenu = ({
 
 			{isOpen && (
 				<div
-					className="absolute end-0 z-10 mt-2 w-56 rounded-md border border-gray-100 bg-white shadow-lg"
+					className="absolute  end-0 z-10 mt-2 w-56 rounded-md border border-gray-100 bg-white shadow-lg"
 					role="menu"
 				>
 					<div className="p-2">

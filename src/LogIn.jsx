@@ -89,12 +89,17 @@ const LogIn = ({ setIsLoggedIn, setToken, setUserData }) => {
 							onChange={handleChange}
 						/>
 					</div>
-					<button
-						type="submit"
-						className="bg-green-500 hover:bg-green-700 text-white uppercase text-sm font-semibold px-4 py-2 rounded"
-					>
-						Login
-					</button>
+					<div className="flex flex-col gap-4 ">
+						<Link to="" className="cursor-pointer text-sm text-right">
+							Forgot Password ?
+						</Link>
+						<button
+							type="submit"
+							className="bg-green-500 hover:bg-green-700 text-white uppercase text-sm font-semibold px-4 py-2 rounded"
+						>
+							Login
+						</button>
+					</div>
 					{errorMessage && (
 						<p className="text-red-500 text-xs mt-2">{errorMessage}</p>
 					)}

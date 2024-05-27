@@ -1,13 +1,7 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 import ChartWrapper from "../main/dashboard/charts/ChartWrapper";
 import BarChart from "../main/dashboard/charts/BarChart";
 import { attendance } from "../data/sourceData";
-import anju from "../../assets/user/anju.jpg";
-import akriti from "../../assets/user/akriti.jpg";
-import ankur from "../../assets/user/ankur.jpg";
-import vikas from "../../assets/user/vikas.jpg";
-import CommonCard from "../List/CommonCard";
 import StudentList from "./StudentList";
 
 const Students = () => {

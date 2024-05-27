@@ -10,7 +10,7 @@ import EventManagement from "./components/EventManagement/EventManagement";
 import NotFound from "./components/NotFound";
 import Summary from "./components/Finance/Summary";
 import Transactions from "./components/Finance/Transactions";
-import StudentFees from "./components/Finance/StudentFees";
+import StudentFees from "./components/Finance/student/StudentFees";
 import Payroll from "./components/Finance/Payroll";
 import Department from "./components/Department/Department";
 

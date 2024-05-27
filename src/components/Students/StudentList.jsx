@@ -6,6 +6,7 @@ import vikas from "../../assets/user/vikas.jpg";
 import ListTable from "../List/ListTable";
 import CommonTable from "../List/CommonTable";
 import ListTableBtn from "../List/ListTableBtn";
+import API_ENDPOINTS from "../../API/apiEndpoints";
 
 const StudentList = () => {
 	const [students, setStudents] = useState([]);
@@ -19,25 +20,26 @@ const StudentList = () => {
 	};
 
 	useEffect(() => {
-		const api =
-			"https://erp-system-backend.onrender.com/api/v1/student/1/fetchAll";
-
-		fetch(api)
-			.then((response) => {
+		const fetchStudents = async () => {
+			try {
+				const response = await fetch(API_ENDPOINTS.FETCH_ALL_STUDENTS);
 				if (!response.ok) {
 					throw new Error("Network response was not ok");
 				}
-				return response.json();
-			})
-			.then((data) => {
+				const data = await response.json();
 				if (Array.isArray(data.data)) {
 					setStudents(data.data);
 				} else {
 					console.error("Unexpected data format:", data);
 				}
-			})
-			.catch((error) => console.error("Error: ", error))
-			.finally(() => setIsLoading(false));
+			} catch (error) {
+				console.error("Error: ", error);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchStudents();
 	}, []);
 
 	const handleFormModal = () => {
@@ -74,10 +76,11 @@ const StudentList = () => {
 						showDataList={students.map((student) => (
 							<CommonTable
 								key={student.id}
-								profile={imageMap[student.profileImage] || akriti} // Default to 'akriti' if no matching image
+								profile={imageMap[student.profileImage] || akriti}
 								name={student.name}
 								role={student.role}
 								id={student.id}
+								hideDropDown={"hidden"}
 							/>
 						))}
 					/>

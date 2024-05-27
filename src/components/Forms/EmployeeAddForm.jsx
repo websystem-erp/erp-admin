@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import API_ENDPOINTS from "../../API/apiEndpoints";
 import FloatingInput from "./FloatingInput";
 
 const EmployeeAddForm = ({ onEmployeeAdded }) => {
@@ -10,8 +11,8 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		role: "",
 		gender: "",
 		dob: "",
+		departmentId: 3,
 		contactNumber: "",
-		departmentId: 1,
 		permanent_address: "",
 		currentAddress: "",
 		subject: {
@@ -42,10 +43,11 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 	};
 
 	const handleSubmit = async (e) => {
+		console.log(formData);
 		e.preventDefault();
 		try {
 			const response = await axios.post(
-				"https://erp-system-backend.onrender.com/api/v1/teacher/1/reg",
+				API_ENDPOINTS.REGISTER_TEACHER,
 				formData
 			);
 			console.log("Response:", response.data);
@@ -57,16 +59,28 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 
 	return (
 		<form onSubmit={handleSubmit}>
-			<FloatingInput
-				xtraClass={"w-full"}
-				type="text"
-				id="name"
-				formTitle="Name"
-				value={formData.name}
-				handleChange={handleChange}
-				formName="name"
-				required
-			/>
+			<div className="flex gap-4">
+				<FloatingInput
+					xtraClass={"w-full"}
+					type="text"
+					id="name"
+					formTitle="Name"
+					value={formData.name}
+					handleChange={handleChange}
+					formName="name"
+					required
+				/>
+				<FloatingInput
+					xtraClass={"w-full"}
+					type="number"
+					id="departmentId"
+					formTitle="Department ID"
+					value={formData.id}
+					handleChange={handleChange}
+					formName="departmentId"
+					required
+				/>
+			</div>
 			<div className="flex gap-4 ">
 				<div className="w-full">
 					<FloatingInput

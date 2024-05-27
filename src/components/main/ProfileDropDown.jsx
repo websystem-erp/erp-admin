@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import UserImg from "../../assets/User.png";
 
-const ProfileDropDown = ({ logout, userData }) => {
+const ProfileDropDown = ({ logout, userData, toggleForm }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef(null);
 
@@ -27,7 +27,7 @@ const ProfileDropDown = ({ logout, userData }) => {
 			<button
 				id="hs-dropdown-custom-trigger"
 				type="button"
-				className="hs-dropdown-toggle py-1 ps-1 pe-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-full border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none "
+				className="hs-dropdown-toggle py-1 ps-1 pe-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-full border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
 				onClick={toggleDropdown}
 			>
 				<img
@@ -35,7 +35,7 @@ const ProfileDropDown = ({ logout, userData }) => {
 					src={UserImg}
 					alt={userData?.name || "User"}
 				/>
-				<span className="text-gray-600 font-medium truncate max-w-[7.5rem] ">
+				<span className="text-gray-600 font-medium truncate max-w-[7.5rem]">
 					{userData?.name || "User"}
 				</span>
 				<svg
@@ -61,15 +61,15 @@ const ProfileDropDown = ({ logout, userData }) => {
 					isOpen
 						? "hs-dropdown-open:opacity-100 opacity-100"
 						: "opacity-0 hidden"
-				} min-w-60 bg-linear-black shadow-md rounded-lg p-2 mt-2 `}
+				} min-w-60 bg-linear-black shadow-md rounded-lg p-2 mt-2`}
 				aria-labelledby="hs-dropdown-custom-trigger"
 			>
-				<a
-					className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-white hover:bg-linear-blue focus:outline-none focus:bg-linear-blue"
-					href="#"
+				<button
+					className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-white hover:bg-linear-blue focus:outline-none focus:bg-linear-blue"
+					onClick={toggleForm}
 				>
-					Profile
-				</a>
+					Assign Role
+				</button>
 				<button
 					className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-white hover:bg-linear-blue focus:outline-none focus:bg-linear-blue w-full"
 					onClick={logout}

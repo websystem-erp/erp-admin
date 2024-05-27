@@ -1,5 +1,5 @@
 import React from "react";
-import Filter from "../Filter/Filter";
+import Filter from "./Filter/Filter";
 
 const data = [
 	{
@@ -34,9 +34,7 @@ const StudentFees = () => {
 			<div className="flex justify-between px-16">
 				<h3 className="font-bold">Transaction History</h3>
 			</div>
-			<div className="">
-				<Filter data={data} />
-			</div>
+			<Filter data={data} />
 		</>
 	);
 };
