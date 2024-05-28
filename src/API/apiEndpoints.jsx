@@ -49,6 +49,9 @@ const API_ENDPOINTS = {
 	FETCH_ALL_LEAVES_TEACHER_ID: `${API_BASE_URL}/leave/fetch-leaves/`,
 	FETCH_ALL_PENDING_LEAVES: `${API_BASE_URL}/leave/pending-leaves`,
 
+	// DEPRTMENT
+	CREATE_DEPARTMENTS: `${API_BASE_URL}/department/${userId}/reg`,
+
 	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
 	DELETE_EVENT: (eventId) => `${API_BASE_URL}/event/delete-event/${eventId}`,
 	// Add other endpoints as needed

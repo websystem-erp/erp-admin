@@ -37,11 +37,17 @@ const Navbar = ({ logout, userData }) => {
 
 	const toggleFormVisibility = () => {
 		setIsFormVisible(!isFormVisible);
+		if (!isFormVisible) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "auto";
+		}
 	};
 
 	const handleClickOutsideForm = (event) => {
 		if (formRef.current && !formRef.current.contains(event.target)) {
 			setIsFormVisible(false);
+			document.body.style.overflow = "auto";
 		}
 	};
 
@@ -51,6 +57,14 @@ const Navbar = ({ logout, userData }) => {
 			document.removeEventListener("mousedown", handleClickOutsideForm);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (isFormVisible) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "auto";
+		}
+	}, [isFormVisible]);
 
 	return (
 		<section className="flex items-center justify-between mt-0 mb-4 mx-0 p-2 glassmorphism w-full relative z-[9999]">

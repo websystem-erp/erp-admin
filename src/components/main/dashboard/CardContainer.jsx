@@ -6,6 +6,7 @@ import API_ENDPOINTS from "../../../API/apiEndpoints";
 
 const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 	const [employeeCount, setEmployeeCount] = useState(0);
+	const [studentCount, setStudentCount] = useState(0);
 
 	useEffect(() => {
 		const fetchEmployeeCount = async () => {
@@ -17,11 +18,25 @@ const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 					console.error("Unexpected data format:", response.data);
 				}
 			} catch (error) {
-				console.error("Error fetching data:", error);
+				console.error("Error fetching employee data:", error);
+			}
+		};
+
+		const fetchStudentCount = async () => {
+			try {
+				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_STUDENTS);
+				if (Array.isArray(response.data.data)) {
+					setStudentCount(response.data.data.length);
+				} else {
+					console.error("Unexpected data format:", response.data);
+				}
+			} catch (error) {
+				console.error("Error fetching student data:", error);
 			}
 		};
 
 		fetchEmployeeCount();
+		fetchStudentCount();
 	}, []);
 
 	return (
@@ -58,7 +73,7 @@ const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 					<Card
 						icon={"solar:square-academic-cap-bold"}
 						title={"Total Students"}
-						number={"15K"}
+						number={studentCount}
 						iconClass={"salary-icon"}
 						iconColor={"bg-linear-green"}
 					/>

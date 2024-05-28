@@ -22,6 +22,11 @@ const ProfileDropDown = ({ logout, userData, toggleForm }) => {
 		};
 	}, []);
 
+	const handleAssignRoleClick = () => {
+		toggleForm();
+		setIsOpen(false);
+	};
+
 	return (
 		<div ref={dropdownRef} className="hs-dropdown relative inline-flex">
 			<button
@@ -66,7 +71,7 @@ const ProfileDropDown = ({ logout, userData, toggleForm }) => {
 			>
 				<button
 					className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-white hover:bg-linear-blue focus:outline-none focus:bg-linear-blue"
-					onClick={toggleForm}
+					onClick={handleAssignRoleClick}
 				>
 					Assign Role
 				</button>

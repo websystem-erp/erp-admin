@@ -3,7 +3,7 @@ import SearchBar from "./SearchBar";
 import FilterOptions from "./FilterOptions";
 import TransactionTable from "./TransactionTable";
 
-const Filter = ({ data }) => {
+const Filter = ({ data, filterFields }) => {
 	const [filters, setFilters] = useState({});
 	const [searchQuery, setSearchQuery] = useState("");
 
@@ -24,9 +24,9 @@ const Filter = ({ data }) => {
 	};
 
 	const filteredData = data.filter((item) => {
-		const matchesSearchQuery =
-			item.transactionID.toLowerCase().includes(searchQuery) ||
-			item.desc.toLowerCase().includes(searchQuery);
+		const matchesSearchQuery = filterFields.some((field) =>
+			item[field].toLowerCase().includes(searchQuery)
+		);
 
 		const matchesFilters = Object.keys(filters).every((key) =>
 			filters[key] === ""
@@ -50,6 +50,7 @@ const Filter = ({ data }) => {
 				filters={filters}
 				onFilterChange={handleFilterChange}
 				uniqueOptions={uniqueOptions}
+				filterFields={filterFields}
 			/>
 			<TransactionTable data={filteredData} />
 		</div>
