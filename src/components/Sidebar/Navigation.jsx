@@ -68,6 +68,17 @@ const Navigation = () => {
 					</li>
 					<li className="navlinks rounded-full ">
 						<NavLink
+							to={"/Attendance"}
+							className="flex justify-start items-center p-4 w-full"
+						>
+							<Icon icon="fluent:task-list-square-add-24-filled" height={24} />
+							<p className="text-left px-4 w-full text-lg font-semibold">
+								Attendance
+							</p>
+						</NavLink>
+					</li>
+					<li className="navlinks rounded-full ">
+						<NavLink
 							to={"/Event"}
 							className="flex justify-start items-center p-4 w-full"
 						>

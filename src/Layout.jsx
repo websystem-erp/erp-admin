@@ -13,6 +13,7 @@ import Transactions from "./components/Finance/Transactions";
 import StudentFees from "./components/Finance/student/StudentFees";
 import Payroll from "./components/Finance/Payroll";
 import Department from "./components/Department/Department";
+import Attendance from "./components/Attendance/Attendance";
 
 const Layout = ({ logout, userData }) => {
 	return (
@@ -34,6 +35,7 @@ const Layout = ({ logout, userData }) => {
 					</Route>
 					<Route path="/event" element={<EventManagement />} />
 					<Route path="/department" element={<Department />} />
+					<Route path="/attendance" element={<Attendance />} />
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</main>

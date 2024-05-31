@@ -12,6 +12,7 @@ const Attendance = () => {
 	const [attendance, setAttendance] = useState({});
 	const [attendanceStatus, setAttendanceStatus] = useState([]);
 	const [attendanceFetched, setAttendanceFetched] = useState(false);
+	const [attendanceMarked, setAttendanceMarked] = useState(false);
 
 	useEffect(() => {
 		const fetchDepartments = async () => {
@@ -37,22 +38,6 @@ const Attendance = () => {
 	}, []);
 
 	useEffect(() => {
-		const fetchAttendanceStatus = async () => {
-			try {
-				const formattedDate = selectedDate.toISOString().split("T")[0];
-				const apiUrl = API_ENDPOINTS.ALL_FACULTY_ATTENDANCE_DATE(formattedDate);
-				console.log(`Fetching attendance for date: ${formattedDate} from ${apiUrl}`);
-				const response = await axios.get(apiUrl);
-				console.log("Attendance status response:", response.data);
-				setAttendanceStatus(response.data.attendanceStatus || []);
-				setAttendanceFetched(true);
-			} catch (error) {
-				console.error("Error fetching attendance status:", error);
-				setAttendanceStatus([]);
-				setAttendanceFetched(true);
-			}
-		};
-
 		fetchAttendanceStatus();
 	}, [selectedDate]);
 
@@ -63,6 +48,7 @@ const Attendance = () => {
 	const handleDateChange = (date) => {
 		setSelectedDate(date);
 		setAttendanceFetched(false);
+		setAttendanceMarked(false);
 	};
 
 	const handleAttendanceChange = (teacherId) => {
@@ -81,24 +67,25 @@ const Attendance = () => {
 			selectedTeachers: selectedTeachers.map(Number),
 		};
 
-		console.log(`Posting attendance data:`, attendanceData);
-
 		try {
-			const response = await axios.post(
-				API_ENDPOINTS.MARK_FACULTY_TEACHERS,
-				attendanceData
-			);
+			const apiUrl = API_ENDPOINTS.MARK_FACULTY_TEACHERS;
+			await axios.post(apiUrl, attendanceData);
 			alert("Attendance marked successfully!");
 			setAttendance({});
 			setAttendanceFetched(false);
 			fetchAttendanceStatus(); // Refetch attendance status to update the UI
 		} catch (error) {
-			console.error("Error marking attendance:", error);
-			alert(
-				`Error marking attendance: ${
-					error.response?.data?.message || error.message
-				}`
-			);
+			if (error.response && error.response.status === 409) {
+				alert("Attendance is already marked for this date!");
+				setAttendanceMarked(true);
+			} else {
+				console.error("Error marking attendance:", error);
+				alert(
+					`Error marking attendance: ${
+						error.response?.data?.message || error.message
+					}`
+				);
+			}
 		}
 	};
 
@@ -106,11 +93,13 @@ const Attendance = () => {
 		try {
 			const formattedDate = selectedDate.toISOString().split("T")[0];
 			const apiUrl = API_ENDPOINTS.ALL_FACULTY_ATTENDANCE_DATE(formattedDate);
-			console.log(`Fetching attendance for date: ${formattedDate} from ${apiUrl}`);
 			const response = await axios.get(apiUrl);
-			console.log("Attendance status response:", response.data);
 			setAttendanceStatus(response.data.attendanceStatus || []);
 			setAttendanceFetched(true);
+			setAttendanceMarked(
+				response.data.attendanceStatus &&
+					response.data.attendanceStatus.length > 0
+			);
 		} catch (error) {
 			console.error("Error fetching attendance status:", error);
 			setAttendanceStatus([]);
@@ -126,8 +115,12 @@ const Attendance = () => {
 		  )
 		: teachers;
 
-	const presentTeachers = attendanceStatus.filter((teacher) => teacher.status === "Present");
-	const absentTeachers = attendanceStatus.filter((teacher) => teacher.status === "Absent");
+	const presentTeachers = attendanceStatus.filter(
+		(teacher) => teacher.status === "Present"
+	);
+	const absentTeachers = attendanceStatus.filter(
+		(teacher) => teacher.status === "Absent"
+	);
 
 	return (
 		<>
@@ -135,7 +128,7 @@ const Attendance = () => {
 				<select
 					onChange={handleDepartmentChange}
 					value={selectedDepartment}
-					className="border p-2 rounded "
+					className="border p-2 rounded w-40"
 				>
 					<option value="">All Departments</option>
 					{departments.map((department) => (
@@ -185,7 +178,12 @@ const Attendance = () => {
 				</fieldset>
 				<button
 					onClick={postAttendance}
-					className="mt-4 px-4 py-2 bg-linear-blue text-white rounded"
+					className={`mt-4 px-4 py-2 rounded ${
+						attendanceMarked
+							? "bg-gray-400 cursor-not-allowed"
+							: "bg-linear-blue text-white"
+					}`}
+					disabled={attendanceMarked}
 				>
 					Submit Attendance
 				</button>
@@ -199,7 +197,9 @@ const Attendance = () => {
 				) : (
 					<>
 						<div>
-							<h3 className="text-md font-medium text-green-600">Present Teachers</h3>
+							<h3 className="text-md font-medium text-green-600">
+								Present Faculty
+							</h3>
 							{presentTeachers.length === 0 ? (
 								<p>No teachers are present.</p>
 							) : (
@@ -211,7 +211,9 @@ const Attendance = () => {
 							)}
 						</div>
 						<div className="mt-2">
-							<h3 className="text-md font-medium text-red-600">Absent Teachers</h3>
+							<h3 className="text-md font-medium text-red-600">
+								Absent Faculty
+							</h3>
 							{absentTeachers.length === 0 ? (
 								<p>All teachers are present.</p>
 							) : (

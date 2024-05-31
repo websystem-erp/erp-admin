@@ -8,7 +8,6 @@ const data = [
 		transactionID: "15X76D98",
 		desc: "Lorem ipsum, dolor sit amet consectetur adipisicing elit.",
 		amount: "₹40,000",
-		actions: "View",
 	},
 	{
 		status: "Success",
@@ -16,7 +15,6 @@ const data = [
 		transactionID: "20X89F51",
 		desc: "Lorem ipsum, dolor sit amet consectetur adipisicing elit.",
 		amount: "₹40,000",
-		actions: "View",
 	},
 	{
 		status: "Pending",
@@ -24,7 +22,6 @@ const data = [
 		transactionID: "20X89F51",
 		desc: "Lorem ipsum, dolor sit amet consectetur adipisicing elit.",
 		amount: "₹40,000",
-		actions: "View",
 	},
 ];
 

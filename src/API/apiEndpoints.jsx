@@ -30,18 +30,28 @@ const API_ENDPOINTS = {
 	DELETE_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/deleteAllTeacher`,
 	LOGIN_TEACHERS: `${API_BASE_URL}/teacher/login`,
 	//ATTENDANCE
+	MARK_FACULTY_TEACHERS: `${API_BASE_URL}/attendance/markFacultyAttendance`,
+	ALL_FACULTY_ATTENDANCE_DATE: (date) =>
+		`${API_BASE_URL}/attendance/fetchFacultyAttendance/${date}`,
+	UPDATE_ATTENDANCE: `${API_BASE_URL}/attendance/updateFacultyAttendance`,
 
 	// STUDENTS
 	REGISTER_STUDENTS: `${API_BASE_URL}/student/${userId}/reg`,
 	FETCH_ALL_STUDENTS: `${API_BASE_URL}/student/${userId}/fetchAll`,
-	UPDATE_STUDENTS: `${API_BASE_URL}/student/${userId}/update/`,
-	DELETE_STUDENTS: `${API_BASE_URL}/student/${userId}/deleteStudent/`,
+	UPDATE_STUDENTS: (eventId) =>
+		`${API_BASE_URL}/student/${userId}/update/${eventId}`,
+	DELETE_STUDENTS: (eventId) =>
+		`${API_BASE_URL}/student/${userId}/deleteStudent/${eventId}`,
 	DELETE_ALL_STUDENTSS: `${API_BASE_URL}/student/${userId}/deleteAllStudent`,
 	LOGIN_STUDENTS: `${API_BASE_URL}/student/login`,
+
+	// SUBJECTS
+	CREATE_SUBJECT: `${API_BASE_URL}/subject/${userId}/reg`,
+
 	// EVENT
 	CREATE_EVENT: `${API_BASE_URL}/event/create`,
 	FETCH_ALL_EVENTS: `${API_BASE_URL}/event/fetchAll`,
-	UPDATE_EVENT: `${API_BASE_URL}/event/update-event/1`,
+	UPDATE_EVENT: (eventId) => `${API_BASE_URL}/event/update-event/${eventId}`,
 	DELETE_ALL_EVENT: `${API_BASE_URL}/event/deleteAll`,
 
 	// LEAVE
@@ -51,8 +61,12 @@ const API_ENDPOINTS = {
 
 	// DEPRTMENT
 	CREATE_DEPARTMENTS: `${API_BASE_URL}/department/${userId}/reg`,
-
+	UPDATE_DEPARTMENTS: (eventId) =>
+		`${API_BASE_URL}/department/update/${eventId}`,
+	DELETE_DEPARTMENT: (eventId) =>
+		`${API_BASE_URL}/department/delete/${eventId}`,
 	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
+
 	DELETE_EVENT: (eventId) => `${API_BASE_URL}/event/delete-event/${eventId}`,
 	// Add other endpoints as needed
 };

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import API_ENDPOINTS from "../../API/apiEndpoints";
-import DepartmentCourseCard from "./DepartmentCourseCard";
 import { Icon } from "@iconify/react";
-import FormItems from "../Forms/FormItems";
+import DepartmentCourseCard from "./DepartmentCourseCard";
+import API_ENDPOINTS from "../../API/apiEndpoints"; // Adjust the import path as needed
 
 const Department = () => {
 	const [isLoading, setIsLoading] = useState(true);
@@ -12,8 +11,6 @@ const Department = () => {
 	const [formValues, setFormValues] = useState({
 		name: "",
 		code: "",
-		campusId: "",
-		subjects: [""],
 	});
 	const [errorMessage, setErrorMessage] = useState("");
 
@@ -21,18 +18,14 @@ const Department = () => {
 		axios
 			.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS)
 			.then((response) => {
-				if (response.status !== 200) {
-					throw new Error("Network response was not ok");
-				}
-				const data = response.data;
-				if (Array.isArray(data.data)) {
-					setPrograms(data.data);
+				if (response.status === 200 && Array.isArray(response.data.data)) {
+					setPrograms(response.data.data);
 				} else {
-					console.error("Unexpected data format:", data);
+					console.error("Unexpected data format:", response.data);
 				}
 			})
 			.catch((error) => {
-				console.error("Error:", error);
+				console.error("Error fetching departments:", error);
 			})
 			.finally(() => {
 				setIsLoading(false);
@@ -50,43 +43,33 @@ const Department = () => {
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
-		setFormValues((prevValues) => ({
-			...prevValues,
-			[name]: value,
-		}));
-	};
-
-	const handleSubjectChange = (index, value) => {
-		const newSubjects = [...formValues.subjects];
-		newSubjects[index] = value;
-		setFormValues((prevValues) => ({
-			...prevValues,
-			subjects: newSubjects,
-		}));
-	};
-
-	const addSubjectField = () => {
-		setFormValues((prevValues) => ({
-			...prevValues,
-			subjects: [...prevValues.subjects, ""],
-		}));
+		setFormValues((prevValues) => ({ ...prevValues, [name]: value }));
 	};
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		const formattedSubjects = formValues.subjects.map((subject) =>
-			subject.trim()
+
+		const duplicate = programs.find(
+			(program) =>
+				program.name.toLowerCase() === formValues.name.toLowerCase() ||
+				program.code.toLowerCase() === formValues.code.toLowerCase()
 		);
-		const requestData = {
-			...formValues,
-			subjects: formattedSubjects,
-		};
+
+		if (duplicate) {
+			setErrorMessage(
+				"A department with this code or name already exists. Please use a different code or name."
+			);
+			return;
+		}
+
+		const requestData = { ...formValues };
+
+		console.log("Submitting new department with data:", requestData);
 
 		axios
 			.post(API_ENDPOINTS.CREATE_DEPARTMENTS, requestData)
 			.then((response) => {
 				if (response.status === 201) {
-					console.log("Department created successfully:", response.data);
 					setPrograms((prevPrograms) => [...prevPrograms, response.data.data]);
 					onClose();
 				} else {
@@ -96,24 +79,17 @@ const Department = () => {
 			.catch((error) => {
 				if (error.response) {
 					if (error.response.status === 409) {
-						console.error(
-							"Conflict error: Department already exists:",
-							error.response.data
-						);
 						setErrorMessage(
 							"A department with this code or name already exists. Please use a different code or name."
 						);
 					} else if (error.response.status === 500) {
-						console.error("Server error:", error.response.data);
 						setErrorMessage(
 							"An internal server error occurred. Please try again later."
 						);
 					} else {
-						console.error("Unexpected error:", error.response.data);
 						setErrorMessage("An unexpected error occurred. Please try again.");
 					}
 				} else {
-					console.error("Error creating department:", error);
 					setErrorMessage(
 						"An error occurred while creating the department. Please check your network connection and try again."
 					);
@@ -128,18 +104,16 @@ const Department = () => {
 			) : (
 				<div className="bg-white p-8 rounded-md w-fit sm:w-full">
 					<div className="flex items-center justify-between pb-6">
-						<div>
-							<h2 className="text-gray-600 font-semibold">Department</h2>
-						</div>
+						<h2 className="text-gray-600 font-semibold">Department</h2>
 					</div>
 					<div className="">
-						<div className="p-4 w-fit text-gray-400 hover:bg-linear-black rounded-lg m-4">
+						<div className="p-4 w-fit text-gray-400 hover:bg-gray-800 rounded-lg m-4">
 							<div
 								className="border-dashed border-2 w-fit p-4 rounded-lg flex justify-center items-center flex-col cursor-pointer"
 								onClick={handleForm}
 							>
 								<Icon icon="mingcute:add-fill" height={36} />
-								<h5 className="font-semibold w-full text-start ">
+								<h5 className="font-semibold w-full text-start">
 									Add New Course
 								</h5>
 							</div>
@@ -150,9 +124,12 @@ const Department = () => {
 									key={index}
 									courseName={program.name}
 									courseCode={program.code}
-									price={"₹14,000/-"}
+									price={"₹ 1,00,000/-"}
 									duration={"3 Months"}
 									subjects={program.subjects}
+									subjectName={"english"}
+									subjectCode={"Eng001"}
+									totalLecture={28}
 								/>
 							))}
 						</div>
@@ -162,56 +139,33 @@ const Department = () => {
 
 			{openForm && (
 				<div className="absolute top-0 left-0 glassmorphism-dark h-screen w-full flex justify-center items-center">
-					<div className="bg-linear-black p-8 rounded-xl w-3/12">
+					<div className="bg-gray-800 p-8 rounded-xl w-3/12">
 						<form onSubmit={handleSubmit} className="text-black">
-							<FormItems
-								formLabel={"Department Name"}
-								formType={"text"}
-								formName={"name"}
-								formValue={formValues.name}
-								formPlaceholder={"Enter Department Name"}
-								handleInputChange={handleInputChange}
-							/>
-							<FormItems
-								formLabel={"Department Code"}
-								formType={"text"}
-								formName={"code"}
-								formValue={formValues.code}
-								formPlaceholder={"Enter Department Code"}
-								handleInputChange={handleInputChange}
-							/>
-							<FormItems
-								formLabel={"Campus ID"}
-								formType={"text"}
-								formName={"campusId"}
-								formValue={formValues.campusId}
-								formPlaceholder={"Enter Campus ID"}
-								handleInputChange={handleInputChange}
-							/>
 							<div className="mb-4">
 								<label className="block text-sm font-medium text-gray-700">
-									Subjects
+									Course Name
 								</label>
-								{formValues.subjects.map((subject, index) => (
-									<div key={index} className="flex items-center mb-2">
-										<input
-											type="text"
-											value={subject}
-											onChange={(e) =>
-												handleSubjectChange(index, e.target.value)
-											}
-											className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-											placeholder={`Subject ${index + 1}`}
-										/>
-									</div>
-								))}
-								<button
-									type="button"
-									className="mt-2 px-4 py-2 bg-blue-500 bg-linear-blue rounded-md"
-									onClick={addSubjectField}
-								>
-									Add Subject
-								</button>
+								<input
+									type="text"
+									name="name"
+									value={formValues.name}
+									onChange={handleInputChange}
+									className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+									placeholder="Course Name"
+								/>
+							</div>
+							<div className="mb-4">
+								<label className="block text-sm font-medium text-gray-700">
+									Course Code
+								</label>
+								<input
+									type="text"
+									name="code"
+									value={formValues.code}
+									onChange={handleInputChange}
+									className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+									placeholder="Course Code"
+								/>
 							</div>
 							{errorMessage && (
 								<div className="mb-4 text-red-500">{errorMessage}</div>
@@ -225,7 +179,7 @@ const Department = () => {
 									Cancel
 								</button>
 								<button
-									className="px-4 py-2 w-1/2 text-white bg-linear-green rounded-lg"
+									className="px-4 py-2 w-1/2 text-white bg-green-600 rounded-lg"
 									type="submit"
 								>
 									Submit
