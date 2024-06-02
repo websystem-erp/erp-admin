@@ -34,7 +34,6 @@ const API_ENDPOINTS = {
 	ALL_FACULTY_ATTENDANCE_DATE: (date) =>
 		`${API_BASE_URL}/attendance/fetchFacultyAttendance/${date}`,
 	UPDATE_ATTENDANCE: `${API_BASE_URL}/attendance/updateFacultyAttendance`,
-
 	// STUDENTS
 	REGISTER_STUDENTS: `${API_BASE_URL}/student/${userId}/reg`,
 	FETCH_ALL_STUDENTS: `${API_BASE_URL}/student/${userId}/fetchAll`,
@@ -58,8 +57,10 @@ const API_ENDPOINTS = {
 	APPLY_LEAVE: `${API_BASE_URL}/Leave/apply-leave`,
 	FETCH_ALL_LEAVES_TEACHER_ID: `${API_BASE_URL}/leave/fetch-leaves/`,
 	FETCH_ALL_PENDING_LEAVES: `${API_BASE_URL}/leave/pending-leaves`,
+	UPDATE_LEAVES: (leaveId, action) =>
+		`${API_BASE_URL}/leave/change-status/${userId}/${leaveId}/${action}`,
 
-	// DEPRTMENT
+	// DEPARTMENT
 	CREATE_DEPARTMENTS: `${API_BASE_URL}/department/${userId}/reg`,
 	UPDATE_DEPARTMENTS: (eventId) =>
 		`${API_BASE_URL}/department/update/${eventId}`,
@@ -68,7 +69,6 @@ const API_ENDPOINTS = {
 	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
 
 	DELETE_EVENT: (eventId) => `${API_BASE_URL}/event/delete-event/${eventId}`,
-	// Add other endpoints as needed
 };
 
 export default API_ENDPOINTS;

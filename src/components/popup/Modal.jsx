@@ -31,7 +31,7 @@ const Modal = ({ modalOpen, setModalOpen, children, responsiveWidth }) => {
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center glassmorphism-dark z-10 min-h-screen">
-			<div ref={modalRef} className={`w-full ${responsiveWidth}  text-center `}>
+			<div ref={modalRef} className={`w-full ${responsiveWidth} text-center `}>
 				<div className="flex justify-end mt-4">
 					<button
 						onClick={() => setModalOpen(false)}
@@ -40,7 +40,7 @@ const Modal = ({ modalOpen, setModalOpen, children, responsiveWidth }) => {
 						Close (X)
 					</button>
 				</div>
-				<div className="bg-white px-8 py-12 dark:bg-dark-2 md:px-[70px] md:py-[60px] rounded-[20px]">
+				<div className="bg-white px-8 py-4 md:px-3 md:py-2 rounded-[20px] w-fit min-w-[80%] mx-auto max-h-[80vh] overflow-y-auto">
 					{children}
 				</div>
 			</div>
