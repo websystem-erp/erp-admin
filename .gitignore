@@ -25,3 +25,4 @@ backup-codes
 *.sw?
 src/components/extra
 src/components/extra
+.env

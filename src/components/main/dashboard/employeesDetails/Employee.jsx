@@ -1,8 +1,4 @@
 import React, { useState, useEffect } from "react";
-import anju from "../../../../assets/user/anju.jpg";
-import akriti from "../../../../assets/user/akriti.jpg";
-import ankur from "../../../../assets/user/ankur.jpg";
-import vikas from "../../../../assets/user/vikas.jpg";
 import ListTable from "../../../List/ListTable";
 import CommonTable from "../../../List/CommonTable";
 import ListTableBtn from "../../../List/ListTableBtn";
@@ -18,13 +14,6 @@ const Employee = () => {
 	const [formModalOpen, setFormModalOpen] = useState(false);
 	const [selectedProfile, setSelectedProfile] = useState(null);
 
-	const imageMap = {
-		anju: anju,
-		akriti: akriti,
-		ankur: ankur,
-		vikas: vikas,
-	};
-
 	useEffect(() => {
 		fetchTeachers();
 	}, []);
@@ -34,8 +23,17 @@ const Employee = () => {
 			const response = await fetch(API_ENDPOINTS.FETCH_ALL_TEACHERS);
 			if (!response.ok) throw new Error("Network response was not ok");
 			const data = await response.json();
-			if (Array.isArray(data.data)) setTeachers(data.data);
-			else console.error("Unexpected data format:", data);
+
+			// Log fetched data
+			console.log("Fetched data:", data);
+
+			if (Array.isArray(data.data)) {
+				setTeachers(data.data);
+				// Log the teachers data
+				console.log("Teachers data:", data.data);
+			} else {
+				console.error("Unexpected data format:", data);
+			}
 		} catch (error) {
 			console.error("Error fetching teachers:", error);
 		} finally {
@@ -100,7 +98,7 @@ const Employee = () => {
 						showDataList={teachers.map((teacher) => (
 							<CommonTable
 								key={teacher.id}
-								profile={imageMap[teacher.profileImage] || akriti} // Default to 'akriti' if no matching image
+								profile={teacher.photo}
 								name={teacher.name}
 								role={teacher.role}
 								id={teacher.id}
@@ -110,7 +108,7 @@ const Employee = () => {
 								buttonHide={"hidden"}
 								onViewProfile={() =>
 									handleViewProfile({
-										profile: imageMap[teacher.profileImage] || akriti, // Default to 'akriti' if no matching image
+										profile: teacher.photo,
 										name: teacher.name,
 										role: teacher.role,
 										id: teacher.id,

@@ -39,6 +39,7 @@ const EventManagement = () => {
 		setEvents((prevEvents) => [newEvent, ...prevEvents]);
 		setShowCreateEventForm(false);
 	};
+
 	const handleDeleteEvent = async (eventId) => {
 		try {
 			await axios.delete(API_ENDPOINTS.DELETE_EVENT(eventId));
@@ -78,17 +79,32 @@ const EventManagement = () => {
 									<div className="px-4 py-4 bg-linear-blue w-fit rounded-lg mb-4">
 										<div className="flex justify-center items-center gap-16">
 											<div>
-												<h5 className="font-bold">{event.title}</h5>
-												<p>{event.description}</p>
-												<p>{new Date(event.date).toLocaleDateString()}</p>
-												<p>{new Date(event.created_at).toLocaleDateString()}</p>
+												{event.photo && (
+													<img
+														src={event.photo}
+														alt={event.title}
+														className="w-80 h-80"
+													/>
+												)}
+												<div className="flex justify-between items-center">
+													<div>
+														<h5 className="font-bold">{event.title}</h5>
+														<p>{event.description}</p>
+														<p>{new Date(event.date).toLocaleDateString()}</p>
+														<p>
+															{new Date(event.created_at).toLocaleDateString()}
+														</p>
+													</div>
+													<div>
+														<button
+															onClick={() => handleDeleteEvent(event.id)}
+															className="text-sm text-white transition duration-150 hover:bg-indigo-500 font-semibold py-2 px-4 h-fit bg-linear-red rounded"
+														>
+															Delete
+														</button>
+													</div>
+												</div>
 											</div>
-											<button
-												onClick={() => handleDeleteEvent(event.id)}
-												className="text-sm text-white transition duration-150 hover:bg-indigo-500 font-semibold py-2 px-4 h-fit bg-linear-red rounded"
-											>
-												Delete
-											</button>
 										</div>
 									</div>
 								</li>

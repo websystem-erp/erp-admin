@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Remove the destructuring
+import { jwtDecode } from "jwt-decode"; // Removed destructuring
 import LogIn from "./LogIn";
 import Layout from "./Layout";
 import "./App.css";
@@ -31,13 +31,13 @@ function App() {
 	};
 
 	useEffect(() => {
-		const token = localStorage.getItem("token");
+		const storedToken = localStorage.getItem("token");
 		const storedUserData = localStorage.getItem("userData");
-		if (token && storedUserData) {
-			const decodedToken = jwtDecode(token);
+		if (storedToken && storedUserData) {
+			const decodedToken = jwtDecode(storedToken);
 			if (decodedToken.exp * 1000 > Date.now()) {
 				setIsLoggedIn(true);
-				setToken(token);
+				setToken(storedToken);
 				setUserData(JSON.parse(storedUserData));
 				setLogoutTimer(decodedToken.exp);
 			} else {
@@ -60,7 +60,9 @@ function App() {
 		window.addEventListener("keypress", handleActivity);
 
 		return () => {
-			clearTimeout(timeoutRef.current);
+			if (timeoutRef.current) {
+				clearTimeout(timeoutRef.current);
+			}
 			window.removeEventListener("mousemove", handleActivity);
 			window.removeEventListener("keypress", handleActivity);
 		};

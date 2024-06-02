@@ -7,11 +7,51 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 		title: "",
 		description: "",
 		date: "",
+		photo: "",
 	});
+
+	const [photoLoading, setPhotoLoading] = useState(false);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setFormData({ ...formData, [name]: value });
+	};
+
+	const handlePhotoUpload = async (e) => {
+		setPhotoLoading(true);
+		const file = e.target.files[0];
+		const photoFormData = new FormData();
+		photoFormData.append("file", file);
+		photoFormData.append(
+			"upload_preset",
+			import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+		);
+
+		try {
+			const response = await axios.post(
+				`https://api.cloudinary.com/v1_1/${
+					import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+				}/image/upload`,
+				photoFormData
+			);
+			console.log("Cloudinary response:", response.data);
+			setFormData((prevData) => ({
+				...prevData,
+				photo: response.data.secure_url,
+			}));
+			// Log the form data after setting the photo
+			console.log("Form data after photo upload:", {
+				...formData,
+				photo: response.data.secure_url,
+			});
+		} catch (error) {
+			console.error(
+				"Error uploading photo:",
+				error.response?.data || error.message
+			);
+		} finally {
+			setPhotoLoading(false);
+		}
 	};
 
 	const handleSubmit = async (e) => {
@@ -24,11 +64,20 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 
 		const formattedDate = new Date(formData.date).toISOString();
 
+		// Log the form data before submitting
+		console.log("Form data being submitted:", {
+			title: formData.title,
+			description: formData.description,
+			date: formattedDate,
+			photo: formData.photo,
+		});
+
 		try {
 			const response = await axios.post(API_ENDPOINTS.CREATE_EVENT, {
 				title: formData.title,
 				description: formData.description,
 				date: formattedDate,
+				photo: formData.photo,
 			});
 			const newEvent = response.data.data; // Assuming the API response contains the new event data
 			onAddEvent(newEvent);
@@ -65,7 +114,7 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 					<label className="text-white">Event Date</label>
 					<input
 						name="date"
-						className="my-2 rounded-lg p-4 "
+						className="my-2 rounded-lg p-4"
 						type="date"
 						value={formData.date}
 						onChange={handleChange}
@@ -82,6 +131,22 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 						value={formData.description}
 						onChange={handleChange}
 					/>
+				</div>
+				<div className="flex flex-col my-2">
+					<label className="text-white">Event Photo</label>
+					<input
+						type="file"
+						accept="image/*"
+						onChange={handlePhotoUpload}
+						disabled={photoLoading}
+					/>
+					{photoLoading && <p>Uploading...</p>}
+					{formData.photo && (
+						<div className="flex-1 mt-2">
+							<p>Photo Preview:</p>
+							<img src={formData.photo} alt="Event Photo" width="100" />
+						</div>
+					)}
 				</div>
 				<div className="flex justify-end items-center">
 					<button

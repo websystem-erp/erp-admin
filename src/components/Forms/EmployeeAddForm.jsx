@@ -21,7 +21,12 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 			totalLectures: 0,
 			totalLectureTaken: 0,
 		},
+		photo: "",
 	});
+
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState(null);
+	const [photoLoading, setPhotoLoading] = useState(false);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -42,23 +47,69 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		});
 	};
 
+	const handlePhotoUpload = async (e) => {
+		setPhotoLoading(true);
+		const file = e.target.files[0];
+		const photoFormData = new FormData();
+		photoFormData.append("file", file);
+		photoFormData.append(
+			"upload_preset",
+			import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+		);
+
+		try {
+			const response = await axios.post(
+				`https://api.cloudinary.com/v1_1/${
+					import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+				}/image/upload`,
+				photoFormData
+			);
+			console.log("Cloudinary response:", response.data);
+			setFormData((prevData) => ({
+				...prevData,
+				photo: response.data.secure_url,
+			}));
+		} catch (error) {
+			console.error(
+				"Error uploading photo:",
+				error.response?.data || error.message
+			);
+		} finally {
+			setPhotoLoading(false);
+		}
+	};
+
 	const handleSubmit = async (e) => {
-		console.log(formData);
 		e.preventDefault();
+		setLoading(true);
+		setError(null);
+
 		try {
 			const response = await axios.post(
 				API_ENDPOINTS.REGISTER_TEACHER,
-				formData
+				formData,
+				{
+					headers: {
+						Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
+					},
+				}
 			);
 			console.log("Response:", response.data);
 			onEmployeeAdded();
 		} catch (error) {
-			console.error("Error:", error);
+			console.error(
+				"Error:",
+				error.response?.data?.message || "An error occurred"
+			);
+			setError(error.response?.data?.message || "An error occurred");
+		} finally {
+			setLoading(false);
 		}
 	};
 
 	return (
 		<form onSubmit={handleSubmit}>
+			{error && <div className="error-message">{error}</div>}
 			<div className="flex gap-4">
 				<FloatingInput
 					xtraClass={"w-full"}
@@ -75,7 +126,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					type="number"
 					id="departmentId"
 					formTitle="Department ID"
-					value={formData.id}
+					value={formData.departmentId}
 					handleChange={handleChange}
 					formName="departmentId"
 					required
@@ -210,12 +261,31 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="totalLectureTaken"
 				/>
 			</div>
+			<div className="flex gap-4">
+				<label className="flex-1">
+					Photo:
+					<input
+						type="file"
+						onChange={handlePhotoUpload}
+						accept="image/*"
+						disabled={photoLoading}
+					/>
+					{photoLoading && <p>Uploading...</p>}
+				</label>
+				{formData.photo && (
+					<div className="flex-1">
+						<p>Photo Preview:</p>
+						<img src={formData.photo} alt="Employee Photo" width="100" />
+					</div>
+				)}
+			</div>
 
 			<button
 				type="submit"
-				className="w-full my-8 inline-block rounded border bg-linear-blue text-white  px-12 py-3 text-sm font-medium  hover:bg-linear-blue  focus:outline-none focus:ring "
+				className="w-full my-8 inline-block rounded border bg-linear-blue text-white px-12 py-3 text-sm font-medium hover:bg-linear-blue focus:outline-none focus:ring"
+				disabled={loading}
 			>
-				Submit
+				{loading ? "Submitting..." : "Submit"}
 			</button>
 		</form>
 	);
