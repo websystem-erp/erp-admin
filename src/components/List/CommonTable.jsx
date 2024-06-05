@@ -15,9 +15,6 @@ const CommonTable = ({
 	hideDropDown,
 	buttonHide,
 }) => {
-	// Debugging log
-	console.log("Profile URL:", profile);
-
 	return (
 		<tr>
 			<td className="px-2 py-5 bg-white text-sm md:text-base">
@@ -46,7 +43,6 @@ const CommonTable = ({
 					onDelete={onDelete}
 					dangerAction={dangerAction}
 					action1={action1}
-					action2={action2}
 					responsiveWidth={responsiveWidth}
 					hideDropDown={hideDropDown}
 				/>

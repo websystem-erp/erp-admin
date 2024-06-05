@@ -104,7 +104,6 @@ const Employee = () => {
 								id={teacher.id}
 								dangerAction={"Remove"}
 								action1={"View Profile"}
-								action2={"Edit Profile"}
 								buttonHide={"hidden"}
 								onViewProfile={() =>
 									handleViewProfile({

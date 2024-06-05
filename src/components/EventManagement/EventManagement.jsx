@@ -26,6 +26,14 @@ const EventManagement = () => {
 		fetchEvents();
 	}, []);
 
+	useEffect(() => {
+		if (showCreateEventForm) {
+			document.body.classList.add("overflow-hidden");
+		} else {
+			document.body.classList.remove("overflow-hidden");
+		}
+	}, [showCreateEventForm]);
+
 	const handleCreateEventClick = (event) => {
 		event.preventDefault();
 		setShowCreateEventForm(true);
@@ -59,9 +67,6 @@ const EventManagement = () => {
 					<div className="flex justify-between items-center pe-8">
 						<h4 className="font-bold text-2xl">Current Events</h4>
 						<div className="my-4">
-							<button className="px-4 py-2 border-sky-600 border-2 rounded-lg bg-white mr-4">
-								View All Event
-							</button>
 							<button
 								className="bg-linear-blue px-4 py-2 rounded-lg w-full md:w-fit ml-4"
 								onClick={handleCreateEventClick}
@@ -73,54 +78,47 @@ const EventManagement = () => {
 					{loading ? (
 						<p className="text-sm my-8">Loading...</p>
 					) : events.length > 0 ? (
-						<ul className="text-sm my-8">
+						<div className=" flex flex-wrap justify-between">
 							{events.map((event) => (
-								<li key={event.id} className="my-2">
-									<div className="px-4 py-4 bg-linear-blue w-fit rounded-lg mb-4">
-										<div className="flex justify-center items-center gap-16">
-											<div>
-												{event.photo && (
-													<img
-														src={event.photo}
-														alt={event.title}
-														className="w-80 h-80"
-													/>
-												)}
-												<div className="flex justify-between items-center">
-													<div>
-														<h5 className="font-bold">{event.title}</h5>
-														<p>{event.description}</p>
-														<p>{new Date(event.date).toLocaleDateString()}</p>
-														<p>
-															{new Date(event.created_at).toLocaleDateString()}
-														</p>
-													</div>
-													<div>
-														<button
-															onClick={() => handleDeleteEvent(event.id)}
-															className="text-sm text-white transition duration-150 hover:bg-indigo-500 font-semibold py-2 px-4 h-fit bg-linear-red rounded"
-														>
-															Delete
-														</button>
-													</div>
+								<div key={event.id} className="my-2 w-1/3 flex">
+									<div className="px-4 py-4 bg-linear-blue w-96 h-fit rounded-lg mb-4">
+										<div className="flex flex-col justify-center items-center gap-16 ">
+											{event.photo && (
+												<img
+													src={event.photo}
+													alt={event.title}
+													className="w-80 h-80"
+												/>
+											)}
+											<div className="flex flex-col justify-between w-full">
+												<div>
+													<h5 className="font-bold text-2xl">{event.title}</h5>
+
+													<p className="text-sm font-semibold pb-8">
+														{new Date(event.date).toLocaleDateString()} -{" "}
+														{new Date(event.created_at).toLocaleDateString()}
+													</p>
+													<p>{event.description}</p>
 												</div>
+												<button
+													onClick={() => handleDeleteEvent(event.id)}
+													className="text-sm w-full text-white transition duration-150 font-semibold py-2 px-4 my-4 h-fit bg-linear-red rounded"
+												>
+													Delete
+												</button>
 											</div>
 										</div>
 									</div>
-								</li>
+								</div>
 							))}
-						</ul>
+						</div>
 					) : (
 						<p className="text-sm my-8">No Event Available</p>
 					)}
 				</div>
 
-				<div
-					className={`absolute top-0 left-0 glassmorphism-dark  h-screen w-full ${
-						showCreateEventForm ? "block" : "hidden"
-					} `}
-				>
-					<div className="flex justify-center items-center w-full h-screen ">
+				{showCreateEventForm && (
+					<div className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
 						<div className="w-fit bg-linear-black p-8 rounded-xl">
 							<CreateEventForm
 								onClose={handleCloseForm}
@@ -128,7 +126,7 @@ const EventManagement = () => {
 							/>
 						</div>
 					</div>
-				</div>
+				)}
 			</div>
 		</>
 	);

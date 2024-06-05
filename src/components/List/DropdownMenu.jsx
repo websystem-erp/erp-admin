@@ -5,7 +5,6 @@ const DropdownMenu = ({
 	onDelete,
 	dangerAction,
 	action1,
-	action2,
 	hideDropDown,
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -65,13 +64,6 @@ const DropdownMenu = ({
 					role="menu"
 				>
 					<div className="p-2">
-						<button
-							className="block w-full rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-							role="menuitem"
-						>
-							{action2}
-						</button>
-
 						<button
 							onClick={onDelete}
 							className="flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm text-red-700 hover:bg-red-50"
