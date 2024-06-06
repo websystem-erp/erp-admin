@@ -23,13 +23,8 @@ const Employee = () => {
 			const response = await fetch(API_ENDPOINTS.FETCH_ALL_TEACHERS);
 			if (!response.ok) throw new Error("Network response was not ok");
 			const data = await response.json();
-			console.log("Fetched data:", data);
 
 			if (Array.isArray(data.data)) {
-				// Log the photo URLs
-				data.data.forEach((teacher) =>
-					console.log("Teacher photo URL:", teacher.photo)
-				);
 				setTeachers(data.data);
 			} else {
 				console.error("Unexpected data format:", data);

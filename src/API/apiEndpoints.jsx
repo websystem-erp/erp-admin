@@ -26,6 +26,8 @@ const API_ENDPOINTS = {
 	// EMPLOYEE/TEACHERS
 	REGISTER_TEACHER: `${API_BASE_URL}/teacher/${userId}/reg`,
 	FETCH_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/fetchAll`,
+	FETCH_TEACHERS: (teacherId) =>
+		`${API_BASE_URL}/teacher/${userId}/fetch/${teacherId}`,
 	UPDATE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/update/:id`,
 	DELETE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/delete/:id`,
 	DELETE_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/deleteAllTeacher`,
@@ -56,8 +58,8 @@ const API_ENDPOINTS = {
 	APPLY_LEAVE: `${API_BASE_URL}/Leave/apply-leave`,
 	FETCH_ALL_LEAVES_TEACHER_ID: `${API_BASE_URL}/leave/fetch-leaves/`,
 	FETCH_ALL_PENDING_LEAVES: `${API_BASE_URL}/leave/pending-leaves`,
-	UPDATE_LEAVES: (action) =>
-		`${API_BASE_URL}/leave/change-status/${userId}/${action}`,
+	UPDATE_LEAVES: (teacherId, action) =>
+		`${API_BASE_URL}/leave/change-status/${teacherId}/${action}`,
 	// DEPARTMENT
 	CREATE_DEPARTMENTS: `${API_BASE_URL}/department/${userId}/reg`,
 	UPDATE_DEPARTMENTS: (eventId) =>

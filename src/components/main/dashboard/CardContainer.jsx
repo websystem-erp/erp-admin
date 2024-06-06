@@ -9,10 +9,12 @@ const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 	const [studentCount, setStudentCount] = useState(0);
 	const [leavesCount, setLeavesCount] = useState(0);
 
-	const fetchData = async (endpoint, setState) => {
+	const fetchData = async (endpoint, setState, processData) => {
 		try {
 			const response = await axios.get(endpoint);
-			if (Array.isArray(response.data.data)) {
+			if (processData) {
+				processData(response.data, setState);
+			} else if (Array.isArray(response.data.data)) {
 				setState(response.data.data.length);
 			} else {
 				console.error("Unexpected data format:", response.data);
@@ -25,9 +27,14 @@ const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 	useEffect(() => {
 		fetchData(API_ENDPOINTS.FETCH_ALL_TEACHERS, setEmployeeCount);
 		fetchData(API_ENDPOINTS.FETCH_ALL_STUDENTS, setStudentCount);
-		fetchData(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES, (data) => {
-			if (Array.isArray(data.leaves)) setLeavesCount(data.leaves.length);
-		});
+		fetchData(
+			API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES,
+			setLeavesCount,
+			(data, setState) => {
+				if (Array.isArray(data.leaves)) setState(data.leaves.length);
+				else console.error("Unexpected data format for leaves:", data);
+			}
+		);
 	}, []);
 
 	return (

@@ -7,10 +7,6 @@ import Employee from "../main/dashboard/employeesDetails/Employee";
 import Modal from "../popup/Modal";
 import ListTable from "../List/ListTable";
 import CommonTable from "../List/CommonTable";
-import anju from "../../assets/user/anju.jpg";
-import akriti from "../../assets/user/akriti.jpg";
-import ankur from "../../assets/user/ankur.jpg";
-import vikas from "../../assets/user/vikas.jpg";
 
 const Dashboard = () => {
 	const [dueFeesModalOpen, setDueFeesModalOpen] = useState(false);
@@ -18,13 +14,6 @@ const Dashboard = () => {
 	const [students, setStudents] = useState([]);
 	const [leaves, setLeaves] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
-
-	const imageMap = {
-		anju,
-		akriti,
-		ankur,
-		vikas,
-	};
 
 	useEffect(() => {
 		const fetchStudents = async () => {
@@ -64,12 +53,15 @@ const Dashboard = () => {
 		}
 	};
 
-	const updateLeaveStatus = async (action) => {
+	const updateLeaveStatus = async (teacherId, action) => {
 		try {
-			console.log("Updating leave status:", action); // Debugging log
-			const response = await axios.put(API_ENDPOINTS.UPDATE_LEAVES(action), {
-				status: action,
-			});
+			console.log("Updating leave status:", teacherId, action); // Debugging log
+			const response = await axios.put(
+				API_ENDPOINTS.UPDATE_LEAVES(teacherId, action),
+				{
+					status: action,
+				}
+			);
 			if (response.status === 200) {
 				fetchLeaves();
 			} else {
@@ -80,8 +72,14 @@ const Dashboard = () => {
 		}
 	};
 
-	const handleApprove = () => updateLeaveStatus("Accept");
-	const handleReject = () => updateLeaveStatus("Reject");
+	const handleApprove = (teacherId) => {
+		console.log("Approving leave for teacherId:", teacherId); // Debugging log
+		updateLeaveStatus(teacherId, "Accept");
+	};
+	const handleReject = (teacherId) => {
+		console.log("Rejecting leave for teacherId:", teacherId); // Debugging log
+		updateLeaveStatus(teacherId, "Reject");
+	};
 
 	return (
 		<>
@@ -127,42 +125,46 @@ const Dashboard = () => {
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-gray-200">
-									{leaves.map((leave, index) => (
-										<tr key={index}>
-											<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												{leave.name}
-											</td>
-											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-												{leave.reason}
-											</td>
-											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-												{new Date(leave.dateFrom).toLocaleDateString()}
-											</td>
-											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-												{new Date(leave.dateTo).toLocaleDateString()}
-											</td>
-											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-												{leave.status}
-											</td>
-											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-												{leave.noOfDays}
-											</td>
-											<td className="whitespace-nowrap px-4 py-2">
-												<button
-													className="inline-block rounded bg-green-500 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
-													onClick={() => handleApprove()}
-												>
-													Approve
-												</button>
-												<button
-													className="inline-block rounded bg-red-500 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 ml-2"
-													onClick={() => handleReject()}
-												>
-													Reject
-												</button>
-											</td>
-										</tr>
-									))}
+									{leaves.map((leave, index) => {
+										console.log("Leave object:", leave); // Debugging log
+										const teacherId = leave.teacherId; // Ensure this is the correct property
+										return (
+											<tr key={index}>
+												<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+													{leave.name}
+												</td>
+												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+													{leave.reason}
+												</td>
+												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+													{new Date(leave.dateFrom).toLocaleDateString()}
+												</td>
+												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+													{new Date(leave.dateTo).toLocaleDateString()}
+												</td>
+												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+													{leave.status}
+												</td>
+												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+													{leave.noOfDays}
+												</td>
+												<td className="whitespace-nowrap px-4 py-2">
+													<button
+														className="inline-block rounded bg-green-500 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
+														onClick={() => handleApprove(teacherId)}
+													>
+														Approve
+													</button>
+													<button
+														className="inline-block rounded bg-red-500 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 ml-2"
+														onClick={() => handleReject(teacherId)}
+													>
+														Reject
+													</button>
+												</td>
+											</tr>
+										);
+									})}
 								</tbody>
 							</table>
 						</div>
@@ -176,7 +178,7 @@ const Dashboard = () => {
 				setModalOpen={setDueFeesModalOpen}
 				responsiveWidth={"md:w-[60%]"}
 			>
-				<div className="bg-white p-8 rounded-md w-fit sm:w-full">
+				<div className="bg-white p-8 rounded-md w-fit sm:w/full">
 					{isLoading ? (
 						<p>Loading...</p>
 					) : (
@@ -190,7 +192,7 @@ const Dashboard = () => {
 							showDataList={students.map((student) => (
 								<CommonTable
 									key={student.id}
-									profile={imageMap[student.profileImage] || akriti}
+									profile={student.photo}
 									name={student.name}
 									role={student.role}
 									id={student.id}

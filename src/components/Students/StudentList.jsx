@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import anju from "../../assets/user/anju.jpg";
-import akriti from "../../assets/user/akriti.jpg";
-import ankur from "../../assets/user/ankur.jpg";
-import vikas from "../../assets/user/vikas.jpg";
+import axios from "axios";
 import ListTable from "../List/ListTable";
 import CommonTable from "../List/CommonTable";
 import ListTableBtn from "../List/ListTableBtn";
@@ -31,15 +28,10 @@ const StudentList = () => {
 		fatherName: "",
 		motherName: "",
 		fatherContactNumber: "",
+		photo: "",
 	});
 	const [formErrors, setFormErrors] = useState({});
-
-	const imageMap = {
-		anju: anju,
-		akriti: akriti,
-		ankur: ankur,
-		vikas: vikas,
-	};
+	const [photoLoading, setPhotoLoading] = useState(false);
 
 	useEffect(() => {
 		const fetchStudents = async () => {
@@ -91,6 +83,37 @@ const StudentList = () => {
 			...prevState,
 			[name]: value,
 		}));
+	};
+
+	const handlePhotoUpload = async (e) => {
+		setPhotoLoading(true);
+		const file = e.target.files[0];
+		const photoFormData = new FormData();
+		photoFormData.append("file", file);
+		photoFormData.append(
+			"upload_preset",
+			import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+		);
+
+		try {
+			const response = await axios.post(
+				`https://api.cloudinary.com/v1_1/${
+					import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+				}/image/upload`,
+				photoFormData
+			);
+			setFormData((prevData) => ({
+				...prevData,
+				photo: response.data.secure_url,
+			}));
+		} catch (error) {
+			console.error(
+				"Error uploading photo:",
+				error.response?.data || error.message
+			);
+		} finally {
+			setPhotoLoading(false);
+		}
 	};
 
 	const validateForm = () => {
@@ -361,6 +384,29 @@ const StudentList = () => {
 									</p>
 								)}
 
+								<div className="flex gap-4">
+									<label className="flex-1">
+										Photo:
+										<input
+											type="file"
+											onChange={handlePhotoUpload}
+											accept="image/*"
+											disabled={photoLoading}
+										/>
+										{photoLoading && <p>Uploading...</p>}
+									</label>
+									{formData.photo && (
+										<div className="flex-1">
+											<p>Photo Preview:</p>
+											<img
+												src={formData.photo}
+												alt="Student Photo"
+												width="100"
+											/>
+										</div>
+									)}
+								</div>
+
 								<button
 									type="submit"
 									className="px-4 py-4 text-sm font-medium text-white bg-linear-blue w-full my-4 rounded hover:bg-blue-700"
@@ -379,7 +425,7 @@ const StudentList = () => {
 						showDataList={students.map((student) => (
 							<CommonTable
 								key={student.id}
-								profile={imageMap[student.profileImage] || akriti}
+								profile={student.photo}
 								name={student.name}
 								role={student.role}
 								id={student.id}
@@ -388,7 +434,7 @@ const StudentList = () => {
 								buttonHide={"hidden"}
 								onViewProfile={() =>
 									handleViewProfile({
-										profile: imageMap[student.profileImage] || akriti,
+										profile: student.photo,
 										name: student.name,
 										role: student.role,
 										id: student.id,
