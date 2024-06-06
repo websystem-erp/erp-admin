@@ -23,14 +23,14 @@ const Employee = () => {
 			const response = await fetch(API_ENDPOINTS.FETCH_ALL_TEACHERS);
 			if (!response.ok) throw new Error("Network response was not ok");
 			const data = await response.json();
-
-			// Log fetched data
 			console.log("Fetched data:", data);
 
 			if (Array.isArray(data.data)) {
+				// Log the photo URLs
+				data.data.forEach((teacher) =>
+					console.log("Teacher photo URL:", teacher.photo)
+				);
 				setTeachers(data.data);
-				// Log the teachers data
-				console.log("Teachers data:", data.data);
 			} else {
 				console.error("Unexpected data format:", data);
 			}
@@ -52,7 +52,10 @@ const Employee = () => {
 				API_ENDPOINTS.DELETE_TEACHERS.replace(":id", id),
 				{ method: "DELETE" }
 			);
-			if (!response.ok) throw new Error("Network response was not ok");
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(`Network response was not ok: ${errorData.message}`);
+			}
 			setTeachers(teachers.filter((teacher) => teacher.id !== id));
 		} catch (error) {
 			console.error("Error deleting teacher:", error);

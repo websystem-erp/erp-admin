@@ -6,6 +6,7 @@ const getUserIdFromLocalStorage = () => {
 };
 
 const userId = getUserIdFromLocalStorage();
+console.log("User ID:", userId); // Add this line
 
 if (!userId) {
 	console.error("User ID not found in localStorage");
@@ -25,11 +26,11 @@ const API_ENDPOINTS = {
 	// EMPLOYEE/TEACHERS
 	REGISTER_TEACHER: `${API_BASE_URL}/teacher/${userId}/reg`,
 	FETCH_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/fetchAll`,
-	UPDATE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/update/`,
-	DELETE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/delete/`,
+	UPDATE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/update/:id`,
+	DELETE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/delete/:id`,
 	DELETE_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/deleteAllTeacher`,
 	LOGIN_TEACHERS: `${API_BASE_URL}/teacher/login`,
-	//ATTENDANCE
+	// ATTENDANCE
 	MARK_FACULTY_TEACHERS: `${API_BASE_URL}/attendance/markFacultyAttendance`,
 	ALL_FACULTY_ATTENDANCE_DATE: (date) =>
 		`${API_BASE_URL}/attendance/fetchFacultyAttendance/${date}`,
@@ -43,23 +44,20 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/student/${userId}/deleteStudent/${eventId}`,
 	DELETE_ALL_STUDENTSS: `${API_BASE_URL}/student/${userId}/deleteAllStudent`,
 	LOGIN_STUDENTS: `${API_BASE_URL}/student/login`,
-
 	// SUBJECTS
 	CREATE_SUBJECT: `${API_BASE_URL}/subject/${userId}/reg`,
-
 	// EVENT
 	CREATE_EVENT: `${API_BASE_URL}/event/create`,
 	FETCH_ALL_EVENTS: `${API_BASE_URL}/event/fetchAll`,
 	UPDATE_EVENT: (eventId) => `${API_BASE_URL}/event/update-event/${eventId}`,
 	DELETE_ALL_EVENT: `${API_BASE_URL}/event/deleteAll`,
-
+	DELETE_EVENT: (eventId) => `${API_BASE_URL}/event/delete-event/${eventId}`,
 	// LEAVE
 	APPLY_LEAVE: `${API_BASE_URL}/Leave/apply-leave`,
 	FETCH_ALL_LEAVES_TEACHER_ID: `${API_BASE_URL}/leave/fetch-leaves/`,
 	FETCH_ALL_PENDING_LEAVES: `${API_BASE_URL}/leave/pending-leaves`,
-	UPDATE_LEAVES: (leaveId, action) =>
-		`${API_BASE_URL}/leave/change-status/${userId}/${leaveId}/${action}`,
-
+	UPDATE_LEAVES: (action) =>
+		`${API_BASE_URL}/leave/change-status/${userId}/${action}`,
 	// DEPARTMENT
 	CREATE_DEPARTMENTS: `${API_BASE_URL}/department/${userId}/reg`,
 	UPDATE_DEPARTMENTS: (eventId) =>
@@ -67,8 +65,6 @@ const API_ENDPOINTS = {
 	DELETE_DEPARTMENT: (eventId) =>
 		`${API_BASE_URL}/department/delete/${eventId}`,
 	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
-
-	DELETE_EVENT: (eventId) => `${API_BASE_URL}/event/delete-event/${eventId}`,
 };
 
 export default API_ENDPOINTS;

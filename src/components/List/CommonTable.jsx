@@ -15,6 +15,8 @@ const CommonTable = ({
 	hideDropDown,
 	buttonHide,
 }) => {
+	console.log("Rendering profile image:", profile); // Log profile image URL
+
 	return (
 		<tr>
 			<td className="px-2 py-5 bg-white text-sm md:text-base">
@@ -24,6 +26,9 @@ const CommonTable = ({
 							src={profile}
 							className="w-full h-full object-cover"
 							alt={`${name}'s profile`}
+							onError={(e) => {
+								e.target.src = "default-image-url";
+							}} // Handle broken image URLs
 						/>
 					</div>
 					<div className="ml-3">

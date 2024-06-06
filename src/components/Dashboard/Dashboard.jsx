@@ -20,74 +20,68 @@ const Dashboard = () => {
 	const [isLoading, setIsLoading] = useState(true);
 
 	const imageMap = {
-		anju: anju,
-		akriti: akriti,
-		ankur: ankur,
-		vikas: vikas,
+		anju,
+		akriti,
+		ankur,
+		vikas,
 	};
 
 	useEffect(() => {
-		axios
-			.get(API_ENDPOINTS.FETCH_ALL_STUDENTS)
-			.then((response) => {
-				if (response.status !== 200) {
-					throw new Error("Network response was not ok");
-				}
-				const data = response.data;
-				if (Array.isArray(data.data)) {
-					setStudents(data.data);
+		const fetchStudents = async () => {
+			try {
+				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_STUDENTS);
+				if (Array.isArray(response.data.data)) {
+					setStudents(response.data.data);
 				} else {
-					console.error("Unexpected data format:", data);
+					console.error("Unexpected data format:", response.data);
 				}
-			})
-			.catch((error) => console.error("Error fetching students:", error))
-			.finally(() => setIsLoading(false));
+			} catch (error) {
+				console.error("Error fetching students:", error);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+		fetchStudents();
 	}, []);
 
-	const handleDueFees = () => {
-		setDueFeesModalOpen(true);
-	};
-
+	const handleDueFees = () => setDueFeesModalOpen(true);
 	const handlePendingRequest = () => {
 		setReqModalOpen(true);
-		axios
-			.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES)
-			.then((response) => {
-				if (response.status !== 200 && response.status !== 201) {
-					console.error("Unexpected response status:", response.status);
-					console.error("Full response:", response);
-					throw new Error("Network response was not ok");
-				}
-				const data = response.data;
-				if (Array.isArray(data.leaves)) {
-					setLeaves(data.leaves);
-				} else {
-					console.error("Unexpected data format:", data);
-				}
-			})
-			.catch((error) => console.error("Error fetching leaves:", error));
+		fetchLeaves();
 	};
 
-	const updateLeaveStatus = (leaveId, status) => {
-		axios
-			.put(API_ENDPOINTS.UPDATE_LEAVES(leaveId, status), { status })
-			.then((response) => {
-				if (response.status !== 200) {
-					throw new Error("Failed to update leave status");
-				}
-				// Refresh leaves list after updating status
-				handlePendingRequest();
-			})
-			.catch((error) => console.error("Error updating leave status:", error));
+	const fetchLeaves = async () => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES);
+			if (Array.isArray(response.data.leaves)) {
+				console.log("Fetched leaves:", response.data.leaves); // Debugging log
+				setLeaves(response.data.leaves);
+			} else {
+				console.error("Unexpected data format:", response.data);
+			}
+		} catch (error) {
+			console.error("Error fetching leaves:", error);
+		}
 	};
 
-	const handleApprove = (leaveId) => {
-		updateLeaveStatus(leaveId, "approved");
+	const updateLeaveStatus = async (action) => {
+		try {
+			console.log("Updating leave status:", action); // Debugging log
+			const response = await axios.put(API_ENDPOINTS.UPDATE_LEAVES(action), {
+				status: action,
+			});
+			if (response.status === 200) {
+				fetchLeaves();
+			} else {
+				throw new Error("Failed to update leave status");
+			}
+		} catch (error) {
+			console.error("Error updating leave status:", error);
+		}
 	};
 
-	const handleReject = (leaveId) => {
-		updateLeaveStatus(leaveId, "rejected");
-	};
+	const handleApprove = () => updateLeaveStatus("Accept");
+	const handleReject = () => updateLeaveStatus("Reject");
 
 	return (
 		<>
@@ -105,76 +99,73 @@ const Dashboard = () => {
 						Pending Request Details
 					</h2>
 					{leaves.length > 0 ? (
-						<>
-							<div className="overflow-x-auto">
-								<table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
-									<thead>
-										<tr>
-											<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												Name
-											</th>
-											<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												Reason
-											</th>
-											<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												From
-											</th>
-											<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												To
-											</th>
-											<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												Status
-											</th>
-											<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												Number of Days
-											</th>
-											<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-												Actions
-											</th>
+						<div className="overflow-x-auto">
+							<table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+								<thead>
+									<tr>
+										<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+											Name
+										</th>
+										<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+											Reason
+										</th>
+										<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+											From
+										</th>
+										<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+											To
+										</th>
+										<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+											Status
+										</th>
+										<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+											Number of Days
+										</th>
+										<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+											Actions
+										</th>
+									</tr>
+								</thead>
+								<tbody className="divide-y divide-gray-200">
+									{leaves.map((leave, index) => (
+										<tr key={index}>
+											<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+												{leave.name}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{leave.reason}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{new Date(leave.dateFrom).toLocaleDateString()}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{new Date(leave.dateTo).toLocaleDateString()}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{leave.status}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{leave.noOfDays}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2">
+												<button
+													className="inline-block rounded bg-green-500 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
+													onClick={() => handleApprove()}
+												>
+													Approve
+												</button>
+												<button
+													className="inline-block rounded bg-red-500 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 ml-2"
+													onClick={() => handleReject()}
+												>
+													Reject
+												</button>
+											</td>
 										</tr>
-									</thead>
-
-									<tbody className="divide-y divide-gray-200">
-										{leaves.map((leave, index) => (
-											<tr key={index}>
-												<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-													{leave.name}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{leave.reason}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{new Date(leave.dateFrom).toLocaleDateString()}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{new Date(leave.dateTo).toLocaleDateString()}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{leave.status}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{leave.noOfDays}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2">
-													<button
-														className="inline-block rounded bg-green-500 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
-														onClick={() => handleApprove(leave.id)}
-													>
-														Approve
-													</button>
-													<button
-														className="inline-block rounded bg-red-500 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 ml-2"
-														onClick={() => handleReject(leave.id)}
-													>
-														Reject
-													</button>
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-							</div>
-						</>
+									))}
+								</tbody>
+							</table>
+						</div>
 					) : (
 						<p>No Pending Requests</p>
 					)}
@@ -199,7 +190,7 @@ const Dashboard = () => {
 							showDataList={students.map((student) => (
 								<CommonTable
 									key={student.id}
-									profile={imageMap[student.profileImage] || akriti} // Default to 'akriti' if no matching image
+									profile={imageMap[student.profileImage] || akriti}
 									name={student.name}
 									role={student.role}
 									id={student.id}
