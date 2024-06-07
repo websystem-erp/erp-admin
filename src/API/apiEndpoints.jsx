@@ -48,6 +48,9 @@ const API_ENDPOINTS = {
 	LOGIN_STUDENTS: `${API_BASE_URL}/student/login`,
 	// SUBJECTS
 	CREATE_SUBJECT: `${API_BASE_URL}/subject/${userId}/reg`,
+	FETCH_ALL_SUBJECTS_IN_DEPARTMENT: (departmentId) =>
+		`${API_BASE_URL}/subject/fetchAll/${departmentId}`,
+	UPDATE_SUBJECT: (subjectId) => `${API_BASE_URL}/subject/update/${subjectId}`,
 	// EVENT
 	CREATE_EVENT: `${API_BASE_URL}/event/create`,
 	FETCH_ALL_EVENTS: `${API_BASE_URL}/event/fetchAll`,
@@ -62,11 +65,13 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/leave/change-status/${teacherId}/${action}`,
 	// DEPARTMENT
 	CREATE_DEPARTMENTS: `${API_BASE_URL}/department/${userId}/reg`,
-	UPDATE_DEPARTMENTS: (eventId) =>
-		`${API_BASE_URL}/department/update/${eventId}`,
-	DELETE_DEPARTMENT: (eventId) =>
-		`${API_BASE_URL}/department/delete/${eventId}`,
+	UPDATE_DEPARTMENTS: (departmentId) =>
+		`${API_BASE_URL}/department/update/${departmentId}`,
+	DELETE_DEPARTMENT: (departmentId) =>
+		`${API_BASE_URL}/department/delete/${departmentId}`,
 	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
+	FETCH_DEPARTMENTS: (departmentId) =>
+		`${API_BASE_URL}/department/fetch/${departmentId}`,
 };
 
 export default API_ENDPOINTS;

@@ -3,6 +3,7 @@ import axios from "axios";
 import { Icon } from "@iconify/react";
 import DepartmentCourseCard from "./DepartmentCourseCard";
 import API_ENDPOINTS from "../../API/apiEndpoints"; // Adjust the import path as needed
+import DepartmentForm from "./DepartmentForm";
 
 const Department = () => {
 	const [isLoading, setIsLoading] = useState(true);
@@ -19,16 +20,35 @@ const Department = () => {
 			.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS)
 			.then((response) => {
 				if (response.status === 200 && Array.isArray(response.data.data)) {
-					setPrograms(response.data.data);
+					const fetchedDepartments = response.data.data;
+					const fetchSubjectsPromises = fetchedDepartments.map((department) =>
+						axios.get(
+							API_ENDPOINTS.FETCH_ALL_SUBJECTS_IN_DEPARTMENT(department.id)
+						)
+					);
+
+					Promise.all(fetchSubjectsPromises)
+						.then((subjectsResponses) => {
+							const updatedDepartments = fetchedDepartments.map(
+								(department, index) => ({
+									...department,
+									subjects: subjectsResponses[index].data.data,
+								})
+							);
+							setPrograms(updatedDepartments);
+						})
+						.catch((error) => {
+							console.error("Error fetching subjects for departments:", error);
+						})
+						.finally(() => {
+							setIsLoading(false);
+						});
 				} else {
 					console.error("Unexpected data format:", response.data);
 				}
 			})
 			.catch((error) => {
 				console.error("Error fetching departments:", error);
-			})
-			.finally(() => {
-				setIsLoading(false);
 			});
 	}, []);
 
@@ -127,9 +147,10 @@ const Department = () => {
 									price={"₹ 1,00,000/-"}
 									duration={"3 Months"}
 									subjects={program.subjects}
-									subjectName={"english"}
-									subjectCode={"Eng001"}
-									totalLecture={28}
+									departmentId={program.id} // Pass departmentId
+									onClick={() =>
+										console.log(`Clicked on department ${program.id}`)
+									}
 								/>
 							))}
 						</div>
@@ -138,56 +159,13 @@ const Department = () => {
 			)}
 
 			{openForm && (
-				<div className="absolute top-0 left-0 glassmorphism-dark h-screen w-full flex justify-center items-center">
-					<div className="bg-gray-800 p-8 rounded-xl w-3/12">
-						<form onSubmit={handleSubmit} className="text-black">
-							<div className="mb-4">
-								<label className="block text-sm font-medium text-gray-700">
-									Course Name
-								</label>
-								<input
-									type="text"
-									name="name"
-									value={formValues.name}
-									onChange={handleInputChange}
-									className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-									placeholder="Course Name"
-								/>
-							</div>
-							<div className="mb-4">
-								<label className="block text-sm font-medium text-gray-700">
-									Course Code
-								</label>
-								<input
-									type="text"
-									name="code"
-									value={formValues.code}
-									onChange={handleInputChange}
-									className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-									placeholder="Course Code"
-								/>
-							</div>
-							{errorMessage && (
-								<div className="mb-4 text-red-500">{errorMessage}</div>
-							)}
-							<div className="flex justify-end items-center mt-4 gap-4">
-								<button
-									className="px-4 w-1/2 py-2 text-white border-red-500 border-2 rounded-lg hover:bg-red-500"
-									type="button"
-									onClick={onClose}
-								>
-									Cancel
-								</button>
-								<button
-									className="px-4 py-2 w-1/2 text-white bg-green-600 rounded-lg"
-									type="submit"
-								>
-									Submit
-								</button>
-							</div>
-						</form>
-					</div>
-				</div>
+				<DepartmentForm
+					formValues={formValues}
+					onClose={onClose}
+					handleInputChange={handleInputChange}
+					handleSubmit={handleSubmit}
+					errorMessage={errorMessage}
+				/>
 			)}
 		</>
 	);
