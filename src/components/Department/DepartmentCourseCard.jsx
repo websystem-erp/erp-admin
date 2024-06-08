@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { Icon } from "@iconify/react";
-import API_ENDPOINTS from "../../API/apiEndpoints"; // Adjust the import path as needed
+import API_ENDPOINTS from "../../API/apiEndpoints";
 import SubjectTable from "./SubjectTable";
 import AddSubjectForm from "./AddSubjectForm";
 
@@ -13,135 +13,143 @@ const DepartmentCourseCard = ({
 	subjects = [],
 	onClick,
 	departmentId,
+	onDeleteSuccess,
 }) => {
-	const [editingSubjectId, setEditingSubjectId] = useState(null);
-	const [subjectFormValues, setSubjectFormValues] = useState({
-		subjectName: "",
-		subjectCode: "",
-		totalLectures: 0,
-		teacherId: null,
-		departmentId: departmentId,
-		totalLectureTaken: 0,
-	});
 	const [newSubjectFormValues, setNewSubjectFormValues] = useState({
 		subjectName: "",
 		subjectCode: "",
 		totalLectures: 0,
+		teacherId: "",
+	});
+	const [editingSubjectFormValues, setEditingSubjectFormValues] = useState({
+		subjectName: "",
+		subjectCode: "",
+		totalLectures: 0,
+		teacherId: "",
 	});
 	const [isOpen, setIsOpen] = useState(false);
 	const [isAdding, setIsAdding] = useState(false);
 	const [localSubjects, setLocalSubjects] = useState(subjects);
+	const [editingSubjectId, setEditingSubjectId] = useState(null);
+	const [teachers, setTeachers] = useState([]);
 
-	const handleEditClick = (subject) => {
+	useEffect(() => {
+		// Fetch all teachers
+		axios
+			.get(API_ENDPOINTS.FETCH_ALL_TEACHERS)
+			.then((response) => {
+				setTeachers(response.data.data);
+			})
+			.catch((error) => {
+				console.error("Error fetching teachers:", error);
+			});
+	}, []);
+
+	useEffect(() => {
+		// Fetch all subjects with teachers included
+		axios
+			.get(API_ENDPOINTS.FETCH_ALL_SUBJECTS_IN_DEPARTMENT(departmentId))
+			.then((response) => {
+				setLocalSubjects(response.data.data);
+			})
+			.catch((error) => {
+				console.error("Error fetching subjects:", error);
+			});
+	}, [departmentId]);
+
+	const handleNewInputChange = useCallback((e) => {
+		const { name, value } = e.target;
+		setNewSubjectFormValues((prevValues) => ({ ...prevValues, [name]: value }));
+	}, []);
+
+	const handleEditInputChange = useCallback((e) => {
+		const { name, value } = e.target;
+		setEditingSubjectFormValues((prevValues) => ({
+			...prevValues,
+			[name]: value,
+		}));
+	}, []);
+
+	const handleAddSubject = useCallback(
+		(e) => {
+			e.preventDefault();
+			const requestData = {
+				subjectName: newSubjectFormValues.subjectName,
+				subjectCode: newSubjectFormValues.subjectCode,
+				totalLectures: parseInt(newSubjectFormValues.totalLectures, 10),
+				teacherId: newSubjectFormValues.teacherId
+					? parseInt(newSubjectFormValues.teacherId, 10)
+					: null,
+			};
+
+			axios
+				.post(API_ENDPOINTS.CREATE_SUBJECT(departmentId), requestData)
+				.then((response) => {
+					if (response.status === 201) {
+						setLocalSubjects((prevSubjects) => [
+							...prevSubjects,
+							response.data.data,
+						]);
+						setIsAdding(false);
+					}
+				})
+				.catch((error) => {
+					console.error(
+						"Error adding subject:",
+						error.response ? error.response.data : error.message
+					);
+				});
+		},
+		[newSubjectFormValues, departmentId]
+	);
+
+	const handleEditSubject = useCallback((subject) => {
 		setEditingSubjectId(subject.id);
-		setSubjectFormValues({
+		setEditingSubjectFormValues({
 			subjectName: subject.subjectName,
 			subjectCode: subject.subjectCode,
 			totalLectures: subject.totalLectures,
-			teacherId: subject.teacherId,
-			departmentId: subject.departmentId,
-			totalLectureTaken: subject.totalLectureTaken,
+			teacherId: subject.teacherId ? subject.teacherId.toString() : "",
 		});
-	};
+	}, []);
 
-	const handleInputChange = (e) => {
-		const { name, value } = e.target;
-		setSubjectFormValues((prevValues) => ({ ...prevValues, [name]: value }));
-	};
+	const handleSaveEdit = useCallback(
+		(updatedSubject) => {
+			const teacher = teachers.find(
+				(t) => t.id === parseInt(updatedSubject.teacherId, 10)
+			);
+			const updatedSubjectData = {
+				...updatedSubject,
+				teacherName: teacher ? teacher.name : "",
+				teacherId: teacher ? teacher.id : null,
+			};
+			setLocalSubjects((prevSubjects) =>
+				prevSubjects.map((subject) =>
+					subject.id === updatedSubjectData.id ? updatedSubjectData : subject
+				)
+			);
+			setEditingSubjectId(null);
+		},
+		[teachers]
+	);
 
-	const handleNewInputChange = (e) => {
-		const { name, value } = e.target;
-		setNewSubjectFormValues((prevValues) => ({ ...prevValues, [name]: value }));
-	};
-
-	const handleSave = (subjectId) => {
-		const requestData = {
-			subjectName: subjectFormValues.subjectName,
-			subjectCode: subjectFormValues.subjectCode,
-			totalLectures: parseInt(subjectFormValues.totalLectures, 10),
-			teacherId: subjectFormValues.teacherId,
-			departmentId: subjectFormValues.departmentId,
-			totalLectureTaken: subjectFormValues.totalLectureTaken,
-		};
-
-		console.log("Request payload for updating subject:", requestData);
-
+	const handleDeleteCourse = useCallback(() => {
 		axios
-			.put(API_ENDPOINTS.UPDATE_SUBJECT(subjectId), requestData)
+			.delete(API_ENDPOINTS.DELETE_DEPARTMENT(departmentId))
 			.then((response) => {
-				console.log("Update response status:", response.status);
-				console.log("Update response data:", response.data);
-
 				if (response.status === 200) {
-					console.log("Subject updated successfully:", response.data);
-					setEditingSubjectId(null);
-					setLocalSubjects((prevSubjects) =>
-						prevSubjects.map((subject) =>
-							subject.id === subjectId ? response.data.data : subject
-						)
-					);
-				} else {
-					console.error("Unexpected response status:", response);
+					if (onDeleteSuccess) {
+						onDeleteSuccess(departmentId);
+					}
 				}
 			})
 			.catch((error) => {
-				console.error("Error updating subject:", error);
-				console.error("Full error details:", JSON.stringify(error, null, 2));
+				console.error(
+					"Error deleting department:",
+					error.response ? error.response.data : error.message
+				);
 			});
-	};
-
-	const handleAddSubject = (e) => {
-		e.preventDefault();
-		const requestData = {
-			subjectName: newSubjectFormValues.subjectName,
-			subjectCode: newSubjectFormValues.subjectCode,
-			totalLectures: parseInt(newSubjectFormValues.totalLectures, 10),
-		};
-
-		console.log("Request payload for new subject:", requestData);
-
-		axios
-			.post(API_ENDPOINTS.CREATE_SUBJECT(departmentId), requestData)
-			.then((response) => {
-				console.log("Create response status:", response.status);
-				console.log("Create response data:", response.data);
-
-				if (response.status === 201) {
-					console.log("Subject added successfully:", response.data);
-
-					// Append the new subject to the existing list
-					setLocalSubjects((prevSubjects) => [
-						...prevSubjects,
-						response.data.data,
-					]);
-
-					// Fetch updated department data
-					axios
-						.get(API_ENDPOINTS.FETCH_DEPARTMENTS(departmentId))
-						.then((res) => {
-							console.log("Fetched department data:", res.data);
-							if (res.status === 200) {
-								setLocalSubjects(res.data.data.subjects);
-							}
-						})
-						.catch((err) => {
-							console.error("Error fetching department data:", err);
-							console.error(
-								"Full error details:",
-								JSON.stringify(err, null, 2)
-							);
-						});
-
-					setIsAdding(false);
-				} else {
-					console.error("Unexpected response status:", response);
-				}
-			})
-			.catch((error) => {
-				console.error("Error adding subject:", error);
-				console.error("Full error details:", JSON.stringify(error, null, 2));
-			});
-	};
+	}, [departmentId, onDeleteSuccess]);
 
 	return (
 		<div className="w-full md:w-1/2 p-4" onClick={onClick}>
@@ -155,11 +163,11 @@ const DepartmentCourseCard = ({
 						</div>
 						<div className="flex gap-4">
 							<div>
-								<p className="text-xs w-fit">Price: </p>
+								<p className="text-xs w-fit">Price:</p>
 								<p className="text-lg font-semibold w-fit">{price}</p>
 							</div>
 							<div>
-								<p className="text-xs w-fit">Duration: </p>
+								<p className="text-xs w-fit">Duration:</p>
 								<p className="text-lg font-semibold w-fit">{duration}</p>
 							</div>
 						</div>
@@ -185,12 +193,11 @@ const DepartmentCourseCard = ({
 										<Icon icon="mingcute:add-fill" height={24} />
 										<span className="mx-1">Add Subject</span>
 									</button>
-									<button className="flex w-full items-center px-3 py-3 text-sm capitalize transition-colors duration-300 transform text-white hover:bg-gray-700 dark:hover:text-white">
-										<Icon icon="flowbite:edit-solid" height={24} />
-										<span className="mx-1">Edit Course</span>
-									</button>
 									<hr className="border-gray-200 dark:border-gray-700" />
-									<button className="flex w-full items-center px-3 py-3 text-sm capitalize transition-colors duration-300 transform text-red-500 hover:bg-red-700 dark:hover:text-white">
+									<button
+										className="flex w-full items-center px-3 py-3 text-sm capitalize transition-colors duration-300 transform text-red-500 hover:bg-red-700 dark:hover:text-white"
+										onClick={handleDeleteCourse}
+									>
 										<Icon icon="mdi:delete" height={24} />
 										<span className="mx-1">Delete Course</span>
 									</button>
@@ -207,10 +214,11 @@ const DepartmentCourseCard = ({
 				<SubjectTable
 					subjects={localSubjects}
 					editingSubjectId={editingSubjectId}
-					subjectFormValues={subjectFormValues}
-					onEditClick={handleEditClick}
-					onSave={handleSave}
-					onInputChange={handleInputChange}
+					subjectFormValues={editingSubjectFormValues}
+					onEditClick={handleEditSubject}
+					onSave={handleSaveEdit}
+					onInputChange={handleEditInputChange}
+					teachers={teachers}
 				/>
 				{isAdding && (
 					<AddSubjectForm
@@ -218,6 +226,7 @@ const DepartmentCourseCard = ({
 						handleChange={handleNewInputChange}
 						handleSubmit={handleAddSubject}
 						handleCancel={() => setIsAdding(false)}
+						teachers={teachers}
 					/>
 				)}
 			</div>
@@ -225,4 +234,4 @@ const DepartmentCourseCard = ({
 	);
 };
 
-export default DepartmentCourseCard;
+export default React.memo(DepartmentCourseCard);

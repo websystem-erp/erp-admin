@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Icon } from "@iconify/react";
 import DepartmentCourseCard from "./DepartmentCourseCard";
@@ -16,9 +16,9 @@ const Department = () => {
 	const [errorMessage, setErrorMessage] = useState("");
 
 	useEffect(() => {
-		axios
-			.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS)
-			.then((response) => {
+		const fetchData = async () => {
+			try {
+				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
 				if (response.status === 200 && Array.isArray(response.data.data)) {
 					const fetchedDepartments = response.data.data;
 					const fetchSubjectsPromises = fetchedDepartments.map((department) =>
@@ -27,76 +27,73 @@ const Department = () => {
 						)
 					);
 
-					Promise.all(fetchSubjectsPromises)
-						.then((subjectsResponses) => {
-							const updatedDepartments = fetchedDepartments.map(
-								(department, index) => ({
-									...department,
-									subjects: subjectsResponses[index].data.data,
-								})
-							);
-							setPrograms(updatedDepartments);
+					const subjectsResponses = await Promise.all(fetchSubjectsPromises);
+					const updatedDepartments = fetchedDepartments.map(
+						(department, index) => ({
+							...department,
+							subjects: subjectsResponses[index].data.data,
 						})
-						.catch((error) => {
-							console.error("Error fetching subjects for departments:", error);
-						})
-						.finally(() => {
-							setIsLoading(false);
-						});
+					);
+
+					setPrograms(updatedDepartments);
 				} else {
 					console.error("Unexpected data format:", response.data);
 				}
-			})
-			.catch((error) => {
+			} catch (error) {
 				console.error("Error fetching departments:", error);
-			});
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchData();
 	}, []);
 
-	const onClose = () => {
+	const onClose = useCallback(() => {
 		setOpenForm(false);
 		setErrorMessage("");
-	};
+	}, []);
 
-	const handleForm = () => {
+	const handleForm = useCallback(() => {
 		setOpenForm(true);
-	};
+	}, []);
 
-	const handleInputChange = (e) => {
+	const handleInputChange = useCallback((e) => {
 		const { name, value } = e.target;
 		setFormValues((prevValues) => ({ ...prevValues, [name]: value }));
-	};
+	}, []);
 
-	const handleSubmit = (e) => {
-		e.preventDefault();
+	const handleSubmit = useCallback(
+		async (e) => {
+			e.preventDefault();
 
-		const duplicate = programs.find(
-			(program) =>
-				program.name.toLowerCase() === formValues.name.toLowerCase() ||
-				program.code.toLowerCase() === formValues.code.toLowerCase()
-		);
-
-		if (duplicate) {
-			setErrorMessage(
-				"A department with this code or name already exists. Please use a different code or name."
+			const duplicate = programs.find(
+				(program) =>
+					program.name.toLowerCase() === formValues.name.toLowerCase() ||
+					program.code.toLowerCase() === formValues.code.toLowerCase()
 			);
-			return;
-		}
 
-		const requestData = { ...formValues };
+			if (duplicate) {
+				setErrorMessage(
+					"A department with this code or name already exists. Please use a different code or name."
+				);
+				return;
+			}
 
-		console.log("Submitting new department with data:", requestData);
+			const requestData = { ...formValues };
 
-		axios
-			.post(API_ENDPOINTS.CREATE_DEPARTMENTS, requestData)
-			.then((response) => {
+			try {
+				const response = await axios.post(
+					API_ENDPOINTS.CREATE_DEPARTMENTS,
+					requestData
+				);
 				if (response.status === 201) {
 					setPrograms((prevPrograms) => [...prevPrograms, response.data.data]);
 					onClose();
 				} else {
 					console.error("Unexpected response status:", response);
 				}
-			})
-			.catch((error) => {
+			} catch (error) {
 				if (error.response) {
 					if (error.response.status === 409) {
 						setErrorMessage(
@@ -114,8 +111,10 @@ const Department = () => {
 						"An error occurred while creating the department. Please check your network connection and try again."
 					);
 				}
-			});
-	};
+			}
+		},
+		[formValues, programs, onClose]
+	);
 
 	return (
 		<>
