@@ -3,6 +3,7 @@ import axios from "axios";
 import { Icon } from "@iconify/react";
 import API_ENDPOINTS from "../../API/apiEndpoints"; // Adjust the import path as needed
 import SubjectTable from "./SubjectTable";
+import AddSubjectForm from "./AddSubjectForm";
 
 const DepartmentCourseCard = ({
 	courseName,
@@ -11,7 +12,7 @@ const DepartmentCourseCard = ({
 	duration,
 	subjects = [],
 	onClick,
-	departmentId, // Add departmentId prop
+	departmentId,
 }) => {
 	const [editingSubjectId, setEditingSubjectId] = useState(null);
 	const [subjectFormValues, setSubjectFormValues] = useState({
@@ -26,12 +27,10 @@ const DepartmentCourseCard = ({
 		subjectName: "",
 		subjectCode: "",
 		totalLectures: 0,
-		teacherId: null,
-		departmentId: departmentId, // Assign departmentId here
-		totalLectureTaken: 0,
 	});
 	const [isOpen, setIsOpen] = useState(false);
 	const [isAdding, setIsAdding] = useState(false);
+	const [localSubjects, setLocalSubjects] = useState(subjects);
 
 	const handleEditClick = (subject) => {
 		setEditingSubjectId(subject.id);
@@ -57,25 +56,30 @@ const DepartmentCourseCard = ({
 
 	const handleSave = (subjectId) => {
 		const requestData = {
-			data: {
-				id: subjectId,
-				subjectName: subjectFormValues.subjectName,
-				subjectCode: subjectFormValues.subjectCode,
-				totalLectures: subjectFormValues.totalLectures,
-				teacherId: subjectFormValues.teacherId,
-				departmentId: subjectFormValues.departmentId,
-				totalLectureTaken: subjectFormValues.totalLectureTaken,
-			},
+			subjectName: subjectFormValues.subjectName,
+			subjectCode: subjectFormValues.subjectCode,
+			totalLectures: parseInt(subjectFormValues.totalLectures, 10),
+			teacherId: subjectFormValues.teacherId,
+			departmentId: subjectFormValues.departmentId,
+			totalLectureTaken: subjectFormValues.totalLectureTaken,
 		};
 
-		console.log("Request payload:", requestData); // Log the request payload
+		console.log("Request payload for updating subject:", requestData);
 
 		axios
 			.put(API_ENDPOINTS.UPDATE_SUBJECT(subjectId), requestData)
 			.then((response) => {
+				console.log("Update response status:", response.status);
+				console.log("Update response data:", response.data);
+
 				if (response.status === 200) {
 					console.log("Subject updated successfully:", response.data);
 					setEditingSubjectId(null);
+					setLocalSubjects((prevSubjects) =>
+						prevSubjects.map((subject) =>
+							subject.id === subjectId ? response.data.data : subject
+						)
+					);
 				} else {
 					console.error("Unexpected response status:", response);
 				}
@@ -86,26 +90,48 @@ const DepartmentCourseCard = ({
 			});
 	};
 
-	const handleAddSubject = () => {
+	const handleAddSubject = (e) => {
+		e.preventDefault();
 		const requestData = {
-			data: {
-				subjectName: newSubjectFormValues.subjectName,
-				subjectCode: newSubjectFormValues.subjectCode,
-				totalLectures: newSubjectFormValues.totalLectures,
-				teacherId: newSubjectFormValues.teacherId,
-				departmentId: departmentId, // Ensure departmentId is included
-				totalLectureTaken: newSubjectFormValues.totalLectureTaken,
-			},
+			subjectName: newSubjectFormValues.subjectName,
+			subjectCode: newSubjectFormValues.subjectCode,
+			totalLectures: parseInt(newSubjectFormValues.totalLectures, 10),
 		};
 
-		console.log("Request payload for new subject:", requestData); // Log the request payload
+		console.log("Request payload for new subject:", requestData);
 
 		axios
 			.post(API_ENDPOINTS.CREATE_SUBJECT(departmentId), requestData)
 			.then((response) => {
+				console.log("Create response status:", response.status);
+				console.log("Create response data:", response.data);
+
 				if (response.status === 201) {
 					console.log("Subject added successfully:", response.data);
-					// Optionally, update the local state to reflect the new subject
+
+					// Append the new subject to the existing list
+					setLocalSubjects((prevSubjects) => [
+						...prevSubjects,
+						response.data.data,
+					]);
+
+					// Fetch updated department data
+					axios
+						.get(API_ENDPOINTS.FETCH_DEPARTMENTS(departmentId))
+						.then((res) => {
+							console.log("Fetched department data:", res.data);
+							if (res.status === 200) {
+								setLocalSubjects(res.data.data.subjects);
+							}
+						})
+						.catch((err) => {
+							console.error("Error fetching department data:", err);
+							console.error(
+								"Full error details:",
+								JSON.stringify(err, null, 2)
+							);
+						});
+
 					setIsAdding(false);
 				} else {
 					console.error("Unexpected response status:", response);
@@ -140,7 +166,6 @@ const DepartmentCourseCard = ({
 					</div>
 					<div className="flex flex-col gap-2">
 						<div className="relative inline-block">
-							{/* Dropdown toggle button */}
 							<button
 								onClick={() => setIsOpen(!isOpen)}
 								className="relative z-10 block p-2 text-white bg-white border border-transparent rounded-full dark:text-white focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 focus:ring dark:bg-gray-800 focus:outline-none"
@@ -148,7 +173,6 @@ const DepartmentCourseCard = ({
 								<Icon icon="zondicons:navigation-more" height={20} />
 							</button>
 
-							{/* Dropdown menu */}
 							{isOpen && (
 								<div
 									className="absolute right-0 z-20 w-48 py-2 mt-2 origin-top-right bg-white rounded-md shadow-xl dark:bg-gray-800"
@@ -181,7 +205,7 @@ const DepartmentCourseCard = ({
 					Subjects
 				</h4>
 				<SubjectTable
-					subjects={subjects}
+					subjects={localSubjects}
 					editingSubjectId={editingSubjectId}
 					subjectFormValues={subjectFormValues}
 					onEditClick={handleEditClick}
@@ -189,70 +213,12 @@ const DepartmentCourseCard = ({
 					onInputChange={handleInputChange}
 				/>
 				{isAdding && (
-					<div className="bg-gray-800 p-4 rounded-lg mt-4">
-						<h5 className="text-white">Add New Subject</h5>
-						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								handleAddSubject();
-							}}
-						>
-							<div className="mb-4">
-								<label className="block text-sm font-medium text-gray-700">
-									Subject Name
-								</label>
-								<input
-									type="text"
-									name="subjectName"
-									value={newSubjectFormValues.subjectName}
-									onChange={handleNewInputChange}
-									className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-									placeholder="Subject Name"
-								/>
-							</div>
-							<div className="mb-4">
-								<label className="block text-sm font-medium text-gray-700">
-									Subject Code
-								</label>
-								<input
-									type="text"
-									name="subjectCode"
-									value={newSubjectFormValues.subjectCode}
-									onChange={handleNewInputChange}
-									className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-									placeholder="Subject Code"
-								/>
-							</div>
-							<div className="mb-4">
-								<label className="block text-sm font-medium text-gray-700">
-									Total Lectures
-								</label>
-								<input
-									type="number"
-									name="totalLectures"
-									value={newSubjectFormValues.totalLectures}
-									onChange={handleNewInputChange}
-									className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-									placeholder="Total Lectures"
-								/>
-							</div>
-							<div className="flex justify-end items-center mt-4 gap-4">
-								<button
-									className="px-4 w-1/2 py-2 text-white border-red-500 border-2 rounded-lg hover:bg-red-500"
-									type="button"
-									onClick={() => setIsAdding(false)}
-								>
-									Cancel
-								</button>
-								<button
-									className="px-4 py-2 w-1/2 text-white bg-green-600 rounded-lg"
-									type="submit"
-								>
-									Add Subject
-								</button>
-							</div>
-						</form>
-					</div>
+					<AddSubjectForm
+						formValues={newSubjectFormValues}
+						handleChange={handleNewInputChange}
+						handleSubmit={handleAddSubject}
+						handleCancel={() => setIsAdding(false)}
+					/>
 				)}
 			</div>
 		</div>

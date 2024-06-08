@@ -47,7 +47,8 @@ const API_ENDPOINTS = {
 	DELETE_ALL_STUDENTSS: `${API_BASE_URL}/student/${userId}/deleteAllStudent`,
 	LOGIN_STUDENTS: `${API_BASE_URL}/student/login`,
 	// SUBJECTS
-	CREATE_SUBJECT: `${API_BASE_URL}/subject/${userId}/reg`,
+	CREATE_SUBJECT: (departmentId) =>
+		`${API_BASE_URL}/subject/${departmentId}/reg`,
 	FETCH_ALL_SUBJECTS_IN_DEPARTMENT: (departmentId) =>
 		`${API_BASE_URL}/subject/fetchAll/${departmentId}`,
 	UPDATE_SUBJECT: (subjectId) => `${API_BASE_URL}/subject/update/${subjectId}`,
