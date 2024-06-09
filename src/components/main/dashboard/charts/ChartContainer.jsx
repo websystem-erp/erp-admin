@@ -16,7 +16,7 @@ const ChartContainer = () => {
 				update={"updated 4 min ago"}
 			/>
 
-			<PieChart />
+			{/* <PieChart /> */}
 		</div>
 	);
 };

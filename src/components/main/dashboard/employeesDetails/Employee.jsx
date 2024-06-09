@@ -113,6 +113,10 @@ const Employee = () => {
 										dob: teacher.dob,
 										contactNumber: teacher.contactNumber,
 										departmentId: teacher.departmentId,
+										departmentName:
+											teacher.subject.length > 0
+												? teacher.subject[0].department.name
+												: "N/A",
 										permanent_address: teacher.permanent_address,
 										currentAddress: teacher.currentAddress,
 									})
@@ -127,39 +131,43 @@ const Employee = () => {
 							setModalOpen={setModalOpen}
 							responsiveWidth={"md:w-fit"}
 						>
-							<div>
-								<img
-									src={selectedProfile.profile}
-									alt={selectedProfile.name}
-									className="w-32 h-32 mx-auto rounded-full"
-								/>
-								<h3 className="text-xl font-semibold my-4">
-									{selectedProfile.name}
-								</h3>
-								<ModalDetails
-									modalTitle={"Department Id : "}
-									modalDesc={selectedProfile.departmentId}
-								/>
-								<ModalDetails
-									modalTitle={"ID : "}
-									modalDesc={selectedProfile.id}
-								/>
-								<ModalDetails
-									modalTitle={"Gender : "}
-									modalDesc={selectedProfile.gender}
-								/>
-								<ModalDetails
-									modalTitle={"Role : "}
-									modalDesc={selectedProfile.role}
-								/>
-								<ModalDetails
-									modalTitle={"Date of Birth : "}
-									modalDesc={selectedProfile.dob}
-								/>
-								<ModalDetails
-									modalTitle={"Contact Number : "}
-									modalDesc={selectedProfile.contactNumber}
-								/>
+							<div className=" flex justify-center items-center gap-4 flex-wrap">
+								<div className="mx-2">
+									<img
+										src={selectedProfile.profile}
+										alt={selectedProfile.name}
+										className="w-32 h-32 mx-auto rounded-full"
+									/>
+									<h3 className="text-xl font-semibold my-4 capitalize">
+										{selectedProfile.name}
+									</h3>
+								</div>
+								<div className="mx-2">
+									<ModalDetails
+										modalTitle={"Department: "}
+										modalDesc={`${selectedProfile.departmentName} (${selectedProfile.departmentId})`}
+									/>
+									<ModalDetails
+										modalTitle={"ID : "}
+										modalDesc={selectedProfile.id}
+									/>
+									<ModalDetails
+										modalTitle={"Gender : "}
+										modalDesc={selectedProfile.gender}
+									/>
+									<ModalDetails
+										modalTitle={"Role : "}
+										modalDesc={selectedProfile.role}
+									/>
+									<ModalDetails
+										modalTitle={"Date of Birth : "}
+										modalDesc={selectedProfile.dob}
+									/>
+									<ModalDetails
+										modalTitle={"Contact Number : "}
+										modalDesc={selectedProfile.contactNumber}
+									/>
+								</div>
 							</div>
 						</Modal>
 					)}

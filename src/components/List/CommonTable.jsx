@@ -26,7 +26,7 @@ const CommonTable = ({
 							alt={`${name}'s profile`}
 							onError={(e) => {
 								e.target.src = "default-image-url";
-							}} // Handle broken image URLs
+							}}
 						/>
 					</div>
 					<div className="ml-3">
