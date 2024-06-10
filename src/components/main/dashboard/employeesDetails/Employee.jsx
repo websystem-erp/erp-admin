@@ -14,6 +14,11 @@ const Employee = () => {
 	const [formModalOpen, setFormModalOpen] = useState(false);
 	const [selectedProfile, setSelectedProfile] = useState(null);
 
+	const defaultMalePhoto =
+		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
+	const defaultFemalePhoto =
+		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
+
 	useEffect(() => {
 		fetchTeachers();
 	}, []);
@@ -66,6 +71,12 @@ const Employee = () => {
 		setFormModalOpen(false);
 	};
 
+	const getDefaultPhoto = (gender) => {
+		return gender && gender.toLowerCase() === "female"
+			? defaultFemalePhoto
+			: defaultMalePhoto;
+	};
+
 	return (
 		<>
 			{isLoading ? (
@@ -96,7 +107,7 @@ const Employee = () => {
 						showDataList={teachers.map((teacher) => (
 							<CommonTable
 								key={teacher.id}
-								profile={teacher.photo}
+								profile={teacher.photo || getDefaultPhoto(teacher.gender)}
 								name={teacher.name}
 								role={teacher.role}
 								id={teacher.id}
@@ -105,7 +116,7 @@ const Employee = () => {
 								buttonHide={"hidden"}
 								onViewProfile={() =>
 									handleViewProfile({
-										profile: teacher.photo,
+										profile: teacher.photo || getDefaultPhoto(teacher.gender),
 										name: teacher.name,
 										role: teacher.role,
 										id: teacher.id,
@@ -131,7 +142,7 @@ const Employee = () => {
 							setModalOpen={setModalOpen}
 							responsiveWidth={"md:w-fit"}
 						>
-							<div className=" flex justify-center items-center gap-4 flex-wrap">
+							<div className="flex justify-center items-center gap-4 flex-wrap">
 								<div className="mx-2">
 									<img
 										src={selectedProfile.profile}
