@@ -6,6 +6,7 @@ import Modal from "../../../popup/Modal";
 import ModalDetails from "../../../popup/ModalDetails";
 import EmployeeAddForm from "../../../Forms/EmployeeAddForm";
 import API_ENDPOINTS from "../../../../API/apiEndpoints";
+import axios from "axios";
 
 const Employee = () => {
 	const [teachers, setTeachers] = useState([]);
@@ -13,6 +14,7 @@ const Employee = () => {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [formModalOpen, setFormModalOpen] = useState(false);
 	const [selectedProfile, setSelectedProfile] = useState(null);
+	const [isEditing, setIsEditing] = useState(false);
 
 	const defaultMalePhoto =
 		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
@@ -48,10 +50,9 @@ const Employee = () => {
 
 	const handleDeleteProfile = async (id) => {
 		try {
-			const response = await fetch(
-				API_ENDPOINTS.DELETE_TEACHERS.replace(":id", id),
-				{ method: "DELETE" }
-			);
+			const response = await fetch(API_ENDPOINTS.DELETE_TEACHERS(id), {
+				method: "DELETE",
+			});
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(`Network response was not ok: ${errorData.message}`);
@@ -75,6 +76,69 @@ const Employee = () => {
 		return gender && gender.toLowerCase() === "female"
 			? defaultFemalePhoto
 			: defaultMalePhoto;
+	};
+
+	const handleEditProfile = () => {
+		setIsEditing(true);
+	};
+
+	const handleSaveProfile = async () => {
+		try {
+			const response = await fetch(
+				API_ENDPOINTS.UPDATE_TEACHERS(selectedProfile.id),
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(selectedProfile),
+				}
+			);
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(`Network response was not ok: ${errorData.message}`);
+			}
+			fetchTeachers();
+			setModalOpen(false);
+			setIsEditing(false);
+		} catch (error) {
+			console.error("Error updating teacher:", error);
+		}
+	};
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setSelectedProfile((prevProfile) => ({
+			...prevProfile,
+			[name]: value,
+		}));
+	};
+
+	const handlePhotoChange = async (e) => {
+		const file = e.target.files[0];
+		if (file) {
+			const formData = new FormData();
+			formData.append("file", file);
+			formData.append(
+				"upload_preset",
+				import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+			);
+
+			try {
+				const response = await axios.post(
+					`https://api.cloudinary.com/v1_1/${
+						import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+					}/image/upload`,
+					formData
+				);
+				setSelectedProfile((prevProfile) => ({
+					...prevProfile,
+					photo: response.data.secure_url,
+				}));
+			} catch (error) {
+				console.error("Error uploading photo:", error);
+			}
+		}
 	};
 
 	return (
@@ -145,7 +209,10 @@ const Employee = () => {
 							<div className="flex justify-center items-center gap-4 flex-wrap">
 								<div className="mx-2">
 									<img
-										src={selectedProfile.profile}
+										src={
+											selectedProfile.photo ||
+											getDefaultPhoto(selectedProfile.gender)
+										}
 										alt={selectedProfile.name}
 										className="w-32 h-32 mx-auto rounded-full"
 									/>
@@ -154,30 +221,138 @@ const Employee = () => {
 									</h3>
 								</div>
 								<div className="mx-2">
-									<ModalDetails
-										modalTitle={"Department: "}
-										modalDesc={`${selectedProfile.departmentName} (${selectedProfile.departmentId})`}
-									/>
-									<ModalDetails
-										modalTitle={"ID : "}
-										modalDesc={selectedProfile.id}
-									/>
-									<ModalDetails
-										modalTitle={"Gender : "}
-										modalDesc={selectedProfile.gender}
-									/>
-									<ModalDetails
-										modalTitle={"Role : "}
-										modalDesc={selectedProfile.role}
-									/>
-									<ModalDetails
-										modalTitle={"Date of Birth : "}
-										modalDesc={selectedProfile.dob}
-									/>
-									<ModalDetails
-										modalTitle={"Contact Number : "}
-										modalDesc={selectedProfile.contactNumber}
-									/>
+									{isEditing ? (
+										<>
+											<div className="my-2">
+												<label
+													className="block text-gray-700 text-sm font-bold mb-2"
+													htmlFor="name"
+												>
+													Name:
+												</label>
+												<input
+													type="text"
+													name="name"
+													value={selectedProfile.name}
+													onChange={handleChange}
+													className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												/>
+											</div>
+											<div className="my-2">
+												<label
+													className="block text-gray-700 text-sm font-bold mb-2"
+													htmlFor="role"
+												>
+													Role:
+												</label>
+												<input
+													type="text"
+													name="role"
+													value={selectedProfile.role}
+													onChange={handleChange}
+													className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												/>
+											</div>
+											<div className="my-2">
+												<label
+													className="block text-gray-700 text-sm font-bold mb-2"
+													htmlFor="gender"
+												>
+													Gender:
+												</label>
+												<input
+													type="text"
+													name="gender"
+													value={selectedProfile.gender}
+													onChange={handleChange}
+													className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												/>
+											</div>
+											<div className="my-2">
+												<label
+													className="block text-gray-700 text-sm font-bold mb-2"
+													htmlFor="dob"
+												>
+													Date Of Birth:
+												</label>
+												<input
+													type="text"
+													name="dob"
+													value={selectedProfile.dob}
+													onChange={handleChange}
+													className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												/>
+											</div>
+											<div className="my-2">
+												<label
+													className="block text-gray-700 text-sm font-bold mb-2"
+													htmlFor="contactNumber"
+												>
+													Contact Number:
+												</label>
+												<input
+													type="number"
+													name="contactNumber"
+													value={selectedProfile.contactNumber}
+													onChange={handleChange}
+													className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												/>
+											</div>
+											<div className="my-2">
+												<label
+													className="block text-gray-700 text-sm font-bold mb-2"
+													htmlFor="photo"
+												>
+													Profile Photo:
+												</label>
+												<input
+													type="file"
+													name="photo"
+													onChange={handlePhotoChange}
+													className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+												/>
+											</div>
+											<button
+												onClick={handleSaveProfile}
+												className="bg-linear-green text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+											>
+												Save
+											</button>
+										</>
+									) : (
+										<>
+											<ModalDetails
+												modalTitle={"Department: "}
+												modalDesc={`${selectedProfile.departmentName} (${selectedProfile.departmentId})`}
+											/>
+											<ModalDetails
+												modalTitle={"ID : "}
+												modalDesc={selectedProfile.id}
+											/>
+											<ModalDetails
+												modalTitle={"Gender : "}
+												modalDesc={selectedProfile.gender}
+											/>
+											<ModalDetails
+												modalTitle={"Role : "}
+												modalDesc={selectedProfile.role}
+											/>
+											<ModalDetails
+												modalTitle={"Date of Birth : "}
+												modalDesc={selectedProfile.dob}
+											/>
+											<ModalDetails
+												modalTitle={"Contact Number : "}
+												modalDesc={selectedProfile.contactNumber}
+											/>
+											<button
+												onClick={handleEditProfile}
+												className="bg-linear-blue hover:bg-linear-blue text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+											>
+												Edit
+											</button>
+										</>
+									)}
 								</div>
 							</div>
 						</Modal>

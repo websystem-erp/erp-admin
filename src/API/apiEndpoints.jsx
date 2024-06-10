@@ -6,7 +6,7 @@ const getUserIdFromLocalStorage = () => {
 };
 
 const userId = getUserIdFromLocalStorage();
-console.log("User ID:", userId); // Add this line
+console.log("User ID:", userId);
 
 if (!userId) {
 	console.error("User ID not found in localStorage");
@@ -28,8 +28,8 @@ const API_ENDPOINTS = {
 	FETCH_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/fetchAll`,
 	FETCH_TEACHERS: (teacherId) =>
 		`${API_BASE_URL}/teacher/${userId}/fetch/${teacherId}`,
-	UPDATE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/update/:id`,
-	DELETE_TEACHERS: `${API_BASE_URL}/teacher/${userId}/delete/:id`,
+	UPDATE_TEACHERS: (id) => `${API_BASE_URL}/teacher/${userId}/update/${id}`,
+	DELETE_TEACHERS: (id) => `${API_BASE_URL}/teacher/${userId}/delete/${id}`,
 	DELETE_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/deleteAllTeacher`,
 	LOGIN_TEACHERS: `${API_BASE_URL}/teacher/login`,
 	// ATTENDANCE

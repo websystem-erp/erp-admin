@@ -60,6 +60,14 @@ const StudentList = () => {
 		setStudents((prevState) => [...prevState, newStudent]);
 	};
 
+	const handleSaveProfile = (updatedStudent) => {
+		setStudents((prevState) =>
+			prevState.map((student) =>
+				student.id === updatedStudent.id ? updatedStudent : student
+			)
+		);
+	};
+
 	return (
 		<>
 			{isLoading ? (
@@ -96,6 +104,7 @@ const StudentList = () => {
 							isOpen={profileModalOpen}
 							onClose={() => setProfileModalOpen(false)}
 							profile={selectedProfile}
+							onSave={handleSaveProfile}
 						/>
 					)}
 				</div>
