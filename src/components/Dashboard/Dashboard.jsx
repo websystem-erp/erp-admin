@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 import CardContainer from "../main/dashboard/CardContainer";
-import ChartContainer from "../main/dashboard/charts/ChartContainer";
+import DailyAttendancePercentage from "../Attendance/DailyAttendancePercentage";
 import Employee from "../main/dashboard/employeesDetails/Employee";
 import Modal from "../popup/Modal";
 import ListTable from "../List/ListTable";
@@ -14,6 +15,8 @@ const Dashboard = () => {
 	const [students, setStudents] = useState([]);
 	const [leaves, setLeaves] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
+
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchStudents = async () => {
@@ -43,7 +46,6 @@ const Dashboard = () => {
 		try {
 			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES);
 			if (Array.isArray(response.data.leaves)) {
-				console.log("Fetched leaves:", response.data.leaves); // Debugging log
 				setLeaves(response.data.leaves);
 			} else {
 				console.error("Unexpected data format:", response.data);
@@ -55,7 +57,6 @@ const Dashboard = () => {
 
 	const updateLeaveStatus = async (teacherId, action) => {
 		try {
-			console.log("Updating leave status:", teacherId, action); // Debugging log
 			const response = await axios.put(
 				API_ENDPOINTS.UPDATE_LEAVES(teacherId, action),
 				{
@@ -73,13 +74,17 @@ const Dashboard = () => {
 	};
 
 	const handleApprove = (teacherId) => {
-		console.log("Approving leave for teacherId:", teacherId); // Debugging log
 		updateLeaveStatus(teacherId, "Accept");
 	};
 	const handleReject = (teacherId) => {
-		console.log("Rejecting leave for teacherId:", teacherId); // Debugging log
 		updateLeaveStatus(teacherId, "Reject");
 	};
+
+	const handleDailyAttendanceClick = () => {
+		navigate("/attendance");
+	};
+
+	const currentDate = new Date();
 
 	return (
 		<>
@@ -126,8 +131,7 @@ const Dashboard = () => {
 								</thead>
 								<tbody className="divide-y divide-gray-200">
 									{leaves.map((leave, index) => {
-										console.log("Leave object:", leave); // Debugging log
-										const teacherId = leave.teacherId; // Ensure this is the correct property
+										const teacherId = leave.teacherId;
 										return (
 											<tr key={index}>
 												<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
@@ -176,7 +180,7 @@ const Dashboard = () => {
 			<Modal
 				modalOpen={dueFeesModalOpen}
 				setModalOpen={setDueFeesModalOpen}
-				responsiveWidth={"md:w-[60%]"}
+				responsiveWidth={"md:w/[60%]"}
 			>
 				<div className="bg-white p-8 rounded-md w-fit sm:w/full">
 					{isLoading ? (
@@ -206,7 +210,10 @@ const Dashboard = () => {
 					)}
 				</div>
 			</Modal>
-			<ChartContainer />
+			<DailyAttendancePercentage
+				selectedDate={currentDate}
+				onClick={handleDailyAttendanceClick}
+			/>
 			<Employee />
 		</>
 	);

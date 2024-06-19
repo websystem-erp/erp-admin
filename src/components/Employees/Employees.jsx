@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Icon } from "@iconify/react";
-import ChartWrapper from "../main/dashboard/charts/ChartWrapper";
-import BarChart from "../main/dashboard/charts/BarChart";
-import { attendance } from "../data/sourceData";
+import { useNavigate } from "react-router-dom";
 import Employee from "../main/dashboard/employeesDetails/Employee";
 import CommonCard from "../List/CommonCard";
 import API_ENDPOINTS from "../../API/apiEndpoints";
+import DailyAttendancePercentage from "../Attendance/DailyAttendancePercentage";
 
 const Employees = () => {
+	const navigate = useNavigate();
 	const [leaves, setLeaves] = useState([]);
 	const [teachers, setTeachers] = useState({});
 	const [currentPage, setCurrentPage] = useState(1);
@@ -137,6 +137,10 @@ const Employees = () => {
 		}
 	};
 
+	const currentDate = new Date();
+	const handleDailyAttendanceClick = () => {
+		navigate("/attendance");
+	};
 	const getDefaultPhoto = (gender) => {
 		return gender && gender.toLowerCase() === "female"
 			? defaultFemalePhoto
@@ -149,12 +153,9 @@ const Employees = () => {
 				<div className="lg:w-3/4 w-full">
 					<h3 className="font-bold text-2xl">Attendance</h3>
 					<div className="flex flex-wrap justify-between px-8">
-						<ChartWrapper
-							chartType={<BarChart data={attendance} />}
-							title={"Attendance"}
-							desc={"(-10%) increase in this month"}
-							icon={"tabler:clock-filled"}
-							update={"updated 4 min ago"}
+						<DailyAttendancePercentage
+							selectedDate={currentDate}
+							onClick={handleDailyAttendanceClick}
 						/>
 					</div>
 				</div>

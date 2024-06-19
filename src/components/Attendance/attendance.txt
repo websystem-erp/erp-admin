@@ -3,7 +3,6 @@ import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import DailyAttendancePercentage from "./DailyAttendancePercentage";
 
 const Attendance = () => {
 	const [teachers, setTeachers] = useState([]);
@@ -14,9 +13,6 @@ const Attendance = () => {
 	const [attendanceStatus, setAttendanceStatus] = useState([]);
 	const [attendanceFetched, setAttendanceFetched] = useState(false);
 	const [attendanceMarked, setAttendanceMarked] = useState(false);
-	const [selectAll, setSelectAll] = useState(false);
-	const [presentPercentage, setPresentPercentage] = useState(0);
-	const [absentPercentage, setAbsentPercentage] = useState(0);
 
 	useEffect(() => {
 		const fetchDepartments = async () => {
@@ -62,18 +58,6 @@ const Attendance = () => {
 		}));
 	};
 
-	const handleSelectAllChange = (event) => {
-		const checked = event.target.checked;
-		setSelectAll(checked);
-		const newAttendance = {};
-		if (checked) {
-			filteredTeachers.forEach((teacher) => {
-				newAttendance[teacher.id] = true;
-			});
-		}
-		setAttendance(newAttendance);
-	};
-
 	const postAttendance = async () => {
 		const selectedTeachers = Object.keys(attendance).filter(
 			(teacherId) => attendance[teacherId]
@@ -116,36 +100,11 @@ const Attendance = () => {
 				response.data.attendanceStatus &&
 					response.data.attendanceStatus.length > 0
 			);
-			calculateDailyAttendancePercentage(response.data.attendanceStatus || []);
 		} catch (error) {
 			console.error("Error fetching attendance status:", error);
 			setAttendanceStatus([]);
 			setAttendanceFetched(true);
 		}
-	};
-
-	const calculateDailyAttendancePercentage = (attendanceStatus) => {
-		const totalTeachers = teachers.length;
-		const presentTeachers = attendanceStatus.filter(
-			(teacher) => teacher.status === "Present"
-		).length;
-
-		if (totalTeachers === 0) {
-			setPresentPercentage(0);
-			setAbsentPercentage(0);
-			return;
-		}
-
-		const presentPercentage = (presentTeachers / totalTeachers) * 100;
-		const absentPercentage = 100 - presentPercentage;
-
-		setPresentPercentage(presentPercentage);
-		setAbsentPercentage(absentPercentage);
-
-		console.log("Total Teachers:", totalTeachers);
-		console.log("Present Teachers:", presentTeachers);
-		console.log("Present Percentage:", presentPercentage);
-		console.log("Absent Percentage:", absentPercentage);
 	};
 
 	const filteredTeachers = selectedDepartment
@@ -165,11 +124,6 @@ const Attendance = () => {
 
 	return (
 		<>
-			<DailyAttendancePercentage
-				presentPercentage={presentPercentage}
-				absentPercentage={absentPercentage}
-				selectedDate={selectedDate}
-			/>
 			<div className="w-full flex gap-4 mb-4">
 				<select
 					onChange={handleDepartmentChange}
@@ -196,27 +150,6 @@ const Attendance = () => {
 					</div>
 
 					<div className="mt-4 space-y-2">
-						<label
-							htmlFor="select-all"
-							className="flex cursor-pointer items-start gap-4"
-						>
-							<div className="flex items-center">
-								<input
-									type="checkbox"
-									className="size-4 rounded border-gray-300"
-									id="select-all"
-									checked={selectAll}
-									onChange={handleSelectAllChange}
-									disabled={filteredTeachers.length === 0}
-								/>
-							</div>
-
-							<div>
-								<strong className="font-medium text-gray-900">
-									Select All
-								</strong>
-							</div>
-						</label>
 						{filteredTeachers.length === 0 && <p>No teachers found.</p>}
 						{filteredTeachers.map((teacher) => (
 							<label
