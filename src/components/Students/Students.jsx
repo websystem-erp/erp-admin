@@ -1,7 +1,7 @@
 import React from "react";
-import ChartWrapper from "../main/dashboard/charts/ChartWrapper";
-import BarChart from "../main/dashboard/charts/BarChart";
-import { attendance } from "../data/sourceData";
+// import ChartWrapper from "../main/dashboard/charts/ChartWrapper";
+// import BarChart from "../main/dashboard/charts/BarChart";
+// import { attendance } from "../data/sourceData";
 import StudentList from "./StudentList";
 
 const Students = () => {

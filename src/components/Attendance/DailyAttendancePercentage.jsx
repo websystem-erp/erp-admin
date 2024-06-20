@@ -44,12 +44,24 @@ const DailyAttendancePercentage = ({ selectedDate }) => {
 	};
 
 	return (
-		<div className="my-4 p-4 bg-linear-black shadow rounded-lg w-fit">
+		<div className="my-4 p-4 bg-linear-black shadow rounded-lg w-full h-auto">
 			<h2 className="text-lg font-medium ">
-				{selectedDate.toLocaleDateString()}
+				{selectedDate.toLocaleDateString("en-US", {
+					year: "numeric",
+					month: "long",
+					day: "numeric",
+				})}
 			</h2>
-			<p className="text-green-300">Present: {presentPercentage.toFixed(2)}%</p>
-			<p className="text-red-300">Absent: {absentPercentage.toFixed(2)}%</p>
+			{presentPercentage > 0 && absentPercentage > 0 ? (
+				<>
+					<p className="text-green-300">
+						Present: {presentPercentage.toFixed(2)}%
+					</p>
+					<p className="text-red-300">Absent: {absentPercentage.toFixed(2)}%</p>
+				</>
+			) : (
+				"Attendance not marked yet"
+			)}
 		</div>
 	);
 };

@@ -150,18 +150,18 @@ const Employees = () => {
 	return (
 		<>
 			<div className="p-4 flex flex-wrap">
-				<div className="lg:w-3/4 w-full">
+				<div className="lg:w-3/4 w-full px-2 ">
 					<h3 className="font-bold text-2xl">Attendance</h3>
-					<div className="flex flex-wrap justify-between px-8">
+					<div className="flex flex-wrap justify-between">
 						<DailyAttendancePercentage
 							selectedDate={currentDate}
 							onClick={handleDailyAttendanceClick}
 						/>
 					</div>
 				</div>
-				<div className="lg:w-1/4 w-full">
+				<div className="lg:w-1/4 w-full px-2">
 					<h3 className="font-bold text-2xl">Request</h3>
-					<div className="flex flex-wrap md:justify-between justify-center w-full p-4">
+					<div className="flex flex-wrap md:justify-between justify-center w-full ">
 						{currentLeaves.length > 0 ? (
 							currentLeaves.map((leave, index) => {
 								const teacher = teachers[leave.teacherId];

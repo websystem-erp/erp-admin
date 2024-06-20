@@ -1,7 +1,5 @@
 import React from "react";
 import Card from "../main/dashboard/Card";
-import LineChart from "../main/dashboard/charts/LineChart";
-import SummaryCard from "./summary/SummaryCard";
 import TransactionsDetails from "./summary/TransactionsDetails";
 const Summary = () => {
 	return (
@@ -28,14 +26,6 @@ const Summary = () => {
 					iconClass={"salary-icon"}
 					iconColor={"bg-linear-red"}
 				/>
-			</div>
-			<div className="flex flex-col lg:flex-row justify-between px-16">
-				<div className="relative w-full lg:w-4/5 h-[200px] lg:h-auto my-8 mx-0 lg:mx-16 bg-white rounded-2xl">
-					<LineChart />
-				</div>
-				<div className="w-full lg:w-fit">
-					<SummaryCard />
-				</div>
 			</div>
 			<div className="mt-16">
 				<TransactionsDetails />
