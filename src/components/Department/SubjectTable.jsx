@@ -1,40 +1,7 @@
 import React from "react";
 import InputField from "./InputField";
+import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
-
-const fetchTeacherDetails = async (teacherId) => {
-	try {
-		const response = await fetch(API_ENDPOINTS.FETCH_TEACHERS(teacherId));
-		if (!response.ok) {
-			const errorText = await response.text();
-			throw new Error(`Error fetching teacher details: ${errorText}`);
-		}
-		return await response.json();
-	} catch (error) {
-		console.error("Fetch error:", error);
-		throw error;
-	}
-};
-
-const saveSubject = async (subjectId, updatedSubject) => {
-	try {
-		const response = await fetch(API_ENDPOINTS.UPDATE_SUBJECT(subjectId), {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(updatedSubject),
-		});
-		if (!response.ok) {
-			const errorText = await response.text();
-			throw new Error(`Error saving subject: ${errorText}`);
-		}
-		return await response.json();
-	} catch (error) {
-		console.error("Save error:", error);
-		throw error;
-	}
-};
 
 const SubjectTable = ({
 	subjects = [],
@@ -43,33 +10,65 @@ const SubjectTable = ({
 	onEditClick,
 	onSave,
 	onInputChange,
+	onDelete,
 	teachers = [],
 }) => {
-	const handleSave = async (subjectId) => {
+	const handleSave = async () => {
+		console.log("Saving subject ID:", editingSubjectId); // Log subject ID
+		const parsedSubjectId = parseInt(editingSubjectId, 10); // Ensure subjectId is a number
+		if (isNaN(parsedSubjectId)) {
+			console.error("Invalid subject ID:", editingSubjectId);
+			return;
+		}
+
 		try {
-			const teacherId = subjectFormValues.teacherId;
-			let teacherData = {};
-			if (teacherId) {
-				const teacherResponse = await fetchTeacherDetails(teacherId);
-				teacherData = teacherResponse.data;
-				console.log("Fetched teacher data:", teacherData);
-			}
 			const updatedSubject = {
 				...subjectFormValues,
-				teacherName: teacherData.name || "",
-				teacherId: teacherData.id || null,
-				totalLectures: parseInt(subjectFormValues.totalLectures, 10), // Ensure totalLectures is a number
+				totalLectures: parseInt(subjectFormValues.totalLectures, 10),
+				teacherId: subjectFormValues.teacherId
+					? parseInt(subjectFormValues.teacherId, 10)
+					: null,
 			};
-			const savedSubjectResponse = await saveSubject(subjectId, updatedSubject);
-			console.log("Saved subject data:", savedSubjectResponse);
-			onSave({
-				...savedSubjectResponse.data,
-				teacherName: teacherData.name || "",
-				teacherId: teacherData.id || null,
-			});
+			console.log("Saving updated subject:", updatedSubject); // Log updated subject data
+			const response = await axios.put(
+				API_ENDPOINTS.UPDATE_SUBJECT(parsedSubjectId),
+				updatedSubject
+			);
+			if (response.status === 200) {
+				onSave(response.data.data);
+			} else {
+				console.error("Error saving subject:", response.data);
+			}
 		} catch (error) {
-			console.error("Error in handleSave:", error);
-			// Optionally display a user-friendly error message
+			console.error(
+				"Error saving subject:",
+				error.response ? error.response.data : error.message
+			);
+		}
+	};
+
+	const handleDelete = async (subjectId) => {
+		console.log("Deleting subject ID:", subjectId); // Log subject ID
+		const parsedSubjectId = parseInt(subjectId, 10); // Ensure subjectId is a number
+		if (isNaN(parsedSubjectId)) {
+			console.error("Invalid subject ID:", subjectId);
+			return;
+		}
+
+		try {
+			const response = await axios.delete(
+				API_ENDPOINTS.DELETE_SUBJECT(parsedSubjectId)
+			);
+			if (response.status === 200) {
+				onDelete(subjectId);
+			} else {
+				console.error("Error deleting subject:", response.data);
+			}
+		} catch (error) {
+			console.error(
+				"Error deleting subject:",
+				error.response ? error.response.data : error.message
+			);
 		}
 	};
 
@@ -79,10 +78,7 @@ const SubjectTable = ({
 				<thead className="text-center">
 					<tr>
 						<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-							Name
-						</th>
-						<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-							Code
+							Course & Code
 						</th>
 						<th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
 							Total Lectures
@@ -103,26 +99,22 @@ const SubjectTable = ({
 							<tr key={subject.id}>
 								<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
 									{editingSubjectId === subject.id ? (
-										<InputField
-											name="subjectName"
-											value={subjectFormValues.subjectName || ""}
-											onChange={onInputChange}
-											type="text"
-										/>
+										<>
+											<InputField
+												name="subjectName"
+												value={subjectFormValues.subjectName || ""}
+												onChange={onInputChange}
+												type="text"
+											/>
+											<InputField
+												name="subjectCode"
+												value={subjectFormValues.subjectCode || ""}
+												onChange={onInputChange}
+												type="text"
+											/>
+										</>
 									) : (
-										subject.subjectName
-									)}
-								</td>
-								<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-									{editingSubjectId === subject.id ? (
-										<InputField
-											name="subjectCode"
-											value={subjectFormValues.subjectCode || ""}
-											onChange={onInputChange}
-											type="text"
-										/>
-									) : (
-										subject.subjectCode
+										`${subject.subjectName} (${subject.subjectCode})`
 									)}
 								</td>
 								<td className="whitespace-nowrap px-4 py-2 text-gray-700">
@@ -157,13 +149,13 @@ const SubjectTable = ({
 									) : teacher ? (
 										`${teacher.name} (${teacher.id})`
 									) : (
-										"No teacher assigned yet"
+										"-"
 									)}
 								</td>
 								<td className="whitespace-nowrap px-4 py-2">
 									{editingSubjectId === subject.id ? (
 										<button
-											onClick={() => handleSave(subject.id)}
+											onClick={handleSave}
 											className="inline-block rounded bg-green-600 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
 										>
 											Save
@@ -176,6 +168,12 @@ const SubjectTable = ({
 											Edit
 										</button>
 									)}
+									<button
+										onClick={() => handleDelete(subject.id)}
+										className="inline-block rounded bg-red-600 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 ml-2"
+									>
+										Delete
+									</button>
 								</td>
 							</tr>
 						);

@@ -141,11 +141,6 @@ const Attendance = () => {
 
 		setPresentPercentage(presentPercentage);
 		setAbsentPercentage(absentPercentage);
-
-		console.log("Total Teachers:", totalTeachers);
-		console.log("Present Teachers:", presentTeachers);
-		console.log("Present Percentage:", presentPercentage);
-		console.log("Absent Percentage:", absentPercentage);
 	};
 
 	const filteredTeachers = selectedDepartment

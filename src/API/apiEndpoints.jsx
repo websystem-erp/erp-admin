@@ -51,7 +51,10 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/subject/${departmentId}/reg`,
 	FETCH_ALL_SUBJECTS_IN_DEPARTMENT: (departmentId) =>
 		`${API_BASE_URL}/subject/fetchAll/${departmentId}`,
-	UPDATE_SUBJECT: (subjectId) => `${API_BASE_URL}/subject/update/${subjectId}`,
+	UPDATE_SUBJECT: (subjectId) =>
+		`${API_BASE_URL}/subject/update/${parseInt(subjectId, 10)}`,
+	DELETE_SUBJECT: (subjectId) =>
+		`${API_BASE_URL}/subject/delete-subject/${parseInt(subjectId, 10)}`,
 	// EVENT
 	CREATE_EVENT: `${API_BASE_URL}/event/create`,
 	FETCH_ALL_EVENTS: `${API_BASE_URL}/event/fetchAll`,

@@ -10,7 +10,7 @@ const DepartmentCourseCard = ({
 	courseCode,
 	price,
 	duration,
-	subjects = [],
+	subjects = [], // Default to an empty array
 	onClick,
 	departmentId,
 	onDeleteSuccess,
@@ -32,6 +32,19 @@ const DepartmentCourseCard = ({
 	const [localSubjects, setLocalSubjects] = useState(subjects);
 	const [editingSubjectId, setEditingSubjectId] = useState(null);
 	const [teachers, setTeachers] = useState([]);
+	const [subjectChangeTrigger, setSubjectChangeTrigger] = useState(false); // Trigger for re-fetching subjects
+
+	const fetchSubjects = useCallback(() => {
+		// Fetch all subjects with teachers included
+		axios
+			.get(API_ENDPOINTS.FETCH_ALL_SUBJECTS_IN_DEPARTMENT(departmentId))
+			.then((response) => {
+				setLocalSubjects(response.data.data || []);
+			})
+			.catch((error) => {
+				console.error("Error fetching subjects:", error);
+			});
+	}, [departmentId]);
 
 	useEffect(() => {
 		// Fetch all teachers
@@ -46,16 +59,8 @@ const DepartmentCourseCard = ({
 	}, []);
 
 	useEffect(() => {
-		// Fetch all subjects with teachers included
-		axios
-			.get(API_ENDPOINTS.FETCH_ALL_SUBJECTS_IN_DEPARTMENT(departmentId))
-			.then((response) => {
-				setLocalSubjects(response.data.data);
-			})
-			.catch((error) => {
-				console.error("Error fetching subjects:", error);
-			});
-	}, [departmentId]);
+		fetchSubjects();
+	}, [fetchSubjects, subjectChangeTrigger]);
 
 	const handleNewInputChange = useCallback((e) => {
 		const { name, value } = e.target;
@@ -86,10 +91,7 @@ const DepartmentCourseCard = ({
 				.post(API_ENDPOINTS.CREATE_SUBJECT(departmentId), requestData)
 				.then((response) => {
 					if (response.status === 201) {
-						setLocalSubjects((prevSubjects) => [
-							...prevSubjects,
-							response.data.data,
-						]);
+						setSubjectChangeTrigger((prev) => !prev); // Trigger re-fetching subjects
 						setIsAdding(false);
 					}
 				})
@@ -104,7 +106,8 @@ const DepartmentCourseCard = ({
 	);
 
 	const handleEditSubject = useCallback((subject) => {
-		setEditingSubjectId(subject.id);
+		console.log("Editing subject:", subject); // Log the subject object
+		setEditingSubjectId(subject.id); // Set the editing subject ID correctly
 		setEditingSubjectFormValues({
 			subjectName: subject.subjectName,
 			subjectCode: subject.subjectCode,
@@ -113,25 +116,65 @@ const DepartmentCourseCard = ({
 		});
 	}, []);
 
-	const handleSaveEdit = useCallback(
-		(updatedSubject) => {
-			const teacher = teachers.find(
-				(t) => t.id === parseInt(updatedSubject.teacherId, 10)
-			);
-			const updatedSubjectData = {
-				...updatedSubject,
-				teacherName: teacher ? teacher.name : "",
-				teacherId: teacher ? teacher.id : null,
+	const handleSaveEdit = useCallback(async () => {
+		console.log("Editing subject ID:", editingSubjectId); // Log subject ID
+		const parsedSubjectId = parseInt(editingSubjectId, 10); // Ensure subjectId is a number
+		if (isNaN(parsedSubjectId)) {
+			console.error("Invalid subject ID:", editingSubjectId);
+			return;
+		}
+
+		try {
+			const updatedSubject = {
+				...editingSubjectFormValues,
+				totalLectures: parseInt(editingSubjectFormValues.totalLectures, 10),
+				teacherId: editingSubjectFormValues.teacherId
+					? parseInt(editingSubjectFormValues.teacherId, 10)
+					: null,
 			};
-			setLocalSubjects((prevSubjects) =>
-				prevSubjects.map((subject) =>
-					subject.id === updatedSubjectData.id ? updatedSubjectData : subject
-				)
+			console.log("Updating subject:", updatedSubject); // Log updated subject data
+			const response = await axios.put(
+				API_ENDPOINTS.UPDATE_SUBJECT(parsedSubjectId),
+				updatedSubject
 			);
-			setEditingSubjectId(null);
-		},
-		[teachers]
-	);
+			if (response.status === 200) {
+				setSubjectChangeTrigger((prev) => !prev); // Trigger re-fetching subjects
+				setEditingSubjectId(null);
+			} else {
+				console.error("Error saving subject:", response.data);
+			}
+		} catch (error) {
+			console.error(
+				"Error saving subject:",
+				error.response ? error.response.data : error.message
+			);
+		}
+	}, [editingSubjectId, editingSubjectFormValues]);
+
+	const handleDeleteSubject = useCallback(async (subjectId) => {
+		console.log("Deleting subject ID:", subjectId); // Log subject ID
+		const parsedSubjectId = parseInt(subjectId, 10); // Ensure subjectId is a number
+		if (isNaN(parsedSubjectId)) {
+			console.error("Invalid subject ID:", subjectId);
+			return;
+		}
+
+		try {
+			const response = await axios.delete(
+				API_ENDPOINTS.DELETE_SUBJECT(parsedSubjectId)
+			);
+			if (response.status === 200) {
+				setSubjectChangeTrigger((prev) => !prev); // Trigger re-fetching subjects
+			} else {
+				console.error("Error deleting subject:", response.data);
+			}
+		} catch (error) {
+			console.error(
+				"Error deleting subject:",
+				error.response ? error.response.data : error.message
+			);
+		}
+	}, []);
 
 	const handleDeleteCourse = useCallback(() => {
 		axios
@@ -141,6 +184,8 @@ const DepartmentCourseCard = ({
 					if (onDeleteSuccess) {
 						onDeleteSuccess(departmentId);
 					}
+				} else {
+					console.error("Error deleting department:", response.data);
 				}
 			})
 			.catch((error) => {
@@ -218,6 +263,7 @@ const DepartmentCourseCard = ({
 					onEditClick={handleEditSubject}
 					onSave={handleSaveEdit}
 					onInputChange={handleEditInputChange}
+					onDelete={handleDeleteSubject}
 					teachers={teachers}
 				/>
 				{isAdding && (

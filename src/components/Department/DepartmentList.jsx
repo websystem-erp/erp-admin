@@ -37,7 +37,6 @@ const DepartmentList = ({
 							price={"₹ 1,00,000/-"}
 							duration={"3 Months"}
 							subjects={program.subjects}
-							onClick={() => console.log(`Clicked on department ${program.id}`)}
 						/>
 					))}
 				</div>

@@ -3,7 +3,7 @@ import React from "react";
 const InputField = React.memo(
 	({ label, name, value, onChange, type, placeholder }) => (
 		<div className="mb-4">
-			<label className="block text-sm font-medium text-gray-700">{label}</label>
+			<label className="block text-sm font-medium text-gray-300">{label}</label>
 			<input
 				type={type}
 				name={name}
