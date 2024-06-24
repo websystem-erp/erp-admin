@@ -52,7 +52,7 @@ const DailyAttendancePercentage = ({ selectedDate }) => {
 					day: "numeric",
 				})}
 			</h2>
-			{presentPercentage > 0 && absentPercentage > 0 ? (
+			{presentPercentage > 0 || absentPercentage > 0 ? (
 				<>
 					<p className="text-green-300">
 						Present: {presentPercentage.toFixed(2)}%

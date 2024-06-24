@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FloatingInput from "../Forms/FloatingInput";
 import Modal from "../popup/Modal";
 import axios from "axios";
@@ -23,6 +23,27 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 	});
 	const [formErrors, setFormErrors] = useState({});
 	const [photoLoading, setPhotoLoading] = useState(false);
+	const [departments, setDepartments] = useState([]);
+
+	useEffect(() => {
+		const fetchDepartments = async () => {
+			try {
+				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
+				console.log("Departments fetched:", response.data.data); // Log departments data
+				if (Array.isArray(response.data.data)) {
+					setDepartments(response.data.data);
+				} else {
+					console.error("Unexpected response format", response.data);
+					setDepartments([]);
+				}
+			} catch (error) {
+				console.error("Error fetching departments:", error);
+				setDepartments([]);
+			}
+		};
+
+		fetchDepartments();
+	}, []);
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
@@ -230,9 +251,11 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 						}`}
 					>
 						<option value="">Department ID</option>
-						<option value="1">1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
+						{departments.map((dept) => (
+							<option key={dept.id} value={dept.id}>
+								{dept.name} (ID: {dept.id})
+							</option>
+						))}
 					</select>
 					{formErrors.departmentId && (
 						<p className="text-red-500">{formErrors.departmentId}</p>

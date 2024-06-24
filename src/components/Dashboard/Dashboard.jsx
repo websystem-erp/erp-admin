@@ -97,7 +97,7 @@ const Dashboard = () => {
 				setModalOpen={setReqModalOpen}
 				responsiveWidth={"md:w-[60%]"}
 			>
-				<div className="bg-white p-8 rounded-md w-fit sm:w-full max-h-[80vh] overflow-y-auto">
+				<div className="bg-white p-8 rounded-md w-fit sm:w/full max-h-[80vh] overflow-y-auto">
 					<h2 className="text-gray-600 font-semibold">
 						Pending Request Details
 					</h2>

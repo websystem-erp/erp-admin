@@ -10,7 +10,7 @@ const NavItems = ({ to, icon, title, isSidebarExpanded }) => {
 		>
 			<Icon icon={icon} className="h-6 w-6 flex-shrink-0" />
 			<span
-				className={`ml-2 duration-300 ease-in-out ${
+				className={`ml-2 duration-0 ease-in-out ${
 					isSidebarExpanded ? "opacity-100" : "opacity-0"
 				}`}
 			>
