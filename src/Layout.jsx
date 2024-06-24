@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Navigation from "./components/Sidebar/Navigation";
 import Navbar from "./components/main/Navbar";
@@ -16,29 +16,67 @@ import Department from "./components/Department/Department";
 import Attendance from "./components/Attendance/Attendance";
 
 const Layout = ({ logout, userData }) => {
+	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
+		getSidebarStateFromLocalStorage()
+	);
+
+	useEffect(() => {
+		window.localStorage.setItem(
+			"isSidebarExpanded",
+			JSON.stringify(isSidebarExpanded)
+		);
+	}, [isSidebarExpanded]);
+
+	function getSidebarStateFromLocalStorage() {
+		return (
+			JSON.parse(window.localStorage.getItem("isSidebarExpanded")) || false
+		);
+	}
+
+	const toggleSidebar = () => {
+		setIsSidebarExpanded(!isSidebarExpanded);
+	};
+
+	const isMobile = window.innerWidth < 768;
+
 	return (
-		<div className="grid lg:grid-cols-[300px_1fr] gap-4 bg-[#F0F2F5]">
-			<aside className="h-screen p-4 hidden lg:block">
-				<Navigation />
-			</aside>
-			<main className="w-full">
-				<Navbar logout={logout} userData={userData} />
-				<Routes>
-					<Route path="/" element={<Dashboard />} />
-					<Route path="/employees" element={<Employees />} />
-					<Route path="/students" element={<Students />} />
-					<Route path="/finance/*" element={<Finance />}>
-						<Route path="summary" element={<Summary />} />
-						<Route path="transactions" element={<Transactions />} />
-						<Route path="student-fees" element={<StudentFees />} />
-						<Route path="payroll" element={<Payroll />} />
-					</Route>
-					<Route path="/event" element={<EventManagement />} />
-					<Route path="/department" element={<Department />} />
-					<Route path="/attendance" element={<Attendance />} />
-					<Route path="*" element={<NotFound />} />
-				</Routes>
-			</main>
+		<div className="flex min-h-screen bg-gray-100">
+			<Navigation
+				isSidebarExpanded={isSidebarExpanded}
+				toggleSidebar={toggleSidebar}
+			/>
+			<div
+				className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+					isSidebarExpanded ? "md:ml-64 ml-0" : "md:ml-20 ml-0"
+				} `}
+			>
+				<Navbar
+					logout={logout}
+					userData={userData}
+					toggleSidebar={toggleSidebar}
+				/>
+				<main
+					className={`flex-1 p-6 ${
+						isSidebarExpanded && !isMobile ? "ml-0" : "ml-0"
+					} w-full`}
+				>
+					<Routes>
+						<Route path="/" element={<Dashboard />} />
+						<Route path="/employees" element={<Employees />} />
+						<Route path="/students" element={<Students />} />
+						<Route path="/finance/*" element={<Finance />}>
+							<Route path="summary" element={<Summary />} />
+							<Route path="transactions" element={<Transactions />} />
+							<Route path="student-fees" element={<StudentFees />} />
+							<Route path="payroll" element={<Payroll />} />
+						</Route>
+						<Route path="/event" element={<EventManagement />} />
+						<Route path="/department" element={<Department />} />
+						<Route path="/attendance" element={<Attendance />} />
+						<Route path="*" element={<NotFound />} />
+					</Routes>
+				</main>
+			</div>
 		</div>
 	);
 };

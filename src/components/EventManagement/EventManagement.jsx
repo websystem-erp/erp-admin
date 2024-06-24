@@ -81,7 +81,7 @@ const EventManagement = () => {
 						<div className=" flex flex-wrap justify-between">
 							{events.map((event) => (
 								<div key={event.id} className="my-2 w-1/3 flex">
-									<div className="px-4 py-4 bg-linear-blue w-96 h-fit rounded-lg mb-4">
+									<div className="px-4 py-4 bg-white border border-slate-600 w-96 h-fit rounded-lg mb-4">
 										<div className="flex flex-col justify-center items-center gap-16 ">
 											{event.photo && (
 												<img
