@@ -50,8 +50,9 @@ const Support = () => {
 			<div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
 				<div className="grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-5">
 					<div className="lg:col-span-2 lg:py-12">
-						<h6 className="text-[#ec407a] font-bold text-2xl">
-							Need Assistance? We're Here to Help!
+						<h6 className="text-black font-bold text-4xl">Need Assistance?</h6>
+						<h6 className="text-black font-bold text-2xl">
+							We're Here to Help!
 						</h6>
 						<p className="max-w-xl text-md my-8">
 							If you need assistance with any aspect of our School ERP system,
