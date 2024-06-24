@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import API_ENDPOINTS from "./API/apiEndpoints";
+import AuthContext from "./context/AuthContext";
 
-const LogIn = ({ setIsLoggedIn, setToken, setUserData }) => {
+const LogIn = () => {
+	const { setIsLoggedIn, setToken, setUserData } = useContext(AuthContext);
 	const [credentials, setCredentials] = useState({ email: "", password: "" });
 	const [errorMessage, setErrorMessage] = useState("");
 	const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
@@ -42,7 +44,7 @@ const LogIn = ({ setIsLoggedIn, setToken, setUserData }) => {
 				setIsLoggedIn(true);
 				setToken(response.data.token);
 				localStorage.setItem("token", response.data.token);
-				localStorage.setItem("userData", JSON.stringify(response.data.data)); // Store user data
+				localStorage.setItem("userData", JSON.stringify(response.data.data));
 				setUserData(response.data.data);
 				navigate("/");
 			}
@@ -80,7 +82,7 @@ const LogIn = ({ setIsLoggedIn, setToken, setUserData }) => {
 							Forgot Password
 						</h2>
 						<form onSubmit={handleForgotPassword}>
-							<div className="mb-4 md:w-full">
+							<div className="mb-4 md:w/full">
 								<label
 									htmlFor="forgotPasswordEmail"
 									className="block text-xs mb-1"
@@ -122,7 +124,7 @@ const LogIn = ({ setIsLoggedIn, setToken, setUserData }) => {
 							Login
 						</h2>
 						<form className="mb-4" onSubmit={handleSubmit}>
-							<div className="mb-4 md:w-full">
+							<div className="mb-4 md:w/full">
 								<label htmlFor="email" className="block text-xs mb-1">
 									Username or Email
 								</label>
@@ -136,7 +138,7 @@ const LogIn = ({ setIsLoggedIn, setToken, setUserData }) => {
 									onChange={handleChange}
 								/>
 							</div>
-							<div className="mb-6 md:w-full">
+							<div className="mb-6 md:w/full">
 								<label htmlFor="password" className="block text-xs mb-1">
 									Password
 								</label>

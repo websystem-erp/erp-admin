@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Removed destructuring
+import { jwtDecode } from "jwt-decode";
 import LogIn from "./LogIn";
 import Layout from "./Layout";
 import "./App.css";
+import AuthContext from "./context/AuthContext";
 
 function App() {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [token, setToken] = useState(null);
-	const [userData, setUserData] = useState(null);
+	const { isLoggedIn, setIsLoggedIn, token, setToken, userData, setUserData } =
+		useContext(AuthContext);
 	const timeoutRef = useRef(null);
 
 	const logout = () => {

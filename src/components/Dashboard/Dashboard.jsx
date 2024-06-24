@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 import CardContainer from "../main/dashboard/CardContainer";
 import DailyAttendancePercentage from "../Attendance/DailyAttendancePercentage";
@@ -8,8 +8,10 @@ import Employee from "../main/dashboard/employeesDetails/Employee";
 import Modal from "../popup/Modal";
 import ListTable from "../List/ListTable";
 import CommonTable from "../List/CommonTable";
+import AuthContext from "../../context/AuthContext";
 
 const Dashboard = () => {
+	const { token, userData } = useContext(AuthContext);
 	const [dueFeesModalOpen, setDueFeesModalOpen] = useState(false);
 	const [reqModalOpen, setReqModalOpen] = useState(false);
 	const [students, setStudents] = useState([]);
@@ -19,22 +21,30 @@ const Dashboard = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		const fetchStudents = async () => {
-			try {
-				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_STUDENTS);
-				if (Array.isArray(response.data.data)) {
-					setStudents(response.data.data);
-				} else {
-					console.error("Unexpected data format:", response.data);
-				}
-			} catch (error) {
-				console.error("Error fetching students:", error);
-			} finally {
-				setIsLoading(false);
+		if (token) {
+			fetchStudents();
+		}
+	}, [token]);
+
+	const fetchStudents = async () => {
+		setIsLoading(true);
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_STUDENTS, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+			if (Array.isArray(response.data.data)) {
+				setStudents(response.data.data);
+			} else {
+				console.error("Unexpected data format:", response.data);
 			}
-		};
-		fetchStudents();
-	}, []);
+		} catch (error) {
+			console.error("Error fetching students:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const handleDueFees = () => setDueFeesModalOpen(true);
 	const handlePendingRequest = () => {
@@ -44,7 +54,11 @@ const Dashboard = () => {
 
 	const fetchLeaves = async () => {
 		try {
-			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES);
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
 			if (Array.isArray(response.data.leaves)) {
 				setLeaves(response.data.leaves);
 			} else {
@@ -59,8 +73,11 @@ const Dashboard = () => {
 		try {
 			const response = await axios.put(
 				API_ENDPOINTS.UPDATE_LEAVES(teacherId, action),
+				{ status: action },
 				{
-					status: action,
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
 				}
 			);
 			if (response.status === 200) {

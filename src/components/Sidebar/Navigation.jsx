@@ -89,6 +89,14 @@ const Navigation = ({ isSidebarExpanded, toggleSidebar }) => {
 					title="Event Management"
 					isSidebarExpanded={isSidebarExpanded}
 				/>
+				<div className="mt-auto ">
+					<NavItems
+						to="/Support"
+						icon="material-symbols:support-agent-rounded"
+						title="Support"
+						isSidebarExpanded={isSidebarExpanded}
+					/>
+				</div>
 			</nav>
 		</aside>
 	);

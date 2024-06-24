@@ -14,6 +14,7 @@ import StudentFees from "./components/Finance/student/StudentFees";
 import Payroll from "./components/Finance/Payroll";
 import Department from "./components/Department/Department";
 import Attendance from "./components/Attendance/Attendance";
+import Support from "./components/Support/Support";
 
 const Layout = ({ logout, userData }) => {
 	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
@@ -73,6 +74,7 @@ const Layout = ({ logout, userData }) => {
 						<Route path="/event" element={<EventManagement />} />
 						<Route path="/department" element={<Department />} />
 						<Route path="/attendance" element={<Attendance />} />
+						<Route path="/support" element={<Support />} />
 						<Route path="*" element={<NotFound />} />
 					</Routes>
 				</main>

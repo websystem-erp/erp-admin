@@ -76,6 +76,8 @@ const API_ENDPOINTS = {
 	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
 	FETCH_DEPARTMENTS: (departmentId) =>
 		`${API_BASE_URL}/department/fetch/${departmentId}`,
+	//SUPPORT
+	CREATE_SUPPORT: `${API_BASE_URL}/admin/support`,
 };
 
 export default API_ENDPOINTS;
