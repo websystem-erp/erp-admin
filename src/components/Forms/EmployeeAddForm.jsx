@@ -29,6 +29,17 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 	const [error, setError] = useState(null);
 	const [photoLoading, setPhotoLoading] = useState(false);
 	const [departments, setDepartments] = useState([]);
+	const [isCurrentAddressSame, setIsCurrentAddressSame] = useState(false);
+
+	useEffect(() => {
+		document.documentElement.classList.add("no-scroll");
+		document.body.classList.add("no-scroll");
+
+		return () => {
+			document.documentElement.classList.remove("no-scroll");
+			document.body.classList.remove("no-scroll");
+		};
+	}, []);
 
 	useEffect(() => {
 		const fetchDepartments = async () => {
@@ -93,6 +104,21 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		}
 	};
 
+	const handleCheckboxChange = () => {
+		setIsCurrentAddressSame(!isCurrentAddressSame);
+		if (!isCurrentAddressSame) {
+			setFormData((prevData) => ({
+				...prevData,
+				currentAddress: prevData.permanent_address,
+			}));
+		} else {
+			setFormData((prevData) => ({
+				...prevData,
+				currentAddress: "",
+			}));
+		}
+	};
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setLoading(true);
@@ -134,18 +160,18 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 			className="max-w-lg mx-auto p-4 bg-white rounded shadow"
 		>
 			{error && <div className="error-message">{error}</div>}
-			<div className="flex flex-col items-center mb-4">
-				<div className="relative">
+			<div className="flex gap-4 justify-between items-center">
+				<div className="">
 					{formData.photo ? (
 						<img
 							src={formData.photo}
-							alt="Employee Photo"
+							alt="Student Photo"
 							className="w-24 h-24 rounded-full object-cover cursor-pointer"
 							onClick={() => document.getElementById("photoUpload").click()}
 						/>
 					) : (
 						<div
-							className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+							className="w-24 h-24 rounded-full bg-[url('https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png')] bg-cover flex items-center justify-center cursor-pointer relative"
 							onClick={() => document.getElementById("photoUpload").click()}
 						>
 							{photoLoading ? (
@@ -169,126 +195,141 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 						disabled={photoLoading}
 					/>
 				</div>
+				<div className="flex-1">
+					<FloatingInput
+						type="text"
+						id="name"
+						formTitle="Name"
+						value={formData.name}
+						handleChange={handleChange}
+						formName="name"
+					/>
+
+					<FloatingInput
+						type="date"
+						id="dob"
+						formTitle="Date of Birth"
+						value={formData.dob}
+						handleChange={handleChange}
+						formName="dob"
+					/>
+				</div>
 			</div>
-			<div className="grid grid-cols-1 gap-4">
-				<FloatingInput
-					xtraClass="w-full"
-					type="text"
-					id="name"
-					formTitle="Name"
-					value={formData.name}
-					handleChange={handleChange}
-					formName="name"
-					required
-				/>
-				<div>
+			<div className="flex gap-2">
+				<div className=" mt-2 w-auto flex-1">
 					<select
-						name="departmentName"
-						id="departmentName"
-						value={formData.departmentName}
+						name="gender"
+						id="gender"
+						value={formData.gender}
 						onChange={handleChange}
-						className="w-full p-2 border rounded"
-						required
+						className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 pt-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0"
 					>
-						<option value="">Select Department</option>
-						{departments.map((dept) => (
-							<option key={dept.id} value={dept.name}>
-								{dept.name}
-							</option>
-						))}
+						<option value="">Gender</option>
+						<option value="Male">Male</option>
+						<option value="Female">Female</option>
+						<option value="Other">Other</option>
 					</select>
 				</div>
+				<div className="flex-1">
+					<FloatingInput
+						type="text"
+						id="role"
+						formTitle="Role"
+						value={formData.role}
+						handleChange={handleChange}
+						formName="role"
+					/>
+				</div>
+			</div>
+			<div className="mt-1.5">
+				<select
+					name="departmentName"
+					id="departmentName"
+					value={formData.departmentName}
+					onChange={handleChange}
+					className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 py-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0"
+				>
+					<option value="">Department</option>
+					{departments.map((dept) => (
+						<option key={dept.id} value={dept.name}>
+							{dept.name}
+						</option>
+					))}
+				</select>
+			</div>
+			<FloatingInput
+				type="text"
+				id="contactNumber"
+				formTitle="Contact Number"
+				value={formData.contactNumber}
+				handleChange={handleChange}
+				formName="contactNumber"
+				required
+			/>
+			<FloatingInput
+				type="email"
+				id="email"
+				formTitle="Email"
+				value={formData.email}
+				handleChange={handleChange}
+				formName="email"
+				required
+			/>
+			<FloatingInput
+				type="password"
+				id="password"
+				formTitle="Password"
+				value={formData.password}
+				handleChange={handleChange}
+				formName="password"
+				required
+			/>
+			<FloatingInput
+				type="text"
+				id="permanent_address"
+				formTitle="Permanent Address"
+				value={formData.permanent_address}
+				handleChange={handleChange}
+				formName="permanent_address"
+			/>
+			{!isCurrentAddressSame && (
 				<FloatingInput
-					xtraClass="w-full"
-					type="text"
-					id="contactNumber"
-					formTitle="Contact Number"
-					value={formData.contactNumber}
-					handleChange={handleChange}
-					formName="contactNumber"
-					required
-				/>
-				<FloatingInput
-					xtraClass="w-full"
-					type="date"
-					id="dob"
-					formTitle="Date of Birth"
-					value={formData.dob}
-					handleChange={handleChange}
-					formName="dob"
-					required
-				/>
-				<FloatingInput
-					xtraClass="w-full"
-					type="email"
-					id="email"
-					formTitle="Email"
-					value={formData.email}
-					handleChange={handleChange}
-					formName="email"
-					required
-				/>
-				<FloatingInput
-					xtraClass="w-full"
-					type="password"
-					id="password"
-					formTitle="Password"
-					value={formData.password}
-					handleChange={handleChange}
-					formName="password"
-					required
-				/>
-				<FloatingInput
-					xtraClass="w-full"
-					type="text"
-					id="gender"
-					formTitle="Gender"
-					value={formData.gender}
-					handleChange={handleChange}
-					formName="gender"
-					required
-				/>
-				<FloatingInput
-					xtraClass="w-full"
-					type="text"
-					id="role"
-					formTitle="Role"
-					value={formData.role}
-					handleChange={handleChange}
-					formName="role"
-					required
-				/>
-				<FloatingInput
-					xtraClass="w-full"
-					type="text"
-					id="permanent_address"
-					formTitle="Permanent Address"
-					value={formData.permanent_address}
-					handleChange={handleChange}
-					formName="permanent_address"
-					required
-				/>
-				<FloatingInput
-					xtraClass="w-full"
 					type="text"
 					id="currentAddress"
 					formTitle="Current Address"
 					value={formData.currentAddress}
 					handleChange={handleChange}
 					formName="currentAddress"
-					required
 				/>
+			)}
+			<label className="flex mt-2 cursor-pointer items-start gap-4">
+				<div className="flex items-center">
+					&#8203;
+					<input
+						type="checkbox"
+						className="size-4 rounded border-gray-300"
+						checked={isCurrentAddressSame}
+						onChange={handleCheckboxChange}
+					/>
+				</div>
+
+				<div>
+					<strong className="font-light text-xs text-gray-900">
+						Current address same as permanent address
+					</strong>
+				</div>
+			</label>
+			<h6 className="my-4 font-bold">Subject Details</h6>
+			<div className="flex gap-2">
 				<FloatingInput
-					xtraClass="w-full"
 					type="text"
 					id="subjectName"
-					formTitle="Subject Name"
+					formTitle="Subject"
 					value={formData.subject.subjectName}
 					handleChange={handleSubjectChange}
 					formName="subjectName"
 				/>
 				<FloatingInput
-					xtraClass="w-full"
 					type="text"
 					id="subjectCode"
 					formTitle="Subject Code"
@@ -297,19 +338,9 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="subjectCode"
 				/>
 				<FloatingInput
-					xtraClass="w-full"
-					type="number"
-					id="totalLectures"
-					formTitle="Total Lectures"
-					value={formData.subject.totalLectures}
-					handleChange={handleSubjectChange}
-					formName="totalLectures"
-				/>
-				<FloatingInput
-					xtraClass="w-full"
 					type="number"
 					id="totalLectureTaken"
-					formTitle="Total Lectures Taken"
+					formTitle="Total Lecture"
 					value={formData.subject.totalLectureTaken}
 					handleChange={handleSubjectChange}
 					formName="totalLectureTaken"

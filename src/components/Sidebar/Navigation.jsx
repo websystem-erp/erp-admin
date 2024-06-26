@@ -46,7 +46,7 @@ const Navigation = ({ isSidebarExpanded, toggleSidebar }) => {
 					</button>
 				</div>
 			</div>
-			<nav className="p-4 space-y-2 font-medium">
+			<nav className="p-4 space-y-2 font-medium h-full flex flex-col">
 				<NavItems
 					to="/"
 					icon="ic:round-dashboard"
@@ -89,14 +89,12 @@ const Navigation = ({ isSidebarExpanded, toggleSidebar }) => {
 					title="Event Management"
 					isSidebarExpanded={isSidebarExpanded}
 				/>
-				<div className="mt-auto ">
-					<NavItems
-						to="/Support"
-						icon="material-symbols:support-agent-rounded"
-						title="Support"
-						isSidebarExpanded={isSidebarExpanded}
-					/>
-				</div>
+				<NavItems
+					to="/Support"
+					icon="material-symbols:support-agent-rounded"
+					title="Support"
+					isSidebarExpanded={isSidebarExpanded}
+				/>
 			</nav>
 		</aside>
 	);

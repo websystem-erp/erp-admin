@@ -180,7 +180,7 @@ const Employee = () => {
 								buttonHide={"hidden"}
 								onViewProfile={() =>
 									handleViewProfile({
-										profile: teacher.photo || getDefaultPhoto(teacher.gender),
+										photo: teacher.photo || getDefaultPhoto(teacher.gender),
 										name: teacher.name,
 										role: teacher.role,
 										id: teacher.id,
