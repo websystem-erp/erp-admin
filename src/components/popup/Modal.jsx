@@ -40,7 +40,7 @@ const Modal = ({ modalOpen, setModalOpen, children, responsiveWidth }) => {
 						Close (X)
 					</button>
 				</div>
-				<div className="bg-white px-8 py-4 md:px-3 md:py-2 rounded-[20px] w-fit min-w-[80%] mx-auto max-h-[80vh] overflow-y-auto">
+				<div className="bg-white px-8 py-4 md:px-3 md:py-2 rounded-[20px] w-fit min-w-[80%] mx-auto max-h-[80vh] overflow-y-auto hide-scrollbar">
 					{children}
 				</div>
 			</div>

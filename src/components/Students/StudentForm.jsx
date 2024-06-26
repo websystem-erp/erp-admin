@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import FloatingInput from "../Forms/FloatingInput";
+import { Icon } from "@iconify/react";
 import Modal from "../popup/Modal";
 import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
@@ -13,7 +14,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 		gender: "",
 		dob: "",
 		contactNumber: "",
-		departmentId: "",
+		departmentName: "",
 		permanent_address: "",
 		currentAddress: "",
 		fatherName: "",
@@ -114,6 +115,10 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 			return;
 		}
 
+		const selectedDepartment = departments.find(
+			(dept) => dept.name === formData.departmentName
+		);
+
 		try {
 			const response = await fetch(API_ENDPOINTS.REGISTER_STUDENTS, {
 				method: "POST",
@@ -123,9 +128,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 				body: JSON.stringify({
 					...formData,
 					rollNo: parseInt(formData.rollNo),
-					departmentId: formData.departmentId
-						? parseInt(formData.departmentId)
-						: null,
+					departmentId: selectedDepartment ? selectedDepartment.id : null,
 				}),
 			});
 			if (!response.ok) {
@@ -146,30 +149,118 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 			modalOpen={isOpen}
 			setModalOpen={onClose}
 			responsiveWidth={"md:w-fit"}
+			className="overflow-hidden"
 		>
-			<form onSubmit={handleSubmit}>
-				<FloatingInput
-					type="text"
-					id="name"
-					formTitle="Name"
-					value={formData.name}
-					handleChange={handleInputChange}
-					formName="name"
-					xtraClass={formErrors.name ? "border-red-500" : ""}
-				/>
-				{formErrors.name && <p className="text-red-500">{formErrors.name}</p>}
+			<form onSubmit={handleSubmit} className="w-96">
+				<div className="flex gap-4 justify-between items-center">
+					<div className="">
+						{formData.photo ? (
+							<img
+								src={formData.photo}
+								alt="Student Photo"
+								className="w-24 h-24 rounded-full object-cover cursor-pointer"
+								onClick={() => document.getElementById("photoUpload").click()}
+							/>
+						) : (
+							<div
+								className="w-24 h-24 rounded-full bg-[url('https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png')] bg-cover flex items-center justify-center cursor-pointer relative"
+								onClick={() => document.getElementById("photoUpload").click()}
+							>
+								{photoLoading ? (
+									<p>Uploading...</p>
+								) : (
+									<span className="text-xs p-1 rounded-full absolute right-0 bottom-0 bg-gray-200">
+										<Icon
+											icon="majesticons:camera"
+											className="h-6 w-6 flex-shrink-0"
+										/>
+									</span>
+								)}
+							</div>
+						)}
+						<input
+							type="file"
+							id="photoUpload"
+							className="hidden"
+							onChange={handlePhotoUpload}
+							accept="image/*"
+							disabled={photoLoading}
+						/>
+					</div>
+					<div className="flex-1">
+						<FloatingInput
+							type="text"
+							id="name"
+							formTitle="Name"
+							value={formData.name}
+							handleChange={handleInputChange}
+							formName="name"
+							xtraClass={formErrors.name ? "border-red-500" : ""}
+						/>
+						{formErrors.name && (
+							<p className="text-red-500">{formErrors.name}</p>
+						)}
+
+						<FloatingInput
+							type="date"
+							id="dob"
+							formTitle="Date of Birth"
+							value={formData.dob}
+							handleChange={handleInputChange}
+							formName="dob"
+							xtraClass={formErrors.dob ? "border-red-500" : ""}
+						/>
+						{formErrors.dob && <p className="text-red-500">{formErrors.dob}</p>}
+					</div>
+				</div>
+				<div className="flex gap-2">
+					<div className="flex-1">
+						<FloatingInput
+							type="number"
+							id="rollNo"
+							formTitle="Roll No"
+							value={formData.rollNo}
+							handleChange={handleInputChange}
+							formName="rollNo"
+							xtraClass={formErrors.rollNo ? "border-red-500" : ""}
+						/>
+						{formErrors.rollNo && (
+							<p className="text-red-500">{formErrors.rollNo}</p>
+						)}
+					</div>
+
+					<div className=" mt-2 w-auto flex-1">
+						<select
+							name="gender"
+							id="gender"
+							value={formData.gender}
+							onChange={handleInputChange}
+							className={` w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 pt-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0 ${
+								formErrors.gender ? "border-red-500" : ""
+							}`}
+						>
+							<option value="">Gender</option>
+							<option value="Male">Male</option>
+							<option value="Female">Female</option>
+							<option value="Other">Other</option>
+						</select>
+						{formErrors.gender && (
+							<p className="text-red-500">{formErrors.gender}</p>
+						)}
+					</div>
+				</div>
 
 				<FloatingInput
-					type="number"
-					id="rollNo"
-					formTitle="Roll No"
-					value={formData.rollNo}
+					type="text"
+					id="contactNumber"
+					formTitle="Contact Number"
+					value={formData.contactNumber}
 					handleChange={handleInputChange}
-					formName="rollNo"
-					xtraClass={formErrors.rollNo ? "border-red-500" : ""}
+					formName="contactNumber"
+					xtraClass={formErrors.contactNumber ? "border-red-500" : ""}
 				/>
-				{formErrors.rollNo && (
-					<p className="text-red-500">{formErrors.rollNo}</p>
+				{formErrors.contactNumber && (
+					<p className="text-red-500">{formErrors.contactNumber}</p>
 				)}
 
 				<FloatingInput
@@ -196,69 +287,25 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 					<p className="text-red-500">{formErrors.password}</p>
 				)}
 
-				<div>
+				<div className="mt-1.5">
 					<select
-						name="gender"
-						id="gender"
-						value={formData.gender}
+						name="departmentName"
+						id="departmentName"
+						value={formData.departmentName}
 						onChange={handleInputChange}
-						className={`mt-1.5 w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm ${
-							formErrors.gender ? "border-red-500" : ""
+						className={`w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 py-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0 ${
+							formErrors.departmentName ? "border-red-500" : ""
 						}`}
 					>
-						<option value="">Gender</option>
-						<option value="Male">Male</option>
-						<option value="Female">Female</option>
-						<option value="Other">Other</option>
-					</select>
-					{formErrors.gender && (
-						<p className="text-red-500">{formErrors.gender}</p>
-					)}
-				</div>
-
-				<FloatingInput
-					type="date"
-					id="dob"
-					formTitle="Date of Birth"
-					value={formData.dob}
-					handleChange={handleInputChange}
-					formName="dob"
-					xtraClass={formErrors.dob ? "border-red-500" : ""}
-				/>
-				{formErrors.dob && <p className="text-red-500">{formErrors.dob}</p>}
-
-				<FloatingInput
-					type="text"
-					id="contactNumber"
-					formTitle="Contact Number"
-					value={formData.contactNumber}
-					handleChange={handleInputChange}
-					formName="contactNumber"
-					xtraClass={formErrors.contactNumber ? "border-red-500" : ""}
-				/>
-				{formErrors.contactNumber && (
-					<p className="text-red-500">{formErrors.contactNumber}</p>
-				)}
-
-				<div>
-					<select
-						name="departmentId"
-						id="departmentId"
-						value={formData.departmentId}
-						onChange={handleInputChange}
-						className={`mt-1.5 w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm ${
-							formErrors.departmentId ? "border-red-500" : ""
-						}`}
-					>
-						<option value="">Department ID</option>
+						<option value="">Department</option>
 						{departments.map((dept) => (
-							<option key={dept.id} value={dept.id}>
-								{dept.name} (ID: {dept.id})
+							<option key={dept.id} value={dept.name}>
+								{dept.name}
 							</option>
 						))}
 					</select>
-					{formErrors.departmentId && (
-						<p className="text-red-500">{formErrors.departmentId}</p>
+					{formErrors.departmentName && (
+						<p className="text-red-500">{formErrors.departmentName}</p>
 					)}
 				</div>
 
@@ -288,27 +335,32 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 					<p className="text-red-500">{formErrors.currentAddress}</p>
 				)}
 
-				<FloatingInput
-					type="text"
-					id="fatherName"
-					formTitle="Father's Name"
-					value={formData.fatherName}
-					handleChange={handleInputChange}
-					formName="fatherName"
-					xtraClass={formErrors.fatherName ? "border-red-500" : ""}
-				/>
-				{formErrors.fatherName && (
-					<p className="text-red-500">{formErrors.fatherName}</p>
-				)}
-
-				<FloatingInput
-					type="text"
-					id="motherName"
-					formTitle="Mother's Name"
-					value={formData.motherName}
-					handleChange={handleInputChange}
-					formName="motherName"
-				/>
+				<div className="flex justify-center items-center gap-2 ">
+					<div className="flex-1">
+						<FloatingInput
+							type="text"
+							id="fatherName"
+							formTitle="Father's Name"
+							value={formData.fatherName}
+							handleChange={handleInputChange}
+							formName="fatherName"
+							xtraClass={formErrors.fatherName ? "border-red-500" : ""}
+						/>
+						{formErrors.fatherName && (
+							<p className="text-red-500">{formErrors.fatherName}</p>
+						)}
+					</div>
+					<div className="flex-1">
+						<FloatingInput
+							type="text"
+							id="motherName"
+							formTitle="Mother's Name"
+							value={formData.motherName}
+							handleChange={handleInputChange}
+							formName="motherName"
+						/>
+					</div>
+				</div>
 
 				<FloatingInput
 					type="text"
@@ -322,25 +374,6 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 				{formErrors.fatherContactNumber && (
 					<p className="text-red-500">{formErrors.fatherContactNumber}</p>
 				)}
-
-				<div className="flex gap-4">
-					<label className="flex-1">
-						Photo:
-						<input
-							type="file"
-							onChange={handlePhotoUpload}
-							accept="image/*"
-							disabled={photoLoading}
-						/>
-						{photoLoading && <p>Uploading...</p>}
-					</label>
-					{formData.photo && (
-						<div className="flex-1">
-							<p>Photo Preview:</p>
-							<img src={formData.photo} alt="Student Photo" width="100" />
-						</div>
-					)}
-				</div>
 
 				<button
 					type="submit"
