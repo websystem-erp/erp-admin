@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 import FloatingInput from "./FloatingInput";
+import { Icon } from "@iconify/react";
 
 const EmployeeAddForm = ({ onEmployeeAdded }) => {
 	const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		role: "",
 		gender: "",
 		dob: "",
-		departmentId: 3,
+		departmentName: "",
 		contactNumber: "",
 		permanent_address: "",
 		currentAddress: "",
@@ -27,6 +28,20 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [photoLoading, setPhotoLoading] = useState(false);
+	const [departments, setDepartments] = useState([]);
+
+	useEffect(() => {
+		const fetchDepartments = async () => {
+			try {
+				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
+				setDepartments(response.data.data);
+			} catch (error) {
+				console.error("Error fetching departments:", error);
+			}
+		};
+
+		fetchDepartments();
+	}, []);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -64,7 +79,6 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 				}/image/upload`,
 				photoFormData
 			);
-			console.log("Cloudinary response:", response.data);
 			setFormData((prevData) => ({
 				...prevData,
 				photo: response.data.secure_url,
@@ -84,10 +98,17 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		setLoading(true);
 		setError(null);
 
+		const selectedDepartment = departments.find(
+			(dept) => dept.name === formData.departmentName
+		);
+
 		try {
 			const response = await axios.post(
 				API_ENDPOINTS.REGISTER_TEACHER,
-				formData,
+				{
+					...formData,
+					departmentId: selectedDepartment ? selectedDepartment.id : null,
+				},
 				{
 					headers: {
 						Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
@@ -108,11 +129,50 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 	};
 
 	return (
-		<form onSubmit={handleSubmit}>
+		<form
+			onSubmit={handleSubmit}
+			className="max-w-lg mx-auto p-4 bg-white rounded shadow"
+		>
 			{error && <div className="error-message">{error}</div>}
-			<div className="flex gap-4">
+			<div className="flex flex-col items-center mb-4">
+				<div className="relative">
+					{formData.photo ? (
+						<img
+							src={formData.photo}
+							alt="Employee Photo"
+							className="w-24 h-24 rounded-full object-cover cursor-pointer"
+							onClick={() => document.getElementById("photoUpload").click()}
+						/>
+					) : (
+						<div
+							className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+							onClick={() => document.getElementById("photoUpload").click()}
+						>
+							{photoLoading ? (
+								<p>Uploading...</p>
+							) : (
+								<span className="text-xs p-1 rounded-full absolute right-0 bottom-0 bg-gray-200">
+									<Icon
+										icon="majesticons:camera"
+										className="h-6 w-6 flex-shrink-0"
+									/>
+								</span>
+							)}
+						</div>
+					)}
+					<input
+						type="file"
+						id="photoUpload"
+						className="hidden"
+						onChange={handlePhotoUpload}
+						accept="image/*"
+						disabled={photoLoading}
+					/>
+				</div>
+			</div>
+			<div className="grid grid-cols-1 gap-4">
 				<FloatingInput
-					xtraClass={"w-full"}
+					xtraClass="w-full"
 					type="text"
 					id="name"
 					formTitle="Name"
@@ -121,32 +181,35 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="name"
 					required
 				/>
-				<FloatingInput
-					xtraClass={"w-full"}
-					type="number"
-					id="departmentId"
-					formTitle="Department ID"
-					value={formData.departmentId}
-					handleChange={handleChange}
-					formName="departmentId"
-					required
-				/>
-			</div>
-			<div className="flex gap-4 ">
-				<div className="w-full">
-					<FloatingInput
-						xtraClass={"flex-1"}
-						type="text"
-						id="contactNumber"
-						formTitle="Contact Number"
-						value={formData.contactNumber}
-						handleChange={handleChange}
-						formName="contactNumber"
+				<div>
+					<select
+						name="departmentName"
+						id="departmentName"
+						value={formData.departmentName}
+						onChange={handleChange}
+						className="w-full p-2 border rounded"
 						required
-					/>
+					>
+						<option value="">Select Department</option>
+						{departments.map((dept) => (
+							<option key={dept.id} value={dept.name}>
+								{dept.name}
+							</option>
+						))}
+					</select>
 				</div>
 				<FloatingInput
-					xtraClass={" "}
+					xtraClass="w-full"
+					type="text"
+					id="contactNumber"
+					formTitle="Contact Number"
+					value={formData.contactNumber}
+					handleChange={handleChange}
+					formName="contactNumber"
+					required
+				/>
+				<FloatingInput
+					xtraClass="w-full"
 					type="date"
 					id="dob"
 					formTitle="Date of Birth"
@@ -155,10 +218,8 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="dob"
 					required
 				/>
-			</div>
-			<div className="flex gap-4">
 				<FloatingInput
-					xtraClass={"flex-1"}
+					xtraClass="w-full"
 					type="email"
 					id="email"
 					formTitle="Email"
@@ -168,7 +229,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					required
 				/>
 				<FloatingInput
-					xtraClass={"flex-1"}
+					xtraClass="w-full"
 					type="password"
 					id="password"
 					formTitle="Password"
@@ -177,11 +238,8 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="password"
 					required
 				/>
-			</div>
-
-			<div className="flex gap-4">
 				<FloatingInput
-					xtraClass={"w-full"}
+					xtraClass="w-full"
 					type="text"
 					id="gender"
 					formTitle="Gender"
@@ -191,7 +249,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					required
 				/>
 				<FloatingInput
-					xtraClass={"flex-1"}
+					xtraClass="w-full"
 					type="text"
 					id="role"
 					formTitle="Role"
@@ -200,30 +258,28 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="role"
 					required
 				/>
-			</div>
-			<FloatingInput
-				xtraClass={"flex-1"}
-				type="text"
-				id="permanent_address"
-				formTitle="Permanent Address"
-				value={formData.permanent_address}
-				handleChange={handleChange}
-				formName="permanent_address"
-				required
-			/>
-			<FloatingInput
-				xtraClass={"flex-1"}
-				type="text"
-				id="currentAddress"
-				formTitle="Current Address"
-				value={formData.currentAddress}
-				handleChange={handleChange}
-				formName="currentAddress"
-				required
-			/>
-			<div className="flex gap-4">
 				<FloatingInput
-					xtraClass={"flex-1"}
+					xtraClass="w-full"
+					type="text"
+					id="permanent_address"
+					formTitle="Permanent Address"
+					value={formData.permanent_address}
+					handleChange={handleChange}
+					formName="permanent_address"
+					required
+				/>
+				<FloatingInput
+					xtraClass="w-full"
+					type="text"
+					id="currentAddress"
+					formTitle="Current Address"
+					value={formData.currentAddress}
+					handleChange={handleChange}
+					formName="currentAddress"
+					required
+				/>
+				<FloatingInput
+					xtraClass="w-full"
 					type="text"
 					id="subjectName"
 					formTitle="Subject Name"
@@ -232,7 +288,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="subjectName"
 				/>
 				<FloatingInput
-					xtraClass={"flex-1"}
+					xtraClass="w-full"
 					type="text"
 					id="subjectCode"
 					formTitle="Subject Code"
@@ -240,10 +296,8 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					handleChange={handleSubjectChange}
 					formName="subjectCode"
 				/>
-			</div>
-			<div className="flex gap-4">
 				<FloatingInput
-					xtraClass={"flex-1"}
+					xtraClass="w-full"
 					type="number"
 					id="totalLectures"
 					formTitle="Total Lectures"
@@ -252,7 +306,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="totalLectures"
 				/>
 				<FloatingInput
-					xtraClass={"flex-1"}
+					xtraClass="w-full"
 					type="number"
 					id="totalLectureTaken"
 					formTitle="Total Lectures Taken"
@@ -261,28 +315,9 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 					formName="totalLectureTaken"
 				/>
 			</div>
-			<div className="flex gap-4">
-				<label className="flex-1">
-					Photo:
-					<input
-						type="file"
-						onChange={handlePhotoUpload}
-						accept="image/*"
-						disabled={photoLoading}
-					/>
-					{photoLoading && <p>Uploading...</p>}
-				</label>
-				{formData.photo && (
-					<div className="flex-1">
-						<p>Photo Preview:</p>
-						<img src={formData.photo} alt="Employee Photo" width="100" />
-					</div>
-				)}
-			</div>
-
 			<button
 				type="submit"
-				className="w-full my-8 inline-block rounded border bg-linear-blue text-white px-12 py-3 text-sm font-medium hover:bg-linear-blue focus:outline-none focus:ring"
+				className="px-4 py-4 text-sm font-medium text-white bg-linear-blue w-full my-4 rounded hover:bg-blue-700"
 				disabled={loading}
 			>
 				{loading ? "Submitting..." : "Submit"}

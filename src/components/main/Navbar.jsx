@@ -72,6 +72,10 @@ const Navbar = ({ logout, userData, toggleSidebar }) => {
 			const response = await axios.get(API_ENDPOINTS.FETCH_TEACHERS(teacherId));
 			return response.data.data.photo;
 		} catch (error) {
+			if (error.response && error.response.status === 404) {
+				console.warn(`Teacher with ID ${teacherId} not found.`);
+				return null;
+			}
 			console.error("Error fetching teacher photo:", error);
 			return null;
 		}
@@ -82,19 +86,20 @@ const Navbar = ({ logout, userData, toggleSidebar }) => {
 			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES);
 			const pendingRequests = response.data.leaves || [];
 
-			const teacherPhotosPromises = pendingRequests.map((request) =>
-				fetchTeacherPhoto(request.teacherId)
-			);
-
-			const photos = await Promise.all(teacherPhotosPromises);
+			const validRequests = [];
 			const teacherPhotosMap = {};
-			pendingRequests.forEach((request, index) => {
-				teacherPhotosMap[request.teacherId] = photos[index];
-			});
 
-			setPendingRequests(pendingRequests);
+			for (const request of pendingRequests) {
+				const photo = await fetchTeacherPhoto(request.teacherId);
+				if (photo !== null) {
+					validRequests.push(request);
+					teacherPhotosMap[request.teacherId] = photo;
+				}
+			}
+
+			setPendingRequests(validRequests);
 			setTeacherPhotos(teacherPhotosMap);
-			setHasPendingRequests(pendingRequests.length > 0);
+			setHasPendingRequests(validRequests.length > 0);
 		} catch (error) {
 			console.error("Error fetching pending requests:", error);
 		}

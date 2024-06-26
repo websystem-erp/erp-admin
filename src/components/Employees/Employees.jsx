@@ -26,15 +26,8 @@ const Employees = () => {
 					API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES
 				);
 				if (Array.isArray(response.data.leaves)) {
-					setLeaves(response.data.leaves);
-					// Fetch teacher details for all leaves
-					const teacherIds = response.data.leaves.map(
-						(leave) => leave.teacherId
-					);
-					const uniqueTeacherIds = [...new Set(teacherIds)];
-					uniqueTeacherIds.forEach((teacherId) =>
-						fetchTeacherDetails(teacherId)
-					);
+					const validLeaves = await fetchValidLeaves(response.data.leaves);
+					setLeaves(validLeaves);
 				} else {
 					console.error("Unexpected data format:", response.data);
 				}
@@ -45,22 +38,54 @@ const Employees = () => {
 		fetchLeaves();
 	}, []);
 
+	const fetchValidLeaves = async (leaves) => {
+		const validLeaves = [];
+		for (const leave of leaves) {
+			try {
+				const teacher = await fetchTeacherDetails(leave.teacherId);
+				if (teacher) {
+					validLeaves.push(leave);
+					setTeachers((prevTeachers) => ({
+						...prevTeachers,
+						[leave.teacherId]: teacher,
+					}));
+				}
+			} catch (error) {
+				if (error.response && error.response.status === 404) {
+					// Handle 404 error: teacher not found
+					console.warn(`Teacher with ID ${leave.teacherId} not found.`);
+				} else {
+					console.error(
+						`Error fetching teacher details for teacherId ${leave.teacherId}:`,
+						error
+					);
+				}
+			}
+		}
+		return validLeaves;
+	};
+
 	const fetchTeacherDetails = async (teacherId) => {
 		try {
 			const response = await axios.get(API_ENDPOINTS.FETCH_TEACHERS(teacherId));
 			if (response.data.success && response.data.data) {
-				setTeachers((prevTeachers) => ({
-					...prevTeachers,
-					[teacherId]: response.data.data,
-				}));
+				return response.data.data;
 			} else {
 				console.error("Unexpected data format:", response.data);
+				return null;
 			}
 		} catch (error) {
-			console.error(
-				`Error fetching teacher details for teacherId ${teacherId}:`,
-				error
-			);
+			if (error.response && error.response.status === 404) {
+				// Handle 404 error: teacher not found
+				console.warn(`Teacher with ID ${teacherId} not found.`);
+				return null;
+			} else {
+				console.error(
+					`Error fetching teacher details for teacherId ${teacherId}:`,
+					error
+				);
+				throw error; // Re-throw the error if it's not a 404
+			}
 		}
 	};
 
@@ -80,15 +105,8 @@ const Employees = () => {
 							API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES
 						);
 						if (Array.isArray(response.data.leaves)) {
-							setLeaves(response.data.leaves);
-							// Fetch teacher details for all leaves
-							const teacherIds = response.data.leaves.map(
-								(leave) => leave.teacherId
-							);
-							const uniqueTeacherIds = [...new Set(teacherIds)];
-							uniqueTeacherIds.forEach((teacherId) =>
-								fetchTeacherDetails(teacherId)
-							);
+							const validLeaves = await fetchValidLeaves(response.data.leaves);
+							setLeaves(validLeaves);
 						} else {
 							console.error("Unexpected data format:", response.data);
 						}

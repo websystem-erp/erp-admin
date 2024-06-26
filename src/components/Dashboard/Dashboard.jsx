@@ -17,6 +17,7 @@ const Dashboard = () => {
 	const [students, setStudents] = useState([]);
 	const [leaves, setLeaves] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [teacherPhotos, setTeacherPhotos] = useState({});
 
 	const navigate = useNavigate();
 
@@ -60,12 +61,41 @@ const Dashboard = () => {
 				},
 			});
 			if (Array.isArray(response.data.leaves)) {
-				setLeaves(response.data.leaves);
+				const validLeaves = await fetchValidLeaves(response.data.leaves);
+				setLeaves(validLeaves);
 			} else {
 				console.error("Unexpected data format:", response.data);
 			}
 		} catch (error) {
 			console.error("Error fetching leaves:", error);
+		}
+	};
+
+	const fetchValidLeaves = async (leaves) => {
+		const validLeaves = [];
+		const teacherPhotosMap = {};
+		for (const leave of leaves) {
+			const photo = await fetchTeacherPhoto(leave.teacherId);
+			if (photo !== null) {
+				validLeaves.push(leave);
+				teacherPhotosMap[leave.teacherId] = photo;
+			}
+		}
+		setTeacherPhotos(teacherPhotosMap);
+		return validLeaves;
+	};
+
+	const fetchTeacherPhoto = async (teacherId) => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_TEACHERS(teacherId));
+			return response.data.data.photo;
+		} catch (error) {
+			if (error.response && error.response.status === 404) {
+				console.warn(`Teacher with ID ${teacherId} not found.`);
+				return null;
+			}
+			console.error("Error fetching teacher photo:", error);
+			return null;
 		}
 	};
 
@@ -147,45 +177,42 @@ const Dashboard = () => {
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-gray-200">
-									{leaves.map((leave, index) => {
-										const teacherId = leave.teacherId;
-										return (
-											<tr key={index}>
-												<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
-													{leave.name}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{leave.reason}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{new Date(leave.dateFrom).toLocaleDateString()}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{new Date(leave.dateTo).toLocaleDateString()}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{leave.status}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2 text-gray-700">
-													{leave.noOfDays}
-												</td>
-												<td className="whitespace-nowrap px-4 py-2">
-													<button
-														className="inline-block rounded bg-green-500 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
-														onClick={() => handleApprove(teacherId)}
-													>
-														Approve
-													</button>
-													<button
-														className="inline-block rounded bg-red-500 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 ml-2"
-														onClick={() => handleReject(teacherId)}
-													>
-														Reject
-													</button>
-												</td>
-											</tr>
-										);
-									})}
+									{leaves.map((leave, index) => (
+										<tr key={index}>
+											<td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
+												{leave.name}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{leave.reason}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{new Date(leave.dateFrom).toLocaleDateString()}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{new Date(leave.dateTo).toLocaleDateString()}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{leave.status}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2 text-gray-700">
+												{leave.noOfDays}
+											</td>
+											<td className="whitespace-nowrap px-4 py-2">
+												<button
+													className="inline-block rounded bg-green-500 px-4 py-2 text-xs font-medium text-white hover:bg-green-700"
+													onClick={() => handleApprove(leave.teacherId)}
+												>
+													Approve
+												</button>
+												<button
+													className="inline-block rounded bg-red-500 px-4 py-2 text-xs font-medium text-white hover:bg-red-700 ml-2"
+													onClick={() => handleReject(leave.teacherId)}
+												>
+													Reject
+												</button>
+											</td>
+										</tr>
+									))}
 								</tbody>
 							</table>
 						</div>

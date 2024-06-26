@@ -24,17 +24,62 @@ const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 		}
 	};
 
-	useEffect(() => {
-		fetchData(API_ENDPOINTS.FETCH_ALL_TEACHERS, setEmployeeCount);
-		fetchData(API_ENDPOINTS.FETCH_ALL_STUDENTS, setStudentCount);
-		fetchData(
-			API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES,
-			setLeavesCount,
-			(data, setState) => {
-				if (Array.isArray(data.leaves)) setState(data.leaves.length);
-				else console.error("Unexpected data format for leaves:", data);
+	const fetchValidEmployees = async () => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_TEACHERS);
+			const validEmployees = response.data.data.filter(
+				(employee) => employee.status !== "deleted"
+			);
+			setEmployeeCount(validEmployees.length);
+		} catch (error) {
+			console.error("Error fetching valid employees:", error);
+			setEmployeeCount(0); // Set count to 0 in case of error
+		}
+	};
+
+	const fetchValidLeaves = async () => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES);
+			const validLeaves = await Promise.all(
+				response.data.leaves.map(async (leave) => {
+					const teacher = await fetchTeacherDetails(leave.teacherId);
+					return teacher ? leave : null;
+				})
+			);
+			setLeavesCount(validLeaves.filter(Boolean).length);
+		} catch (error) {
+			console.error("Error fetching valid leaves:", error);
+			setLeavesCount(0); // Set count to 0 in case of error
+		}
+	};
+
+	const fetchTeacherDetails = async (teacherId) => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_TEACHERS(teacherId));
+			if (response.data.success && response.data.data) {
+				return response.data.data;
+			} else {
+				console.error("Unexpected data format:", response.data);
+				return null;
 			}
-		);
+		} catch (error) {
+			if (error.response && error.response.status === 404) {
+				console.warn(`Teacher with ID ${teacherId} not found.`);
+				return null;
+			} else {
+				console.error(
+					`Error fetching teacher details for teacherId ${teacherId}:`,
+					error
+				);
+				throw error; // Re-throw the error if it's not a 404
+			}
+		}
+	};
+
+	useEffect(() => {
+		fetchValidEmployees();
+		fetchData(API_ENDPOINTS.FETCH_ALL_STUDENTS, setStudentCount);
+		fetchValidLeaves();
 	}, []);
 
 	return (
