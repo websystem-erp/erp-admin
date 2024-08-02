@@ -166,7 +166,7 @@ const Employee = () => {
 					<ListTable
 						ListName={"Name"}
 						ListRole={"Role"}
-						ListID={"ID"}
+						ListDepartment={"Department"}
 						ListAction={"Actions"}
 						showDataList={teachers.map((teacher) => (
 							<CommonTable
@@ -174,7 +174,11 @@ const Employee = () => {
 								profile={teacher.photo || getDefaultPhoto(teacher.gender)}
 								name={teacher.name}
 								role={teacher.role}
-								id={teacher.id}
+								id={
+									teacher.subject.length > 0
+										? teacher.subject[0].department.name
+										: "N/A"
+								}
 								dangerAction={"Remove"}
 								action1={"View Profile"}
 								buttonHide={"hidden"}

@@ -142,7 +142,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 										<ModalDetails
 											key={key}
 											modalTitle={`${key.replace("_", " ")} : `}
-											modalDesc={profile[key]}
+											modalDesc={String(profile[key])}
 										/>
 									)
 							)}

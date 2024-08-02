@@ -1,6 +1,6 @@
 import React from "react";
 import ListTable from "../List/ListTable";
-import CommonTable from "../List/CommonTable";
+import AllStudents from "./AllStudents";
 
 const StudentTable = ({ students, onViewProfile, onDeleteProfile }) => {
 	const getDefaultPhoto = (gender) => {
@@ -17,16 +17,16 @@ const StudentTable = ({ students, onViewProfile, onDeleteProfile }) => {
 		<ListTable
 			pageTitle={"Student Details"}
 			ListName={"Name"}
-			ListRole={"Role"}
-			ListID={"ID"}
+			ListRole={"Roll Number"}
+			ListDepartment={"Department"}
 			ListAction={"Actions"}
 			showDataList={students.map((student) => (
-				<CommonTable
+				<AllStudents
 					key={student.id}
 					profile={student.photo || getDefaultPhoto(student.gender)}
 					name={student.name}
-					role={student.role}
-					id={student.id}
+					rollNo={student.rollNo}
+					department={student.department ? student.department.name : "N/A"}
 					dangerAction={"Remove"}
 					action1={"View Profile"}
 					buttonHide={"hidden"}
@@ -34,12 +34,11 @@ const StudentTable = ({ students, onViewProfile, onDeleteProfile }) => {
 						onViewProfile({
 							photo: student.photo || getDefaultPhoto(student.gender),
 							name: student.name,
-							role: student.role,
-							id: student.id,
+							rollNo: student.rollNo,
 							gender: student.gender,
 							dob: student.dob,
 							contactNumber: student.contactNumber,
-							departmentId: student.departmentId,
+							department: student.department ? student.department.name : "N/A",
 							permanent_address: student.permanent_address,
 							currentAddress: student.currentAddress,
 							fatherName: student.fatherName,

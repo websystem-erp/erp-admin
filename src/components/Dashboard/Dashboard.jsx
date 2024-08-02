@@ -7,8 +7,9 @@ import DailyAttendancePercentage from "../Attendance/DailyAttendancePercentage";
 import Employee from "../main/dashboard/employeesDetails/Employee";
 import Modal from "../popup/Modal";
 import ListTable from "../List/ListTable";
-import CommonTable from "../List/CommonTable";
 import AuthContext from "../../context/AuthContext";
+import AllStudents from "../Students/AllStudents";
+import FeesListTable from "../Fees/FeesListTable";
 
 const Dashboard = () => {
 	const { token, userData } = useContext(AuthContext);
@@ -226,32 +227,8 @@ const Dashboard = () => {
 				setModalOpen={setDueFeesModalOpen}
 				responsiveWidth={"md:w/[60%]"}
 			>
-				<div className="bg-white p-8 rounded-md w-fit sm:w/full">
-					{isLoading ? (
-						<p>Loading...</p>
-					) : (
-						<ListTable
-							pageTitle={"Pending Requests"}
-							ListName={"Name"}
-							ListRole={"Role"}
-							ListID={"ID"}
-							ListAction={"Actions"}
-							hide={"hidden"}
-							showDataList={students.map((student) => (
-								<CommonTable
-									key={student.id}
-									profile={student.photo}
-									name={student.name}
-									role={student.role}
-									id={student.id}
-									action1={"View Profile"}
-									action2={"View Details"}
-									dangerAction={"Remove"}
-									hideDropDown={"hidden"}
-								/>
-							))}
-						/>
-					)}
+				<div className="bg-white p-8 rounded-md">
+					{isLoading ? <p>Loading...</p> : <FeesListTable />}
 				</div>
 			</Modal>
 			<DailyAttendancePercentage

@@ -78,6 +78,8 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/department/fetch/${departmentId}`,
 	//SUPPORT
 	CREATE_SUPPORT: `${API_BASE_URL}/admin/support`,
+	//Fees
+	// FETCH_STUDENT_PAYMENT_DETAILS: ` https://erp-system-backend-1.onrender.com/api/v1/payment/student/${studentID} `,
 };
 
 export default API_ENDPOINTS;

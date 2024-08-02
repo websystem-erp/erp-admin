@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import LogIn from "./LogIn";
 import Layout from "./Layout";
+import FeesDashboard from "./components/Dashboard/FeesDashboard"; // Import Finance Dashboard
 import "./App.css";
 import AuthContext from "./context/AuthContext";
 
@@ -17,6 +18,7 @@ function App() {
 		setUserData(null);
 		localStorage.removeItem("token");
 		localStorage.removeItem("userData");
+		localStorage.removeItem("userType"); // Remove userType from localStorage
 	};
 
 	const setLogoutTimer = (expirationTime) => {
@@ -33,6 +35,7 @@ function App() {
 	useEffect(() => {
 		const storedToken = localStorage.getItem("token");
 		const storedUserData = localStorage.getItem("userData");
+		const storedUserType = localStorage.getItem("userType");
 		if (storedToken && storedUserData) {
 			const decodedToken = jwtDecode(storedToken);
 			if (decodedToken.exp * 1000 > Date.now()) {
@@ -78,6 +81,16 @@ function App() {
 						setToken={setToken}
 						setUserData={setUserData}
 					/>
+				}
+			/>
+			<Route
+				path="/fees"
+				element={
+					isLoggedIn ? (
+						<FeesDashboard userData={userData} logout={logout} />
+					) : (
+						<Navigate to="/login" />
+					)
 				}
 			/>
 			<Route

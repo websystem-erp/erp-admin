@@ -8,6 +8,7 @@ import AuthContext from "./context/AuthContext";
 const LogIn = () => {
 	const { setIsLoggedIn, setToken, setUserData } = useContext(AuthContext);
 	const [credentials, setCredentials] = useState({ email: "", password: "" });
+	const [userType, setUserType] = useState("admin"); // Add state for user type
 	const [errorMessage, setErrorMessage] = useState("");
 	const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 	const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -17,16 +18,22 @@ const LogIn = () => {
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 		const storedUserData = localStorage.getItem("userData");
+		const storedUserType = localStorage.getItem("userType");
 		if (token && storedUserData) {
 			const decodedToken = jwtDecode(token);
 			if (decodedToken.exp * 1000 > Date.now()) {
 				setIsLoggedIn(true);
 				setToken(token);
 				setUserData(JSON.parse(storedUserData));
-				navigate("/");
+				if (storedUserType === "finance") {
+					navigate("/fees");
+				} else {
+					navigate("/");
+				}
 			} else {
 				localStorage.removeItem("token");
 				localStorage.removeItem("userData");
+				localStorage.removeItem("userType");
 			}
 		}
 	}, [setIsLoggedIn, setToken, setUserData, navigate]);
@@ -45,8 +52,13 @@ const LogIn = () => {
 				setToken(response.data.token);
 				localStorage.setItem("token", response.data.token);
 				localStorage.setItem("userData", JSON.stringify(response.data.data));
+				localStorage.setItem("userType", userType); // Store userType in localStorage
 				setUserData(response.data.data);
-				navigate("/");
+				if (userType === "finance") {
+					navigate("/fees");
+				} else {
+					navigate("/");
+				}
 			}
 		} catch (error) {
 			if (error.response && error.response.status === 401) {
@@ -151,6 +163,21 @@ const LogIn = () => {
 									value={credentials.password}
 									onChange={handleChange}
 								/>
+							</div>
+							<div className="mb-4 md:w/full">
+								<label htmlFor="userType" className="block text-xs mb-1">
+									Select User Type
+								</label>
+								<select
+									className="w-full border rounded p-2 outline-none focus:shadow-outline"
+									name="userType"
+									id="userType"
+									value={userType}
+									onChange={(e) => setUserType(e.target.value)}
+								>
+									<option value="admin">Admin</option>
+									<option value="finance">Finance</option>
+								</select>
 							</div>
 							<div className="flex flex-col gap-4 ">
 								<a
