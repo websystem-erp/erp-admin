@@ -6,7 +6,7 @@ import API_ENDPOINTS from "../../API/apiEndpoints";
 
 const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 	const [isEditing, setIsEditing] = useState(false);
-	const [editedProfile, setEditedProfile] = useState(adminData);
+	const [editedProfile, setEditedProfile] = useState(adminData || {});
 	const [photoLoading, setPhotoLoading] = useState(false);
 
 	const defaultMalePhoto =
@@ -149,7 +149,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="text"
 									name="name"
-									value={editedProfile.name}
+									value={editedProfile.name || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
@@ -164,7 +164,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="text"
 									name="role"
-									value={editedProfile.role}
+									value={editedProfile.role || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
@@ -179,7 +179,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="text"
 									name="gender"
-									value={editedProfile.gender}
+									value={editedProfile.gender || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
@@ -194,7 +194,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="date"
 									name="dob"
-									value={editedProfile.dob}
+									value={editedProfile.dob || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
@@ -209,7 +209,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="email"
 									name="email"
-									value={editedProfile.email}
+									value={editedProfile.email || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
