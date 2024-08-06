@@ -9,7 +9,7 @@ import Modal from "../popup/Modal";
 import ListTable from "../List/ListTable";
 import AuthContext from "../../context/AuthContext";
 import AllStudents from "../Students/AllStudents";
-import FeesListTable from "../Fees/FeesListTable";
+import FeesListTable from "../Fees/StudentsWithPaymentStatus";
 
 const Dashboard = () => {
 	const { token, userData } = useContext(AuthContext);

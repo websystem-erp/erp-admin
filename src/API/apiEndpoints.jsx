@@ -82,6 +82,8 @@ const API_ENDPOINTS = {
 	//Fees
 	FETCH_STUDENT_PAYMENT_DETAILS: (studentID) =>
 		`${API_BASE_URL}/payment/student/${studentID}`,
+	FETCH_PAYMENT_DETAILS: (studentID) =>
+		`${API_BASE_URL}/payment/status/${studentID}`,
 };
 
 export default API_ENDPOINTS;

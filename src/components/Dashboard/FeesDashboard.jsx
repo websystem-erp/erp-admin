@@ -1,14 +1,13 @@
 import React from "react";
 import Navbar from "../FeesDepartment/Navbar";
-import StudentList from "../Students/StudentList";
+import StudentsWithPaymentStatus from "../Fees/StudentsWithPaymentStatus";
 
 const FeesDashboard = ({ userData, logout }) => {
 	return (
-		<>
+		<div className="bg-[#F2F3F5]">
 			<Navbar logout={logout} userData={userData} />
-			<p>Welcome to the Finance Dashboard!</p>
-			<StudentList />
-		</>
+			<StudentsWithPaymentStatus />
+		</div>
 	);
 };
 
