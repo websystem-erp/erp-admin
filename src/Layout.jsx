@@ -16,7 +16,12 @@ import Department from "./components/Department/Department";
 import Attendance from "./components/Attendance/Attendance";
 import Support from "./components/Support/Support";
 
-const Layout = ({ logout, userData }) => {
+const Layout = ({ logout }) => {
+	const [userData, setUserData] = useState(() => {
+		const storedUserData = localStorage.getItem("userData");
+		return storedUserData ? JSON.parse(storedUserData) : null;
+	});
+
 	const [isSidebarExpanded, setIsSidebarExpanded] = useState(
 		getSidebarStateFromLocalStorage()
 	);
@@ -55,7 +60,9 @@ const Layout = ({ logout, userData }) => {
 					logout={logout}
 					userData={userData}
 					toggleSidebar={toggleSidebar}
+					setUserData={setUserData}
 				/>
+
 				<main
 					className={`flex-1 p-6 ${
 						isSidebarExpanded && !isMobile ? "ml-0" : "ml-0"

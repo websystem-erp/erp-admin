@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Modal from "../popup/Modal";
 import ModalDetails from "../popup/ModalDetails";
-import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 
 const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
@@ -23,6 +23,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 	useEffect(() => {
 		if (isOpen) {
 			document.body.style.overflow = "hidden";
+			fetchAdminDetails();
 		} else {
 			document.body.style.overflow = "auto";
 		}
@@ -30,6 +31,15 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 			document.body.style.overflow = "auto";
 		};
 	}, [isOpen]);
+
+	const fetchAdminDetails = async () => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ADMIN_BY_ID);
+			setEditedProfile(response.data);
+		} catch (error) {
+			console.error("Error fetching admin details:", error);
+		}
+	};
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -48,6 +58,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 				"upload_preset",
 				import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
 			);
+			formData.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
 			setPhotoLoading(true);
 			try {
@@ -90,6 +101,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 				throw new Error(`Network response was not ok: ${errorData.message}`);
 			}
 			onSave(editedProfile);
+			localStorage.setItem("userData", JSON.stringify(editedProfile));
 			setIsEditing(false);
 			onClose();
 		} catch (error) {

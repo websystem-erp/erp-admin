@@ -5,7 +5,7 @@ import ProfileDropDown from "./ProfileDropDown";
 import FloatingInput from "../Forms/FloatingInput";
 import axios from "axios";
 
-const Navbar = ({ logout, userData, toggleSidebar }) => {
+const Navbar = ({ logout, userData, toggleSidebar, setUserData }) => {
 	const [formData, setFormData] = useState({
 		name: "",
 		role: "",
@@ -185,10 +185,16 @@ const Navbar = ({ logout, userData, toggleSidebar }) => {
 					)}
 				</div>
 				<div className="flex items-center justify-center">
+					{/* <ProfileDropDown
+						logout={logout}
+						userData={userData}
+						toggleForm={toggleFormVisibility}
+					/> */}
 					<ProfileDropDown
 						logout={logout}
 						userData={userData}
 						toggleForm={toggleFormVisibility}
+						setUserData={setUserData}
 					/>
 				</div>
 			</div>

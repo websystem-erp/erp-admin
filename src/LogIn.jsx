@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Correct import
 import API_ENDPOINTS from "./API/apiEndpoints";
 import AuthContext from "./context/AuthContext";
 
 const LogIn = () => {
 	const { setIsLoggedIn, setToken, setUserData } = useContext(AuthContext);
 	const [credentials, setCredentials] = useState({ email: "", password: "" });
-	const [userType, setUserType] = useState("admin"); // Add state for user type
+	const [userType, setUserType] = useState("admin"); // State for user type
 	const [errorMessage, setErrorMessage] = useState("");
 	const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 	const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -27,8 +27,13 @@ const LogIn = () => {
 				setUserData(JSON.parse(storedUserData));
 				if (storedUserType === "finance") {
 					navigate("/fees");
-				} else {
+				} else if (storedUserType === "admin") {
 					navigate("/");
+				} else {
+					setErrorMessage(
+						`Unauthorized role: ${storedUserType}. Please log in with the appropriate role.`
+					);
+					navigate("/login");
 				}
 			} else {
 				localStorage.removeItem("token");
@@ -48,16 +53,33 @@ const LogIn = () => {
 		try {
 			const response = await axios.post(API_ENDPOINTS.ADMIN_LOGIN, credentials);
 			if (response.data.success) {
-				setIsLoggedIn(true);
-				setToken(response.data.token);
-				localStorage.setItem("token", response.data.token);
-				localStorage.setItem("userData", JSON.stringify(response.data.data));
-				localStorage.setItem("userType", userType); // Store userType in localStorage
-				setUserData(response.data.data);
-				if (userType === "finance") {
-					navigate("/fees");
+				const userRole = response.data.data.role;
+				const selectedUserType = userType.toLowerCase();
+				if (
+					userRole.toLowerCase() === "admin" ||
+					(userRole.toLowerCase() === "finance" &&
+						selectedUserType === "finance")
+				) {
+					setIsLoggedIn(true);
+					setToken(response.data.token);
+					localStorage.setItem("token", response.data.token);
+					localStorage.setItem("userData", JSON.stringify(response.data.data));
+					localStorage.setItem("userType", selectedUserType); // Store userType in localStorage
+					setUserData(response.data.data);
+					if (
+						userRole.toLowerCase() === "admin" &&
+						selectedUserType === "finance"
+					) {
+						navigate("/fees");
+					} else if (userRole.toLowerCase() === "finance") {
+						navigate("/fees");
+					} else {
+						navigate("/");
+					}
 				} else {
-					navigate("/");
+					setErrorMessage(
+						`Unauthorized role: ${userRole}. Please log in with the appropriate role.`
+					);
 				}
 			}
 		} catch (error) {

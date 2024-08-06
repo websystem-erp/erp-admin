@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminProfileModal from "./AdminProfileModal";
 
-const ProfileDropDown = ({ logout, userData, toggleForm }) => {
+const ProfileDropDown = ({ logout, userData, toggleForm, setUserData }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 	const dropdownRef = useRef(null);
@@ -46,9 +46,10 @@ const ProfileDropDown = ({ logout, userData, toggleForm }) => {
 
 	const handleSaveProfile = (updatedProfile) => {
 		// Update userData with the updated profile data
-		// This assumes that userData is a state managed at a higher level and can be updated.
-		// If it's not, you might need to lift state management up to a common parent component.
-		// setUserData(updatedProfile);
+		setUserData(updatedProfile);
+
+		// Save the updated profile data to local storage
+		localStorage.setItem("userData", JSON.stringify(updatedProfile));
 	};
 
 	return (
