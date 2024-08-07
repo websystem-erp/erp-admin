@@ -3,6 +3,7 @@ import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 import { Icon } from "@iconify/react";
 import Card from "../main/dashboard/Card";
+import PaymentModal from "./PaymentModal";
 
 const StudentsWithPaymentStatus = () => {
 	const [students, setStudents] = useState([]);
@@ -15,6 +16,11 @@ const StudentsWithPaymentStatus = () => {
 	const [termFeesFilter, setTermFeesFilter] = useState("");
 	const [semesterFeesFilter, setSemesterFeesFilter] = useState("");
 	const [feesPaid, setFeesPaid] = useState(0);
+	const [showModal, setShowModal] = useState(false);
+	const [selectedPayment, setSelectedPayment] = useState({
+		studentId: null,
+		paymentId: null,
+	});
 
 	useEffect(() => {
 		const fetchStudents = async () => {
@@ -124,11 +130,100 @@ const StudentsWithPaymentStatus = () => {
 		handleSearch();
 	}, [searchTerm, departmentFilter, termFeesFilter, semesterFeesFilter]);
 
+	const handleEditClick = (studentId, paymentId) => {
+		setSelectedPayment({ studentId, paymentId });
+		setShowModal(true);
+	};
+
+	const handleUpdate = () => {
+		setLoading(true);
+		setShowModal(false);
+		// Refetch students and payment statuses after update
+		const fetchStudents = async () => {
+			try {
+				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_STUDENTS);
+				const studentData = response.data.data;
+				setStudents(studentData);
+				setFilteredStudents(studentData);
+				fetchPaymentStatuses(studentData);
+			} catch (err) {
+				setError("Error fetching students");
+				console.error(err);
+			}
+		};
+
+		const fetchPaymentStatuses = async (students) => {
+			try {
+				let totalFeesPaid = 0;
+				const statusPromises = students.map((student) =>
+					axios
+						.get(API_ENDPOINTS.FETCH_STUDENT_PAYMENT_DETAILS(student.id))
+						.then((response) => {
+							const payments = response.data.data.payment;
+							const termFeeStatus =
+								payments.find((payment) => payment.title === "Term Fees")
+									?.status || "Pending";
+							const semesterFeeStatus =
+								payments.find((payment) => payment.title === "Semester Fees")
+									?.status || "Pending";
+
+							// Calculate total fees paid
+							payments.forEach((payment) => {
+								if (payment.status === "paid") {
+									totalFeesPaid += payment.amount;
+								}
+							});
+
+							return {
+								id: student.id,
+								termFeeStatus: termFeeStatus === "paid" ? "Paid" : "Pending",
+								semesterFeeStatus:
+									semesterFeeStatus === "paid" ? "Paid" : "Pending",
+							};
+						})
+						.catch((error) => {
+							if (error.response && error.response.status === 404) {
+								return {
+									id: student.id,
+									termFeeStatus: "Pending",
+									semesterFeeStatus: "Pending",
+								};
+							} else {
+								throw error;
+							}
+						})
+				);
+				const statuses = await Promise.all(statusPromises);
+				const statusMap = {};
+				statuses.forEach(({ id, termFeeStatus, semesterFeeStatus }) => {
+					statusMap[id] = { termFeeStatus, semesterFeeStatus };
+				});
+				setPaymentStatus(statusMap);
+				setFeesPaid(totalFeesPaid);
+			} catch (err) {
+				setError("Error fetching payment statuses");
+				console.error(err);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchStudents();
+	};
+
 	if (loading) return <p>Loading...</p>;
 	if (error) return <p>{error}</p>;
 
 	return (
 		<div className="px-8">
+			{showModal && (
+				<PaymentModal
+					studentId={selectedPayment.studentId}
+					paymentId={selectedPayment.paymentId}
+					onClose={() => setShowModal(false)}
+					onUpdate={handleUpdate}
+				/>
+			)}
 			<div className="flex justify-center items-center my-20">
 				<Card
 					icon={"clarity:employee-group-solid"}
@@ -310,7 +405,10 @@ const StudentsWithPaymentStatus = () => {
 											</p>
 										</td>
 										<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
-											<button className="bg-linear-red whitespace-no-wrap w-fit p-2 rounded-md">
+											<button
+												onClick={() => handleEditClick(student.id, paymentId)} // Ensure paymentId is available for each student
+												className="bg-linear-red whitespace-no-wrap w-fit p-2 rounded-md"
+											>
 												<Icon
 													icon="flowbite:edit-solid"
 													className="h-6 w-6 flex-shrink-0 text-white"
