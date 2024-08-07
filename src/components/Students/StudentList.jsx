@@ -11,6 +11,7 @@ const StudentList = () => {
 	const [formModalOpen, setFormModalOpen] = useState(false);
 	const [profileModalOpen, setProfileModalOpen] = useState(false);
 	const [selectedProfile, setSelectedProfile] = useState(null);
+	const [selectedStudentId, setSelectedStudentId] = useState(null); // Store the selected student ID
 
 	useEffect(() => {
 		const fetchStudents = async () => {
@@ -39,8 +40,9 @@ const StudentList = () => {
 		setFormModalOpen(true);
 	};
 
-	const handleViewProfile = (profile) => {
+	const handleViewProfile = (profile, studentId) => {
 		setSelectedProfile(profile);
+		setSelectedStudentId(studentId); // Store the selected student ID
 		setProfileModalOpen(true);
 	};
 
@@ -104,6 +106,7 @@ const StudentList = () => {
 							isOpen={profileModalOpen}
 							onClose={() => setProfileModalOpen(false)}
 							profile={selectedProfile}
+							studentId={selectedStudentId} // Pass the selected student ID
 							onSave={handleSaveProfile}
 						/>
 					)}

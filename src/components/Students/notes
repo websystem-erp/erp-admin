@@ -1,0 +1,245 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import API_ENDPOINTS from "../../API/apiEndpoints";
+
+const formatLabel = (key) => {
+	return key
+		.replace("_", " ")
+		.replace(/([a-z])([A-Z])/g, "$1 $2")
+		.replace(/^./, (str) => str.toUpperCase());
+};
+
+const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
+	const [isEditing, setIsEditing] = useState(false);
+	const [editedProfile, setEditedProfile] = useState(profile);
+	const [photoLoading, setPhotoLoading] = useState(false);
+
+	useEffect(() => {
+		const fetchFeesStatus = async () => {
+			try {
+				const response = await axios.get(
+					API_ENDPOINTS.FETCH_STUDENT_PAYMENT_DETAILS(profile.id)
+				);
+				const updatedProfile = { ...editedProfile, feesStatus: response.data };
+				setEditedProfile(updatedProfile);
+			} catch (error) {
+				console.error("Error fetching fees status:", error);
+				const updatedProfile = { ...editedProfile, feesStatus: null };
+				setEditedProfile(updatedProfile);
+			}
+		};
+
+		if (profile.id) {
+			fetchFeesStatus();
+		}
+	}, [profile.id]);
+
+	useEffect(() => {
+		console.log("Edited Profile:", editedProfile);
+	}, [editedProfile]);
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setEditedProfile((prevProfile) => ({
+			...prevProfile,
+			[name]: value,
+		}));
+	};
+
+	const handlePhotoChange = async (e) => {
+		const file = e.target.files[0];
+		if (file) {
+			const formData = new FormData();
+			formData.append("file", file);
+			formData.append(
+				"upload_preset",
+				import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+			);
+
+			setPhotoLoading(true);
+			try {
+				const response = await axios.post(
+					`https://api.cloudinary.com/v1_1/${
+						import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+					}/image/upload`,
+					formData
+				);
+				setEditedProfile((prevProfile) => ({
+					...prevProfile,
+					photo: response.data.secure_url,
+				}));
+			} catch (error) {
+				console.error("Error uploading photo:", error);
+			} finally {
+				setPhotoLoading(false);
+			}
+		}
+	};
+
+	const handleSave = async () => {
+		console.log("Saving profile with ID:", editedProfile.id);
+		try {
+			const response = await fetch(
+				API_ENDPOINTS.UPDATE_STUDENTS(editedProfile.id),
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(editedProfile),
+				}
+			);
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(`Network response was not ok: ${errorData.message}`);
+			}
+			onSave(editedProfile);
+			setIsEditing(false);
+			onClose();
+		} catch (error) {
+			console.error("Error updating student:", error);
+		}
+	};
+
+	if (!isOpen) {
+		return null;
+	}
+
+	return (
+		<div className="hs-overlay fixed inset-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-auto bg-black bg-opacity-50 p-8 ">
+			<div className="flex justify-center items-center">
+				<div className="h-[80vh]  overflow-hidden flex flex-col bg-white border shadow-sm rounded-xl pointer-events-auto sm:max-w-lg sm:w-full m-3">
+					<div className="flex justify-between items-center py-3 px-4 border-b ">
+						<h3
+							id="hs-scroll-inside-body-modal-label"
+							className="font-bold text-gray-800 "
+						>
+							Profile
+						</h3>
+						<button
+							type="button"
+							className="size-8 inline-flex justify-center items-center gap-x-2 rounded-full border border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200 focus:outline-none focus:bg-gray-200 disabled:opacity-50 disabled:pointer-events-none"
+							aria-label="Close"
+							onClick={onClose}
+						>
+							<span className="sr-only">Close</span>
+							<svg
+								className="shrink-0 size-4"
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+							>
+								<path d="M18 6 6 18"></path>
+								<path d="m6 6 12 12"></path>
+							</svg>
+						</button>
+					</div>
+					<div className="p-4 overflow-y-auto">
+						<div className="space-y-4">
+							<div className="mx-4">
+								<img
+									src={editedProfile.photo || "default-photo-url"}
+									alt={editedProfile.name || "Profile"}
+									className="w-32 h-32 mx-auto rounded-full"
+								/>
+								{isEditing && (
+									<div className="my-2">
+										<label
+											className="block text-gray-700 text-sm font-bold mb-2"
+											htmlFor="photo"
+										>
+											Profile Photo:
+										</label>
+										<input
+											type="file"
+											name="photo"
+											onChange={handlePhotoChange}
+											className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+											disabled={photoLoading}
+										/>
+										{photoLoading && <p>Uploading...</p>}
+									</div>
+								)}
+
+								<div className="flow-root my-3">
+									<dl className="-my-3 divide-y divide-gray-100 text-sm">
+										{Object.keys(profile).map(
+											(key) =>
+												key !== "photo" && (
+													<div
+														key={key}
+														className="flex justify-start py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4"
+													>
+														<dt className="font-medium text-gray-900 w-1/2">
+															{formatLabel(key)}
+														</dt>
+														<dd className="text-gray-700 w-1/2">
+															{isEditing ? (
+																<input
+																	type="text"
+																	name={key}
+																	value={editedProfile[key] || ""}
+																	onChange={handleChange}
+																	className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+																/>
+															) : (
+																String(profile[key])
+															)}
+														</dd>
+													</div>
+												)
+										)}
+										<div className="flex py-3 even:bg-gray-50 sm:grid-cols-3 sm:gap-4">
+											<dt className="font-medium text-gray-900 w-1/2">
+												Fees Status
+											</dt>
+											<dd className="text-gray-700 sm:col-span-2 w-1/2">
+												{editedProfile.feesStatus &&
+												editedProfile.feesStatus.amount
+													? editedProfile.feesStatus.paid
+														? "Paid"
+														: "Not Paid"
+													: "Pending"}
+												<br />
+												Amount:{" "}
+												{editedProfile.feesStatus
+													? editedProfile.feesStatus.amount
+													: "Pending"}
+											</dd>
+										</div>
+									</dl>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div className="flex justify-end items-center gap-x-2 py-3 px-4 border-t ">
+						{isEditing && (
+							<button
+								onClick={handleSave}
+								className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none     "
+							>
+								Save
+							</button>
+						)}
+						{!isEditing && (
+							<button
+								onClick={() => setIsEditing(true)}
+								className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-linear-blue text-white hover:bg-linear-blue focus:outline-none focus:bg-linear-blue disabled:opacity-50 disabled:pointer-events-none"
+							>
+								Edit
+							</button>
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default ProfileModal;

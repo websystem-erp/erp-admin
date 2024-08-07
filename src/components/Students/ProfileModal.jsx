@@ -4,29 +4,14 @@ import ModalDetails from "../popup/ModalDetails";
 import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 
-const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
+const ProfileModal = ({ isOpen, onClose, profile, studentId, onSave }) => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editedProfile, setEditedProfile] = useState(profile);
 	const [photoLoading, setPhotoLoading] = useState(false);
-	const [feesStatus, setFeesStatus] = useState(null);
 
 	useEffect(() => {
-		const fetchFeesStatus = async () => {
-			try {
-				const response = await axios.get(
-					API_ENDPOINTS.FETCH_STUDENT_PAYMENT_DETAILS(profile.id)
-				);
-				setFeesStatus(response.data);
-			} catch (error) {
-				console.error("Error fetching fees status:", error);
-				setFeesStatus(null);
-			}
-		};
-
-		if (profile.id) {
-			fetchFeesStatus();
-		}
-	}, [profile.id]);
+		setEditedProfile(profile);
+	}, [profile]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -67,10 +52,10 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 	};
 
 	const handleSave = async () => {
-		console.log("Saving profile with ID:", editedProfile.id); // Add this log
+		console.log("Saving profile with ID:", studentId);
 		try {
 			const response = await fetch(
-				API_ENDPOINTS.UPDATE_STUDENTS(editedProfile.id),
+				API_ENDPOINTS.UPDATE_STUDENTS(studentId), // Ensure this line correctly uses the student ID
 				{
 					method: "PUT",
 					headers: {
@@ -81,6 +66,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 			);
 			if (!response.ok) {
 				const errorData = await response.json();
+				console.error("Network response was not ok:", errorData);
 				throw new Error(`Network response was not ok: ${errorData.message}`);
 			}
 			onSave(editedProfile);
@@ -140,7 +126,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 											<input
 												type="text"
 												name={key}
-												value={editedProfile[key] || ""}
+												value={editedProfile[key]}
 												onChange={handleChange}
 												className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 											/>
@@ -162,7 +148,7 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 										<ModalDetails
 											key={key}
 											modalTitle={`${key.replace("_", " ")} : `}
-											modalDesc={String(profile[key])}
+											modalDesc={profile[key]}
 										/>
 									)
 							)}
@@ -173,13 +159,6 @@ const ProfileModal = ({ isOpen, onClose, profile, onSave }) => {
 								Edit
 							</button>
 						</>
-					)}
-					{feesStatus && (
-						<div className="mt-4 p-4 bg-gray-100 rounded-lg">
-							<h4 className="text-lg font-semibold">Fees Status</h4>
-							<p>{feesStatus.paid ? "Paid" : "Not Paid"}</p>
-							<p>Amount: {feesStatus.amount}</p>
-						</div>
 					)}
 				</div>
 			</div>

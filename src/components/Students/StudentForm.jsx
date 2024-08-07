@@ -15,6 +15,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 		dob: "",
 		contactNumber: "",
 		departmentName: "",
+		year: "", // Added year field
 		permanent_address: "",
 		currentAddress: "",
 		fatherName: "",
@@ -99,6 +100,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 			"currentAddress",
 			"fatherName",
 			"fatherContactNumber",
+			"year", // Added year to required fields
 		];
 		requiredFields.forEach((field) => {
 			if (!formData[field]) {
@@ -286,6 +288,17 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 				{formErrors.password && (
 					<p className="text-red-500">{formErrors.password}</p>
 				)}
+
+				<FloatingInput
+					type="text"
+					id="year"
+					formTitle="Year"
+					value={formData.year}
+					handleChange={handleInputChange}
+					formName="year"
+					xtraClass={formErrors.year ? "border-red-500" : ""}
+				/>
+				{formErrors.year && <p className="text-red-500">{formErrors.year}</p>}
 
 				<div className="mt-1.5">
 					<select

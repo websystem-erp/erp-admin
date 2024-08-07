@@ -31,20 +31,31 @@ const StudentTable = ({ students, onViewProfile, onDeleteProfile }) => {
 					action1={"View Profile"}
 					buttonHide={"hidden"}
 					onViewProfile={() =>
-						onViewProfile({
-							photo: student.photo || getDefaultPhoto(student.gender),
-							name: student.name,
-							rollNo: student.rollNo,
-							gender: student.gender,
-							dob: student.dob,
-							contactNumber: student.contactNumber,
-							department: student.department ? student.department.name : "N/A",
-							permanent_address: student.permanent_address,
-							currentAddress: student.currentAddress,
-							fatherName: student.fatherName,
-							motherName: student.motherName,
-							fatherContactNumber: student.fatherContactNumber,
-						})
+						onViewProfile(
+							{
+								photo: student.photo || getDefaultPhoto(student.gender),
+								name: student.name,
+								year: student.year,
+								rollNo: student.rollNo,
+								email: student.email,
+								gender: student.gender,
+								dob: student.dob,
+								contactNumber: student.contactNumber,
+								department: student.department
+									? student.department.name
+									: "N/A",
+								permanent_address: student.permanent_address,
+								currentAddress: student.currentAddress,
+								fatherName: student.fatherName,
+								motherName: student.motherName,
+								fatherContactNumber: student.fatherContactNumber,
+								paymentStatus:
+									student.payment && student.payment.length > 0
+										? student.payment[0].status
+										: "N/A",
+							},
+							student.id // Pass the student ID
+						)
 					}
 					onDelete={() => onDeleteProfile(student.id)}
 				/>

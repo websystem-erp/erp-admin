@@ -40,6 +40,8 @@ const API_ENDPOINTS = {
 	UPDATE_ATTENDANCE: `${API_BASE_URL}/attendance/updateFacultyAttendance`,
 	// STUDENTS
 	REGISTER_STUDENTS: `${API_BASE_URL}/student/${userId}/reg`,
+	FETCH_STUDENT: (studentID) =>
+		`${API_BASE_URL}/student/${userId}/fetch/${studentID}`,
 	FETCH_ALL_STUDENTS: `${API_BASE_URL}/student/${userId}/fetchAll`,
 	UPDATE_STUDENTS: (eventId) =>
 		`${API_BASE_URL}/student/${userId}/update/${eventId}`,
