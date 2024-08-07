@@ -13,14 +13,10 @@ const StudentsWithPaymentStatus = () => {
 	const [error, setError] = useState("");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [departmentFilter, setDepartmentFilter] = useState("");
-	const [termFeesFilter, setTermFeesFilter] = useState("");
-	const [semesterFeesFilter, setSemesterFeesFilter] = useState("");
 	const [feesPaid, setFeesPaid] = useState(0);
+	const [dueFees, setDueFees] = useState(0);
 	const [showModal, setShowModal] = useState(false);
-	const [selectedPayment, setSelectedPayment] = useState({
-		studentId: null,
-		paymentId: null,
-	});
+	const [selectedStudent, setSelectedStudent] = useState(null);
 
 	useEffect(() => {
 		const fetchStudents = async () => {
@@ -39,38 +35,33 @@ const StudentsWithPaymentStatus = () => {
 		const fetchPaymentStatuses = async (students) => {
 			try {
 				let totalFeesPaid = 0;
+				let totalDueFees = 0;
 				const statusPromises = students.map((student) =>
 					axios
 						.get(API_ENDPOINTS.FETCH_STUDENT_PAYMENT_DETAILS(student.id))
 						.then((response) => {
 							const payments = response.data.data.payment;
-							const termFeeStatus =
-								payments.find((payment) => payment.title === "Term Fees")
-									?.status || "Pending";
-							const semesterFeeStatus =
-								payments.find((payment) => payment.title === "Semester Fees")
-									?.status || "Pending";
 
-							// Calculate total fees paid
+							// Calculate total fees paid and due fees
 							payments.forEach((payment) => {
 								if (payment.status === "paid") {
 									totalFeesPaid += payment.amount;
+								} else {
+									totalDueFees += payment.amount;
 								}
 							});
 
-							return {
+							return payments.map((payment) => ({
 								id: student.id,
-								termFeeStatus: termFeeStatus === "paid" ? "Paid" : "Pending",
-								semesterFeeStatus:
-									semesterFeeStatus === "paid" ? "Paid" : "Pending",
-							};
+								title: payment.title,
+								status: payment.status === "paid" ? "Paid" : "Pending",
+							}));
 						})
 						.catch((error) => {
 							if (error.response && error.response.status === 404) {
 								return {
 									id: student.id,
-									termFeeStatus: "Pending",
-									semesterFeeStatus: "Pending",
+									status: "Pending",
 								};
 							} else {
 								throw error;
@@ -79,11 +70,17 @@ const StudentsWithPaymentStatus = () => {
 				);
 				const statuses = await Promise.all(statusPromises);
 				const statusMap = {};
-				statuses.forEach(({ id, termFeeStatus, semesterFeeStatus }) => {
-					statusMap[id] = { termFeeStatus, semesterFeeStatus };
+				statuses.forEach((payments) => {
+					payments.forEach(({ id, title, status }) => {
+						if (!statusMap[id]) {
+							statusMap[id] = {};
+						}
+						statusMap[id][title] = status;
+					});
 				});
 				setPaymentStatus(statusMap);
 				setFeesPaid(totalFeesPaid);
+				setDueFees(totalDueFees);
 			} catch (err) {
 				setError("Error fetching payment statuses");
 				console.error(err);
@@ -110,29 +107,31 @@ const StudentsWithPaymentStatus = () => {
 			);
 		}
 
-		if (termFeesFilter) {
-			filtered = filtered.filter(
-				(student) => paymentStatus[student.id]?.termFeeStatus === termFeesFilter
-			);
-		}
-
-		if (semesterFeesFilter) {
-			filtered = filtered.filter(
-				(student) =>
-					paymentStatus[student.id]?.semesterFeeStatus === semesterFeesFilter
-			);
-		}
-
 		setFilteredStudents(filtered);
 	};
 
 	useEffect(() => {
 		handleSearch();
-	}, [searchTerm, departmentFilter, termFeesFilter, semesterFeesFilter]);
+	}, [searchTerm, departmentFilter]);
 
-	const handleEditClick = (studentId, paymentId) => {
-		setSelectedPayment({ studentId, paymentId });
-		setShowModal(true);
+	const handleEditClick = async (studentId) => {
+		try {
+			const response = await axios.get(
+				API_ENDPOINTS.FETCH_STUDENT_PAYMENT_DETAILS(studentId)
+			);
+			const student = response.data.data;
+			setSelectedStudent({
+				studentId: studentId,
+				name: student.name,
+				email: student.email,
+				rollNo: student.rollNo,
+				payments: student.payment,
+			});
+			setShowModal(true);
+		} catch (err) {
+			setError("Error fetching payment details");
+			console.error(err);
+		}
 	};
 
 	const handleUpdate = () => {
@@ -155,38 +154,33 @@ const StudentsWithPaymentStatus = () => {
 		const fetchPaymentStatuses = async (students) => {
 			try {
 				let totalFeesPaid = 0;
+				let totalDueFees = 0;
 				const statusPromises = students.map((student) =>
 					axios
 						.get(API_ENDPOINTS.FETCH_STUDENT_PAYMENT_DETAILS(student.id))
 						.then((response) => {
 							const payments = response.data.data.payment;
-							const termFeeStatus =
-								payments.find((payment) => payment.title === "Term Fees")
-									?.status || "Pending";
-							const semesterFeeStatus =
-								payments.find((payment) => payment.title === "Semester Fees")
-									?.status || "Pending";
 
-							// Calculate total fees paid
+							// Calculate total fees paid and due fees
 							payments.forEach((payment) => {
 								if (payment.status === "paid") {
 									totalFeesPaid += payment.amount;
+								} else {
+									totalDueFees += payment.amount;
 								}
 							});
 
-							return {
+							return payments.map((payment) => ({
 								id: student.id,
-								termFeeStatus: termFeeStatus === "paid" ? "Paid" : "Pending",
-								semesterFeeStatus:
-									semesterFeeStatus === "paid" ? "Paid" : "Pending",
-							};
+								title: payment.title,
+								status: payment.status === "paid" ? "Paid" : "Pending",
+							}));
 						})
 						.catch((error) => {
 							if (error.response && error.response.status === 404) {
 								return {
 									id: student.id,
-									termFeeStatus: "Pending",
-									semesterFeeStatus: "Pending",
+									status: "Pending",
 								};
 							} else {
 								throw error;
@@ -195,11 +189,17 @@ const StudentsWithPaymentStatus = () => {
 				);
 				const statuses = await Promise.all(statusPromises);
 				const statusMap = {};
-				statuses.forEach(({ id, termFeeStatus, semesterFeeStatus }) => {
-					statusMap[id] = { termFeeStatus, semesterFeeStatus };
+				statuses.forEach((payments) => {
+					payments.forEach(({ id, title, status }) => {
+						if (!statusMap[id]) {
+							statusMap[id] = {};
+						}
+						statusMap[id][title] = status;
+					});
 				});
 				setPaymentStatus(statusMap);
 				setFeesPaid(totalFeesPaid);
+				setDueFees(totalDueFees);
 			} catch (err) {
 				setError("Error fetching payment statuses");
 				console.error(err);
@@ -218,8 +218,7 @@ const StudentsWithPaymentStatus = () => {
 		<div className="px-8">
 			{showModal && (
 				<PaymentModal
-					studentId={selectedPayment.studentId}
-					paymentId={selectedPayment.paymentId}
+					selectedStudent={selectedStudent}
 					onClose={() => setShowModal(false)}
 					onUpdate={handleUpdate}
 				/>
@@ -235,7 +234,7 @@ const StudentsWithPaymentStatus = () => {
 				<Card
 					icon={"ri:money-rupee-circle-line"}
 					title={"Due Fees"}
-					number={"-"}
+					number={`₹${dueFees}`}
 					iconClass={"salary-icon"}
 					iconColor={"bg-linear-red"}
 				/>
@@ -265,28 +264,6 @@ const StudentsWithPaymentStatus = () => {
 									{dept}
 								</option>
 							))}
-						</select>
-					</div>
-					<div className="mx-2">
-						<select
-							value={termFeesFilter}
-							onChange={(e) => setTermFeesFilter(e.target.value)}
-							className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm py-2.5 pe-10 shadow-sm"
-						>
-							<option value="">All Term Fees</option>
-							<option value="Paid">Paid</option>
-							<option value="Pending">Pending</option>
-						</select>
-					</div>
-					<div className="mx-2">
-						<select
-							value={semesterFeesFilter}
-							onChange={(e) => setSemesterFeesFilter(e.target.value)}
-							className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm py-2.5 pe-10 shadow-sm"
-						>
-							<option value="">All Semester Fees</option>
-							<option value="Paid">Paid</option>
-							<option value="Pending">Pending</option>
 						</select>
 					</div>
 					<div className="relative">
@@ -349,10 +326,7 @@ const StudentsWithPaymentStatus = () => {
 										Department
 									</th>
 									<th className="w-fit px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
-										Term Fees
-									</th>
-									<th className="w-fit px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider">
-										Semester Fees
+										Semester
 									</th>
 									<th className="w-fit px-2 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-sm md:text-base font-semibold text-gray-600 uppercase tracking-wider"></th>
 								</tr>
@@ -394,19 +368,21 @@ const StudentsWithPaymentStatus = () => {
 												{student.department?.name || "-"}
 											</p>
 										</td>
-										<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
-											<p className="text-gray-900 whitespace-no-wrap">
-												{paymentStatus[student.id]?.termFeeStatus}
-											</p>
-										</td>
-										<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
-											<p className="text-gray-900 whitespace-no-wrap">
-												{paymentStatus[student.id]?.semesterFeeStatus}
-											</p>
-										</td>
+										{Object.keys(paymentStatus[student.id] || {}).map(
+											(title) => (
+												<td
+													key={title}
+													className="px-2 py-5 bg-white text-center text-sm md:text-base"
+												>
+													<p className="text-gray-900 whitespace-no-wrap">
+														{paymentStatus[student.id][title]}
+													</p>
+												</td>
+											)
+										)}
 										<td className="px-2 py-5 bg-white text-center text-sm md:text-base">
 											<button
-												onClick={() => handleEditClick(student.id, paymentId)} // Ensure paymentId is available for each student
+												onClick={() => handleEditClick(student.id)}
 												className="bg-linear-red whitespace-no-wrap w-fit p-2 rounded-md"
 											>
 												<Icon
