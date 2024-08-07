@@ -9,23 +9,34 @@ const AllStudents = ({
 	onViewProfile,
 	onDelete,
 	action1,
-	action2,
 	dangerAction,
 	responsiveWidth,
 	hideDropDown,
 	buttonHide,
+	gender,
 }) => {
+	const getDefaultImage = (gender) => {
+		if (gender === "Male") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
+		} else if (gender === "Female") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
+		} else {
+			return "https://via.placeholder.com/150";
+		}
+	};
+
 	return (
 		<tr>
 			<td className="px-2 py-5 bg-white text-sm md:text-base">
 				<div className="flex justify-start items-center">
 					<div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden">
 						<img
-							src={profile}
+							src={profile || getDefaultImage(gender)}
 							className="w-full h-full object-cover"
 							alt={`${name}'s profile`}
 							onError={(e) => {
-								e.target.src = "default-image-url";
+								e.target.onerror = null;
+								e.target.src = getDefaultImage(gender);
 							}}
 						/>
 					</div>

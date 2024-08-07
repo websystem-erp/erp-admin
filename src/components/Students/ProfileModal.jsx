@@ -9,6 +9,16 @@ const ProfileModal = ({ isOpen, onClose, profile, studentId, onSave }) => {
 	const [editedProfile, setEditedProfile] = useState(profile);
 	const [photoLoading, setPhotoLoading] = useState(false);
 
+	const getDefaultImage = (gender) => {
+		if (gender === "Male") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
+		} else if (gender === "Female") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
+		} else {
+			return "https://via.placeholder.com/150";
+		}
+	};
+
 	useEffect(() => {
 		setEditedProfile(profile);
 	}, [profile]);
@@ -52,7 +62,6 @@ const ProfileModal = ({ isOpen, onClose, profile, studentId, onSave }) => {
 	};
 
 	const handleSave = async () => {
-		console.log("Saving profile with ID:", studentId);
 		try {
 			const response = await fetch(
 				API_ENDPOINTS.UPDATE_STUDENTS(studentId), // Ensure this line correctly uses the student ID
@@ -66,7 +75,6 @@ const ProfileModal = ({ isOpen, onClose, profile, studentId, onSave }) => {
 			);
 			if (!response.ok) {
 				const errorData = await response.json();
-				console.error("Network response was not ok:", errorData);
 				throw new Error(`Network response was not ok: ${errorData.message}`);
 			}
 			onSave(editedProfile);
@@ -86,9 +94,13 @@ const ProfileModal = ({ isOpen, onClose, profile, studentId, onSave }) => {
 			<div className="flex">
 				<div className="mx-4">
 					<img
-						src={editedProfile.photo}
+						src={editedProfile.photo || getDefaultImage(editedProfile.gender)}
 						alt={editedProfile.name}
 						className="w-32 h-32 mx-auto rounded-full"
+						onError={(e) => {
+							e.target.onerror = null;
+							e.target.src = getDefaultImage(editedProfile.gender);
+						}}
 					/>
 					<h3 className="text-xl font-semibold my-4">{editedProfile.name}</h3>
 					{isEditing && (

@@ -18,6 +18,16 @@ const StudentsWithPaymentStatus = () => {
 	const [showModal, setShowModal] = useState(false);
 	const [selectedStudent, setSelectedStudent] = useState(null);
 
+	const getDefaultImage = (gender) => {
+		if (gender === "Male") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
+		} else if (gender === "Female") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
+		} else {
+			return "https://via.placeholder.com/150";
+		}
+	};
+
 	useEffect(() => {
 		const fetchStudents = async () => {
 			try {
@@ -338,11 +348,14 @@ const StudentsWithPaymentStatus = () => {
 											<div className="flex justify-start items-center">
 												<div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden">
 													<img
-														src={student.photo}
+														src={
+															student.photo || getDefaultImage(student.gender)
+														}
 														className="w-full h-full object-cover"
 														alt={`${student.name}'s profile`}
 														onError={(e) => {
-															e.target.src = "default-image-url";
+															e.target.onerror = null;
+															e.target.src = getDefaultImage(student.gender);
 														}}
 													/>
 												</div>

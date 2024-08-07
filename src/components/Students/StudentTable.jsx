@@ -4,13 +4,13 @@ import AllStudents from "./AllStudents";
 
 const StudentTable = ({ students, onViewProfile, onDeleteProfile }) => {
 	const getDefaultPhoto = (gender) => {
-		const defaultMalePhoto =
-			"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
-		const defaultFemalePhoto =
-			"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
-		return gender && gender.toLowerCase() === "female"
-			? defaultFemalePhoto
-			: defaultMalePhoto;
+		if (gender === "Male") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
+		} else if (gender === "Female") {
+			return "https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
+		} else {
+			return "https://via.placeholder.com/150";
+		}
 	};
 
 	return (
@@ -54,10 +54,11 @@ const StudentTable = ({ students, onViewProfile, onDeleteProfile }) => {
 										? student.payment[0].status
 										: "N/A",
 							},
-							student.id // Pass the student ID
+							student.id
 						)
 					}
 					onDelete={() => onDeleteProfile(student.id)}
+					gender={student.gender} // pass gender to getDefaultImage function
 				/>
 			))}
 		/>

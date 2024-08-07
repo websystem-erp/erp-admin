@@ -15,7 +15,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 		dob: "",
 		contactNumber: "",
 		departmentName: "",
-		year: "", // Added year field
+		year: "",
 		permanent_address: "",
 		currentAddress: "",
 		fatherName: "",
@@ -31,7 +31,6 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 		const fetchDepartments = async () => {
 			try {
 				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
-				console.log("Departments fetched:", response.data.data); // Log departments data
 				if (Array.isArray(response.data.data)) {
 					setDepartments(response.data.data);
 				} else {
@@ -100,7 +99,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 			"currentAddress",
 			"fatherName",
 			"fatherContactNumber",
-			"year", // Added year to required fields
+			"year",
 		];
 		requiredFields.forEach((field) => {
 			if (!formData[field]) {
@@ -231,13 +230,13 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 						)}
 					</div>
 
-					<div className=" mt-2 w-auto flex-1">
+					<div className="mt-2 w-auto flex-1">
 						<select
 							name="gender"
 							id="gender"
 							value={formData.gender}
 							onChange={handleInputChange}
-							className={` w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 pt-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0 ${
+							className={`w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 pt-4 text-sm focus:border-blue-600 focus:outline-none focus:ring-0 ${
 								formErrors.gender ? "border-red-500" : ""
 							}`}
 						>
@@ -306,7 +305,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 						id="departmentName"
 						value={formData.departmentName}
 						onChange={handleInputChange}
-						className={`w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 py-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0 ${
+						className={`w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 py-4 text-sm focus:border-blue-600 focus:outline-none focus:ring-0 ${
 							formErrors.departmentName ? "border-red-500" : ""
 						}`}
 					>
@@ -348,7 +347,7 @@ const StudentForm = ({ isOpen, onClose, onStudentAdd }) => {
 					<p className="text-red-500">{formErrors.currentAddress}</p>
 				)}
 
-				<div className="flex justify-center items-center gap-2 ">
+				<div className="flex justify-center items-center gap-2">
 					<div className="flex-1">
 						<FloatingInput
 							type="text"
