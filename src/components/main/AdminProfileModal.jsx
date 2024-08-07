@@ -5,20 +5,14 @@ import ModalDetails from "../popup/ModalDetails";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 
 const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
-	const [isEditing, setIsEditing] = useState(false);
-	const [editedProfile, setEditedProfile] = useState(adminData || {});
-	const [photoLoading, setPhotoLoading] = useState(false);
+	const [state, setState] = useState({
+		isEditing: false,
+		editedProfile: adminData || {},
+		photoLoading: false,
+	});
 
-	const defaultMalePhoto =
+	const defaultPhoto =
 		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
-	const defaultFemalePhoto =
-		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
-
-	const getDefaultPhoto = (gender) => {
-		return gender && gender.toLowerCase() === "female"
-			? defaultFemalePhoto
-			: defaultMalePhoto;
-	};
 
 	useEffect(() => {
 		if (isOpen) {
@@ -33,9 +27,10 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 	}, [isOpen]);
 
 	const fetchAdminDetails = async () => {
+		const userId = getUserIdFromLocalStorage();
 		try {
-			const response = await axios.get(API_ENDPOINTS.FETCH_ADMIN_BY_ID);
-			setEditedProfile(response.data);
+			const response = await axios.get(API_ENDPOINTS.FETCH_ADMIN_BY_ID(userId));
+			setState((prevState) => ({ ...prevState, editedProfile: response.data }));
 		} catch (error) {
 			console.error("Error fetching admin details:", error);
 		}
@@ -43,9 +38,12 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		setEditedProfile((prevProfile) => ({
-			...prevProfile,
-			[name]: value,
+		setState((prevState) => ({
+			...prevState,
+			editedProfile: {
+				...prevState.editedProfile,
+				[name]: value,
+			},
 		}));
 	};
 
@@ -60,7 +58,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 			);
 			formData.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
-			setPhotoLoading(true);
+			setState((prevState) => ({ ...prevState, photoLoading: true }));
 			try {
 				const response = await axios.post(
 					`https://api.cloudinary.com/v1_1/${
@@ -68,45 +66,57 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 					}/image/upload`,
 					formData
 				);
-				setEditedProfile((prevProfile) => ({
-					...prevProfile,
-					photo: response.data.secure_url,
+				setState((prevState) => ({
+					...prevState,
+					editedProfile: {
+						...prevState.editedProfile,
+						photo: response.data.secure_url,
+					},
+					photoLoading: false,
 				}));
 			} catch (error) {
 				console.error("Error uploading photo:", error);
-			} finally {
-				setPhotoLoading(false);
+				setState((prevState) => ({ ...prevState, photoLoading: false }));
 			}
 		}
 	};
 
 	const handleRemovePhoto = () => {
-		setEditedProfile((prevProfile) => ({
-			...prevProfile,
-			photo: "",
+		setState((prevState) => ({
+			...prevState,
+			editedProfile: {
+				...prevState.editedProfile,
+				photo: "",
+			},
 		}));
 	};
 
 	const handleSave = async () => {
+		const userId = getUserIdFromLocalStorage();
 		try {
-			const response = await fetch(API_ENDPOINTS.UPDATE_ADMIN, {
+			const response = await fetch(API_ENDPOINTS.UPDATE_ADMIN(userId), {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify(editedProfile),
+				body: JSON.stringify(state.editedProfile),
 			});
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(`Network response was not ok: ${errorData.message}`);
 			}
-			onSave(editedProfile);
-			localStorage.setItem("userData", JSON.stringify(editedProfile));
-			setIsEditing(false);
+			onSave(state.editedProfile);
+			localStorage.setItem("userData", JSON.stringify(state.editedProfile));
+			setState((prevState) => ({ ...prevState, isEditing: false }));
 			onClose();
 		} catch (error) {
 			console.error("Error updating admin:", error);
 		}
+	};
+
+	const getUserIdFromLocalStorage = () => {
+		const userData = JSON.parse(localStorage.getItem("userData"));
+		return userData && userData.id ? userData.id : null;
 	};
 
 	return (
@@ -118,12 +128,14 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 			<div className="flex">
 				<div className="mx-4">
 					<img
-						src={editedProfile.photo || getDefaultPhoto(editedProfile.gender)}
-						alt={editedProfile.name}
+						src={state.editedProfile.photo || defaultPhoto}
+						alt={state.editedProfile.name}
 						className="w-32 h-32 mx-auto rounded-full"
 					/>
-					<h3 className="text-xl font-semibold my-4">{editedProfile.name}</h3>
-					{isEditing && (
+					<h3 className="text-xl font-semibold my-4">
+						{state.editedProfile.name}
+					</h3>
+					{state.isEditing && (
 						<div className="my-2">
 							<label
 								className="block text-gray-700 text-sm font-bold mb-2"
@@ -136,9 +148,9 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								name="photo"
 								onChange={handlePhotoChange}
 								className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								disabled={photoLoading}
+								disabled={state.photoLoading}
 							/>
-							{photoLoading && <p>Uploading...</p>}
+							{state.photoLoading && <p>Uploading...</p>}
 							<button
 								onClick={handleRemovePhoto}
 								className="bg-red-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2"
@@ -149,7 +161,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 					)}
 				</div>
 				<div className="mx-4">
-					{isEditing ? (
+					{state.isEditing ? (
 						<>
 							<div className="my-2">
 								<label
@@ -161,7 +173,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="text"
 									name="name"
-									value={editedProfile.name || ""}
+									value={state.editedProfile.name || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
@@ -176,37 +188,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="text"
 									name="role"
-									value={editedProfile.role || ""}
-									onChange={handleChange}
-									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								/>
-							</div>
-							<div className="my-2">
-								<label
-									className="block text-gray-700 text-sm font-bold mb-2"
-									htmlFor="gender"
-								>
-									Gender:
-								</label>
-								<input
-									type="text"
-									name="gender"
-									value={editedProfile.gender || ""}
-									onChange={handleChange}
-									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-								/>
-							</div>
-							<div className="my-2">
-								<label
-									className="block text-gray-700 text-sm font-bold mb-2"
-									htmlFor="dob"
-								>
-									Date Of Birth:
-								</label>
-								<input
-									type="date"
-									name="dob"
-									value={editedProfile.dob || ""}
+									value={state.editedProfile.role || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
@@ -221,7 +203,7 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 								<input
 									type="email"
 									name="email"
-									value={editedProfile.email || ""}
+									value={state.editedProfile.email || ""}
 									onChange={handleChange}
 									className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
 								/>
@@ -237,26 +219,20 @@ const AdminProfileModal = ({ isOpen, onClose, adminData, onSave }) => {
 						<>
 							<ModalDetails
 								modalTitle={"Name : "}
-								modalDesc={editedProfile.name}
+								modalDesc={state.editedProfile.name}
 							/>
 							<ModalDetails
 								modalTitle={"Role : "}
-								modalDesc={editedProfile.role}
-							/>
-							<ModalDetails
-								modalTitle={"Gender : "}
-								modalDesc={editedProfile.gender}
-							/>
-							<ModalDetails
-								modalTitle={"Date Of Birth : "}
-								modalDesc={editedProfile.dob}
+								modalDesc={state.editedProfile.role}
 							/>
 							<ModalDetails
 								modalTitle={"Email : "}
-								modalDesc={editedProfile.email}
+								modalDesc={state.editedProfile.email}
 							/>
 							<button
-								onClick={() => setIsEditing(true)}
+								onClick={() =>
+									setState((prevState) => ({ ...prevState, isEditing: true }))
+								}
 								className="bg-linear-blue hover:bg-linear-blue text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
 							>
 								Edit

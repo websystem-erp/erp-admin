@@ -166,7 +166,7 @@ const StudentsWithPaymentStatus = () => {
 							{[
 								...new Set(students.map((student) => student.department?.name)),
 							].map((dept) => (
-								<option key={dept} value={dept}>
+								<option key={dept || "default"} value={dept}>
 									{dept}
 								</option>
 							))}

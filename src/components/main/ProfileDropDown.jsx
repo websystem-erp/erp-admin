@@ -1,25 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminProfileModal from "./AdminProfileModal";
 
-const ProfileDropDown = ({ logout, userData, toggleForm, setUserData }) => {
+const ProfileDropDown = ({ logout, userData, setUserData }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 	const dropdownRef = useRef(null);
 
-	const defaultMalePhoto =
+	const defaultPhoto =
 		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
-	const defaultFemalePhoto =
-		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910872/images/dxflhaspx3rm1kcak2is.png";
 
-	const getDefaultPhoto = (gender) => {
-		return gender && gender.toLowerCase() === "female"
-			? defaultFemalePhoto
-			: defaultMalePhoto;
-	};
-
-	const toggleDropdown = () => {
-		setIsOpen(!isOpen);
-	};
+	const toggleDropdown = () => setIsOpen(!isOpen);
 
 	const handleClickOutside = (event) => {
 		if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -34,21 +24,13 @@ const ProfileDropDown = ({ logout, userData, toggleForm, setUserData }) => {
 		};
 	}, []);
 
-	const handleAssignRoleClick = () => {
-		toggleForm();
-		setIsOpen(false);
-	};
-
 	const handleProfileClick = () => {
 		setIsProfileModalOpen(true);
 		setIsOpen(false);
 	};
 
 	const handleSaveProfile = (updatedProfile) => {
-		// Update userData with the updated profile data
 		setUserData(updatedProfile);
-
-		// Save the updated profile data to local storage
 		localStorage.setItem("userData", JSON.stringify(updatedProfile));
 	};
 
@@ -63,7 +45,7 @@ const ProfileDropDown = ({ logout, userData, toggleForm, setUserData }) => {
 				>
 					<img
 						className="w-8 h-auto rounded-full"
-						src={userData.photo || getDefaultPhoto(userData.gender)}
+						src={userData.photo || defaultPhoto}
 						alt={userData?.name || "User"}
 					/>
 					<span className="text-gray-600 font-medium truncate max-w-[7.5rem]">
@@ -100,12 +82,6 @@ const ProfileDropDown = ({ logout, userData, toggleForm, setUserData }) => {
 						onClick={handleProfileClick}
 					>
 						Profile
-					</button>
-					<button
-						className="w-full flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-white hover:bg-linear-blue focus:outline-none focus:bg-linear-blue"
-						onClick={handleAssignRoleClick}
-					>
-						Assign Role
 					</button>
 					<button
 						className="flex items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-white hover:bg-linear-blue focus:outline-none focus:bg-linear-blue w-full"

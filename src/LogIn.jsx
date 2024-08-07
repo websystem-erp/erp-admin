@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"; // Correct import
+import { jwtDecode } from "jwt-decode";
 import API_ENDPOINTS from "./API/apiEndpoints";
 import AuthContext from "./context/AuthContext";
 
@@ -55,6 +55,8 @@ const LogIn = () => {
 			if (response.data.success) {
 				const userRole = response.data.data.role;
 				const selectedUserType = userType.toLowerCase();
+				// Log admin details
+				console.log("Admin Details:", response.data.data);
 				if (
 					userRole.toLowerCase() === "admin" ||
 					(userRole.toLowerCase() === "finance" &&

@@ -32,6 +32,7 @@ const Navbar = ({ logout, userData, toggleSidebar, setUserData }) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		const userId = getUserIdFromLocalStorage();
 		try {
 			const response = await axios.post(API_ENDPOINTS.CREATE_ADMIN, formData);
 			console.log(response.data);
@@ -68,8 +69,11 @@ const Navbar = ({ logout, userData, toggleSidebar, setUserData }) => {
 	};
 
 	const fetchTeacherPhoto = async (teacherId) => {
+		const userId = getUserIdFromLocalStorage();
 		try {
-			const response = await axios.get(API_ENDPOINTS.FETCH_TEACHERS(teacherId));
+			const response = await axios.get(
+				API_ENDPOINTS.FETCH_TEACHERS(userId, teacherId)
+			);
 			return response.data.data.photo;
 		} catch (error) {
 			if (error.response && error.response.status === 404) {
@@ -185,11 +189,6 @@ const Navbar = ({ logout, userData, toggleSidebar, setUserData }) => {
 					)}
 				</div>
 				<div className="flex items-center justify-center">
-					{/* <ProfileDropDown
-						logout={logout}
-						userData={userData}
-						toggleForm={toggleFormVisibility}
-					/> */}
 					<ProfileDropDown
 						logout={logout}
 						userData={userData}

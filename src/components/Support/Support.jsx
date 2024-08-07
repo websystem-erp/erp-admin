@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import API_ENDPOINTS from "../../API/apiEndpoints"; // Adjust the import path accordingly
-
+import API_ENDPOINTS from "../../API/apiEndpoints";
 const Support = () => {
 	const [formData, setFormData] = useState({
 		name: "",

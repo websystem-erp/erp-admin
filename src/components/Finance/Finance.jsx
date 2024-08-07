@@ -9,7 +9,8 @@ import {
 } from "react-router-dom";
 import Summary from "./Summary";
 import Transactions from "./Transactions";
-import StudentFees from "./student/StudentFees";
+// import StudentFees from "./student/StudentFees";
+import StudentWithPaymentStatus from "../Fees/StudentsWithPaymentStatus";
 import Payroll from "./Payroll";
 
 const Finance = () => {
@@ -45,7 +46,7 @@ const Finance = () => {
 					<Route path="/" element={<Navigate to="summary" />} />
 					<Route path="summary" element={<Summary />} />
 					<Route path="transactions" element={<Transactions />} />
-					<Route path="student-fees" element={<StudentFees />} />
+					<Route path="student-fees" element={<StudentWithPaymentStatus />} />
 					<Route path="payroll" element={<Payroll />} />
 				</Routes>
 			</div>
