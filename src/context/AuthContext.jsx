@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
 	const [token, setToken] = useState(null);
 	const [userData, setUserData] = useState(null);
 
-	useEffect(() => {
+	const refreshAuthState = () => {
 		const token = localStorage.getItem("token");
 		const storedUserData = localStorage.getItem("userData");
 		if (token && storedUserData) {
@@ -22,6 +22,10 @@ export const AuthProvider = ({ children }) => {
 				localStorage.removeItem("userData");
 			}
 		}
+	};
+
+	useEffect(() => {
+		refreshAuthState();
 	}, []);
 
 	return (
@@ -33,6 +37,7 @@ export const AuthProvider = ({ children }) => {
 				setToken,
 				userData,
 				setUserData,
+				refreshAuthState, // Export the refresh function
 			}}
 		>
 			{children}

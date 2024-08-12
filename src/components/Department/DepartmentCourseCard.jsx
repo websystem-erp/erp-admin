@@ -221,7 +221,7 @@ const DepartmentCourseCard = ({
 						<div className="relative inline-block">
 							<button
 								onClick={() => setIsOpen(!isOpen)}
-								className="relative z-10 block p-2 text-white bg-white border border-transparent rounded-full dark:text-white focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 focus:ring dark:bg-gray-800 focus:outline-none"
+								className="relative z-2 block p-2 text-white bg-white border border-transparent rounded-full dark:text-white focus:border-blue-500 focus:ring-opacity-40 dark:focus:ring-opacity-40 focus:ring-blue-300 focus:ring dark:bg-gray-800 focus:outline-none"
 							>
 								<Icon icon="zondicons:navigation-more" height={20} />
 							</button>

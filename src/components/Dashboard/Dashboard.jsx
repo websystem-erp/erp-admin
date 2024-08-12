@@ -12,7 +12,7 @@ import AllStudents from "../Students/AllStudents";
 import FeesListTable from "../Fees/StudentsWithPaymentStatus";
 
 const Dashboard = () => {
-	const { token, userData } = useContext(AuthContext);
+	const { token, isLoggedIn } = useContext(AuthContext);
 	const [dueFeesModalOpen, setDueFeesModalOpen] = useState(false);
 	const [reqModalOpen, setReqModalOpen] = useState(false);
 	const [students, setStudents] = useState([]);
@@ -23,18 +23,16 @@ const Dashboard = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		if (token) {
+		if (token && isLoggedIn) {
 			fetchStudents();
 		}
-	}, [token]);
+	}, [token, isLoggedIn]);
 
 	const fetchStudents = async () => {
 		setIsLoading(true);
 		try {
 			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_STUDENTS, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (Array.isArray(response.data.data)) {
 				setStudents(response.data.data);
@@ -57,9 +55,7 @@ const Dashboard = () => {
 	const fetchLeaves = async () => {
 		try {
 			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+				headers: { Authorization: `Bearer ${token}` },
 			});
 			if (Array.isArray(response.data.leaves)) {
 				const validLeaves = await fetchValidLeaves(response.data.leaves);
@@ -105,11 +101,7 @@ const Dashboard = () => {
 			const response = await axios.put(
 				API_ENDPOINTS.UPDATE_LEAVES(teacherId, action),
 				{ status: action },
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
+				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 			if (response.status === 200) {
 				fetchLeaves();

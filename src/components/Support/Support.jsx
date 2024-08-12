@@ -1,7 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
+
+// Define the function to get user ID from localStorage
+const getUserIdFromLocalStorage = () => {
+	const userData = JSON.parse(localStorage.getItem("userData"));
+	return userData && userData.id ? userData.id : null;
+};
+
 const Support = () => {
 	const [formData, setFormData] = useState({
 		name: "",
@@ -12,6 +19,31 @@ const Support = () => {
 	});
 	const [responseMessage, setResponseMessage] = useState("");
 	const [complaintNo, setComplaintNo] = useState("");
+
+	const userId = getUserIdFromLocalStorage();
+
+	// Fetch user details and autofill form
+	useEffect(() => {
+		if (userId) {
+			const fetchUserDetails = async () => {
+				try {
+					const response = await axios.get(
+						API_ENDPOINTS.FETCH_ADMIN_BY_ID(userId)
+					);
+					const { name, email } = response.data.data; // Adjusting based on the actual API response structure
+					setFormData({
+						...formData,
+						name: name || "",
+						email: email || "",
+						phone: "", // If your API doesn't provide phone, leave it as an empty string or adjust based on your needs
+					});
+				} catch (error) {
+					console.error("Error fetching user details:", error);
+				}
+			};
+			fetchUserDetails();
+		}
+	}, [userId]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -31,15 +63,29 @@ const Support = () => {
 			query: `${formData.option}: ${formData.message}`,
 		};
 
+		console.log("Submitting query data:", queryData); // Log the payload for debugging
+
 		try {
 			const response = await axios.post(
 				API_ENDPOINTS.CREATE_SUPPORT,
 				queryData
 			);
+			console.log("API Response:", response.data);
 			setResponseMessage(response.data.message);
-			setComplaintNo(response.data.queryData.complaintNo);
+			setComplaintNo(response.data.queryData?.complaintNo || "N/A");
 		} catch (error) {
 			console.error("Error sending query:", error);
+			if (error.response) {
+				console.error(
+					"Server responded with a status code:",
+					error.response.status
+				);
+				console.error("Response data:", error.response.data);
+			} else if (error.request) {
+				console.error("No response received:", error.request);
+			} else {
+				console.error("Error setting up the request:", error.message);
+			}
 			setResponseMessage("An error occurred. Please try again later.");
 		}
 	};
