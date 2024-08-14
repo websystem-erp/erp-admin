@@ -1,10 +1,13 @@
 import React from "react";
 import StudentList from "./StudentList";
+import ErrorBoundary from "./ErrorBoundary";
 
 const Students = () => {
 	return (
 		<>
-			<StudentList />
+			<ErrorBoundary>
+				<StudentList />
+			</ErrorBoundary>
 		</>
 	);
 };

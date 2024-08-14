@@ -4,6 +4,7 @@ import StudentForm from "./StudentForm";
 import ProfileModal from "./ProfileModal";
 import StudentTable from "./StudentTable";
 import ListTableBtn from "../List/ListTableBtn";
+import StudentUpload from "./StudentUpload";
 
 const StudentList = () => {
 	const [students, setStudents] = useState([]);
@@ -70,6 +71,36 @@ const StudentList = () => {
 		);
 	};
 
+	const handleStudentsUpload = async (uploadedStudents) => {
+		try {
+			for (const student of uploadedStudents) {
+				console.log("Student data:", student); // Log the full student object
+
+				if (!student.password || student.password.trim() === "") {
+					console.error(`Password is missing for student: ${student.name}`);
+					continue; // Skip this student or handle it as needed
+				}
+
+				const response = await fetch(API_ENDPOINTS.REGISTER_STUDENTS, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(student),
+				});
+				if (!response.ok) {
+					const errorData = await response.json();
+					console.error("Error response:", errorData);
+					throw new Error("Network response was not ok");
+				}
+				const data = await response.json();
+				setStudents((prevState) => [...prevState, data.data]);
+			}
+		} catch (error) {
+			console.error("Error uploading students:", error);
+		}
+	};
+
 	return (
 		<>
 			{isLoading ? (
@@ -88,6 +119,8 @@ const StudentList = () => {
 									buttonColor={"bg-linear-green"}
 									borderRadius={"rounded"}
 								/>
+								{/* Add the StudentUpload component */}
+								<StudentUpload onStudentsUpload={handleStudentsUpload} />
 							</div>
 						</div>
 						<StudentForm
