@@ -4,6 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import LogIn from "./LogIn";
 import Layout from "./Layout";
 import FeesDashboard from "./components/Dashboard/FeesDashboard";
+import ResetPassword from "./ResetPassword";
 import "./App.css";
 import AuthContext from "./context/AuthContext";
 
@@ -73,16 +74,7 @@ function App() {
 
 	return (
 		<Routes>
-			<Route
-				path="/login"
-				element={
-					<LogIn
-						setIsLoggedIn={setIsLoggedIn}
-						setToken={setToken}
-						setUserData={setUserData}
-					/>
-				}
-			/>
+			<Route path="/login" element={<LogIn />} />
 			<Route
 				path="/fees"
 				element={
@@ -92,6 +84,10 @@ function App() {
 						<Navigate to="/login" />
 					)
 				}
+			/>
+			<Route
+				path="/reset-password/:token/:userId"
+				element={<ResetPassword />}
 			/>
 			<Route
 				path="/*"

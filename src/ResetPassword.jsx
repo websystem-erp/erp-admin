@@ -1,157 +1,121 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_ENDPOINTS from "./API/apiEndpoints";
 
 const ResetPassword = () => {
-	const { token, userId } = useParams();
-	const [newPassword, setNewPassword] = useState("");
+	const { token, userId } = useParams(); // Extract token and userId from URL
+	const navigate = useNavigate(); // Initialize the useNavigate hook
+	const [password, setPassword] = useState(""); // Use 'password' instead of 'newPassword'
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
+	// Function to check if both passwords match
 	const checkPasswordMatch = () => {
-		return newPassword && confirmPassword && newPassword === confirmPassword;
+		return password && confirmPassword && password === confirmPassword;
 	};
 
+	// Function to handle form submission
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
 		if (!checkPasswordMatch()) {
 			setErrorMessage("Passwords do not match");
 			return;
 		}
+
+		if (!userId || !token) {
+			setErrorMessage("Invalid user ID or token");
+			return;
+		}
+
 		setIsSubmitting(true);
+
 		try {
-			const response = await axios.post(API_ENDPOINTS.RESET_PASSWORD, {
-				token,
+			// Ensure URL is constructed correctly
+			const resetPasswordUrl = API_ENDPOINTS.ADMIN_RESET_PASSWORD(
 				userId,
-				newPassword,
-			});
+				token
+			);
+			console.log("API URL:", resetPasswordUrl);
+
+			// Sending 'password' in the request body
+			const response = await axios.post(resetPasswordUrl, { password });
+
 			if (response.data.success) {
 				setSuccessMessage("Password reset successfully");
+				// Redirect to the login page after successful reset
+				setTimeout(() => {
+					navigate("/login");
+				}, 2000); // Redirect after 2 seconds
 			} else {
 				setErrorMessage("Failed to reset password. Please try again later.");
 			}
 		} catch (error) {
+			console.error("Error during password reset:", error);
 			setErrorMessage("An error occurred. Please try again later.");
 		}
+
 		setIsSubmitting(false);
 	};
 
 	return (
-		<div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
-			<div className="mx-auto max-w-lg">
-				<form
-					id="resetForm"
-					onSubmit={handleSubmit}
-					className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8"
-				>
-					<p className="text-center text-lg font-medium">Reset Password</p>
-
-					<div>
-						<label htmlFor="newPassword" className="sr-only">
-							Password
+		<div className="flex items-center justify-center h-screen bg-gray-100">
+			<div className="bg-white p-6 rounded-lg shadow-lg w-80">
+				<h2 className="text-center text-2xl font-semibold text-gray-700 mb-6">
+					Reset Password
+				</h2>
+				<form id="resetForm" onSubmit={handleSubmit}>
+					<div className="mb-4">
+						<label htmlFor="password" className="block text-gray-600 mb-2">
+							New Password
 						</label>
-
-						<div className="relative">
-							<input
-								id="newPassword"
-								type="password"
-								className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-								placeholder="New password"
-								value={newPassword}
-								onChange={(e) => setNewPassword(e.target.value)}
-								onInput={checkPasswordMatch}
-							/>
-							<span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="size-4 text-gray-400"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth="2"
-										d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-									/>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth="2"
-										d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-									/>
-								</svg>
-							</span>
-						</div>
+						<input
+							id="password"
+							type="password"
+							name="password"
+							placeholder="Enter new password"
+							className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+							required
+						/>
 					</div>
-					<div>
-						<label htmlFor="confirmPassword" className="sr-only">
-							Confirm New Password
+					<div className="mb-4">
+						<label
+							htmlFor="confirmPassword"
+							className="block text-gray-600 mb-2"
+						>
+							Confirm Password
 						</label>
-
-						<div className="relative">
-							<input
-								id="confirmPassword"
-								type="password"
-								className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-								placeholder="Confirm password"
-								value={confirmPassword}
-								onChange={(e) => setConfirmPassword(e.target.value)}
-								onInput={checkPasswordMatch}
-							/>
-							<span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="size-4 text-gray-400"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth="2"
-										d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-									/>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth="2"
-										d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-									/>
-								</svg>
-							</span>
-						</div>
+						<input
+							id="confirmPassword"
+							type="password"
+							name="confirmPassword"
+							placeholder="Confirm new password"
+							className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+							value={confirmPassword}
+							onChange={(e) => setConfirmPassword(e.target.value)}
+							required
+						/>
 					</div>
-
-					{errorMessage && (
-						<p id="errorMessage" className="text-red-500 text-sm">
-							{errorMessage}
-						</p>
-					)}
-
-					{successMessage && (
-						<p id="successMessage" className="text-green-500 text-sm">
-							{successMessage}
-						</p>
-					)}
-
 					<button
-						id="resetButton"
 						type="submit"
-						className="block w-full rounded-lg px-5 py-3 text-sm font-medium text-white disabled:opacity-50"
+						className="w-full py-2 px-4 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 disabled:opacity-50"
 						disabled={!checkPasswordMatch() || isSubmitting}
-						style={{
-							background:
-								"linear-gradient(195deg, rgb(73, 163, 241), rgb(26, 115, 232))",
-						}}
 					>
 						{isSubmitting ? "Submitting..." : "Reset Password"}
 					</button>
+					<p id="message" className="mt-4 text-center text-sm">
+						{errorMessage && (
+							<span className="text-red-500">{errorMessage}</span>
+						)}
+						{successMessage && (
+							<span className="text-green-500">{successMessage}</span>
+						)}
+					</p>
 				</form>
 			</div>
 		</div>

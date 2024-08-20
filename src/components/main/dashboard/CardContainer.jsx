@@ -40,8 +40,9 @@ const CardContainer = ({ onDueFeesClick, onPendingRequestClick }) => {
 	const fetchValidLeaves = async () => {
 		try {
 			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES);
+			const leaves = response.data.leaves || []; // Use an empty array if leaves is undefined
 			const validLeaves = await Promise.all(
-				response.data.leaves.map(async (leave) => {
+				leaves.map(async (leave) => {
 					const teacher = await fetchTeacherDetails(leave.teacherId);
 					return teacher ? leave : null;
 				})

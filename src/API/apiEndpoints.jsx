@@ -21,9 +21,10 @@ const API_ENDPOINTS = {
 	FETCH_ADMIN_BY_ID: (userId) => `${API_BASE_URL}/admin/${userId}`,
 	FETCH_ALL_ADMIN: `${API_BASE_URL}/admin`,
 	ADMIN_FORGOT_PASSWORD: `${API_BASE_URL}/admin/forget-password`,
-	ADMIN_RESET_PASSWORD: `${API_BASE_URL}/admin/reset-password/(token-value)`,
+	ADMIN_RESET_PASSWORD: (userId, token) =>
+		`${API_BASE_URL}/admin/reset-password/${token}/${userId}`,
 	ADMIN_LOGOUT: `${API_BASE_URL}/admin/logout`,
-	DELETE_ADMIN: `${API_BASE_URL}/admin/${userId}`,
+	DELETE_ADMIN: (userId) => `${API_BASE_URL}/admin/${userId}`,
 	// EMPLOYEE/TEACHERS
 	REGISTER_TEACHER: `${API_BASE_URL}/teacher/${userId}/reg`,
 	FETCH_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/fetchAll`,
