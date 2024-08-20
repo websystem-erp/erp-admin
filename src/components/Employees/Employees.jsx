@@ -4,13 +4,14 @@ import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
 import Employee from "../main/dashboard/employeesDetails/Employee";
 import CommonCard from "../List/CommonCard";
-import API_ENDPOINTS from "../../API/apiEndpoints";
 import DailyAttendancePercentage from "../Attendance/DailyAttendancePercentage";
+import EmployeeUpload from "./EmployeeUpload";
+import API_ENDPOINTS from "../../API/apiEndpoints";
 
 const Employees = () => {
 	const navigate = useNavigate();
 	const [leaves, setLeaves] = useState([]);
-	const [teachers, setTeachers] = useState({});
+	const [teachers, setTeachers] = useState([]);
 	const [currentPage, setCurrentPage] = useState(1);
 	const leavesPerPage = 2;
 
@@ -36,6 +37,7 @@ const Employees = () => {
 			}
 		};
 		fetchLeaves();
+		fetchTeachers();
 	}, []);
 
 	const fetchValidLeaves = async (leaves) => {
@@ -98,22 +100,6 @@ const Employees = () => {
 				}
 			);
 			if (response.status === 200) {
-				// Refetch leaves to update the list
-				const fetchLeaves = async () => {
-					try {
-						const response = await axios.get(
-							API_ENDPOINTS.FETCH_ALL_PENDING_LEAVES
-						);
-						if (Array.isArray(response.data.leaves)) {
-							const validLeaves = await fetchValidLeaves(response.data.leaves);
-							setLeaves(validLeaves);
-						} else {
-							console.error("Unexpected data format:", response.data);
-						}
-					} catch (error) {
-						console.error("Error fetching leaves:", error);
-					}
-				};
 				fetchLeaves();
 			} else {
 				throw new Error("Failed to update leave status");
@@ -129,6 +115,42 @@ const Employees = () => {
 
 	const handleReject = (teacherId) => {
 		updateLeaveStatus(teacherId, "Reject");
+	};
+
+	const fetchTeachers = async () => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_TEACHERS);
+			setTeachers(response.data.data || []);
+		} catch (error) {
+			console.error("Error fetching teachers:", error);
+		}
+	};
+
+	const handleEmployeesUpload = async (uploadedEmployees) => {
+		try {
+			for (const employee of uploadedEmployees) {
+				// Check if the password field exists and is a string before trimming
+				if (
+					!employee.password ||
+					typeof employee.password !== "string" ||
+					employee.password.trim() === ""
+				) {
+					console.error(
+						`Password is missing or invalid for employee: ${employee.name}`
+					);
+					continue; // Skip this employee or handle it as needed
+				}
+
+				// Assuming the rest of the employee data is valid, proceed with the upload
+				const response = await axios.post(
+					API_ENDPOINTS.REGISTER_TEACHER,
+					employee
+				);
+				setTeachers((prevState) => [...prevState, response.data.data]);
+			}
+		} catch (error) {
+			console.error("Error uploading employees:", error);
+		}
 	};
 
 	// Pagination logic
@@ -234,6 +256,13 @@ const Employees = () => {
 					</div>
 				</div>
 			</div>
+
+			{/* Employee Upload */}
+			<div className="p-4">
+				<h3 className="font-bold text-2xl">Upload Employees</h3>
+				<EmployeeUpload onEmployeesUpload={handleEmployeesUpload} />
+			</div>
+
 			<Employee />
 		</>
 	);

@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import LogIn from "./LogIn";
 import Layout from "./Layout";
-import FeesDashboard from "./components/Dashboard/FeesDashboard"; // Import Finance Dashboard
+import FeesDashboard from "./components/Dashboard/FeesDashboard";
 import "./App.css";
 import AuthContext from "./context/AuthContext";
 
@@ -18,7 +18,7 @@ function App() {
 		setUserData(null);
 		localStorage.removeItem("token");
 		localStorage.removeItem("userData");
-		localStorage.removeItem("userType"); // Remove userType from localStorage
+		localStorage.removeItem("userType");
 	};
 
 	const setLogoutTimer = (expirationTime) => {
