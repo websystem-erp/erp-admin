@@ -15,6 +15,11 @@ if (!userId) {
 const API_ENDPOINTS = {
 	// verify otp
 	VERIFY_OTP: (roleId) => `${API_BASE_URL}/admin/verify-email/${roleId}`,
+
+	//campus
+	FECTH_CAMPUS_BY_ID: (campusId) =>
+		`${API_BASE_URL}/campus/fetch-campus/${campusId}`,
+
 	// Onboarding
 	CREATE_CAMPUS: `${API_BASE_URL}/campus/reg/campus`,
 	CREATE_BRANCH: `${API_BASE_URL}/campus/reg/branch`,
@@ -84,7 +89,7 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/department/update/${departmentId}`,
 	DELETE_DEPARTMENT: (departmentId) =>
 		`${API_BASE_URL}/department/delete/${departmentId}`,
-	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
+	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll/${userId}`,
 	FETCH_DEPARTMENTS: (departmentId) =>
 		`${API_BASE_URL}/department/fetch/${departmentId}`,
 	//SUPPORT

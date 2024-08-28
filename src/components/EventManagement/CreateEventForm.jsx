@@ -39,7 +39,6 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 				...prevData,
 				photo: response.data.secure_url,
 			}));
-			// Log the form data after setting the photo
 			console.log("Form data after photo upload:", {
 				...formData,
 				photo: response.data.secure_url,
@@ -64,12 +63,29 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 
 		const formattedDate = new Date(formData.date).toISOString();
 
+		// Safely parse and access userData from localStorage
+		let campusId = null;
+		try {
+			const userData = JSON.parse(localStorage.getItem("userData"));
+			campusId = userData?.id; // Assuming id is the campusId
+		} catch (error) {
+			console.error("Error parsing user data from localStorage:", error);
+			alert("There was an error accessing your user data.");
+			return;
+		}
+
+		if (!campusId) {
+			alert("User data not found. Please check your login status.");
+			return;
+		}
+
 		// Log the form data before submitting
 		console.log("Form data being submitted:", {
 			title: formData.title,
 			description: formData.description,
 			date: formattedDate,
 			photo: formData.photo,
+			campusId: campusId,
 		});
 
 		try {
@@ -78,6 +94,7 @@ const CreateEventForm = ({ onClose, onAddEvent }) => {
 				description: formData.description,
 				date: formattedDate,
 				photo: formData.photo,
+				campusId: campusId,
 			});
 			const newEvent = response.data.data; // Assuming the API response contains the new event data
 			onAddEvent(newEvent);
