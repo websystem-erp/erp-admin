@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import Employee from "../main/dashboard/employeesDetails/Employee";
 import CommonCard from "../List/CommonCard";
 import DailyAttendancePercentage from "../Attendance/DailyAttendancePercentage";
-import EmployeeUpload from "./EmployeeUpload";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 
 const Employees = () => {
@@ -126,33 +125,6 @@ const Employees = () => {
 		}
 	};
 
-	const handleEmployeesUpload = async (uploadedEmployees) => {
-		try {
-			for (const employee of uploadedEmployees) {
-				// Check if the password field exists and is a string before trimming
-				if (
-					!employee.password ||
-					typeof employee.password !== "string" ||
-					employee.password.trim() === ""
-				) {
-					console.error(
-						`Password is missing or invalid for employee: ${employee.name}`
-					);
-					continue; // Skip this employee or handle it as needed
-				}
-
-				// Assuming the rest of the employee data is valid, proceed with the upload
-				const response = await axios.post(
-					API_ENDPOINTS.REGISTER_TEACHER,
-					employee
-				);
-				setTeachers((prevState) => [...prevState, response.data.data]);
-			}
-		} catch (error) {
-			console.error("Error uploading employees:", error);
-		}
-	};
-
 	// Pagination logic
 	const indexOfLastLeave = currentPage * leavesPerPage;
 	const indexOfFirstLeave = indexOfLastLeave - leavesPerPage;
@@ -255,12 +227,6 @@ const Employees = () => {
 						</button>
 					</div>
 				</div>
-			</div>
-
-			{/* Employee Upload */}
-			<div className="p-4">
-				<h3 className="font-bold text-2xl">Upload Employees</h3>
-				<EmployeeUpload onEmployeesUpload={handleEmployeesUpload} />
 			</div>
 
 			<Employee />

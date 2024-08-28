@@ -37,9 +37,8 @@ const LogIn = () => {
 					navigate("/login");
 				}
 			} else {
-				localStorage.removeItem("token");
-				localStorage.removeItem("userData");
-				localStorage.removeItem("userType");
+				localStorage.clear(); // Clear all related data
+				navigate("/login"); // Redirect to login
 			}
 		}
 	}, [setIsLoggedIn, setToken, setUserData, navigate]);
@@ -54,30 +53,23 @@ const LogIn = () => {
 		try {
 			const response = await axios.post(API_ENDPOINTS.ADMIN_LOGIN, credentials);
 			if (response.data.success) {
-				const userRole = response.data.data.role;
+				const userRole = response.data.data.role.toLowerCase();
 				const selectedUserType = userType.toLowerCase();
-				// Log admin details
-				console.log("Admin Details:", response.data.data);
+
 				if (
-					userRole.toLowerCase() === "admin" ||
-					(userRole.toLowerCase() === "finance" &&
-						selectedUserType === "finance")
+					userRole === "admin" ||
+					(userRole === "finance" && selectedUserType === "finance")
 				) {
 					setIsLoggedIn(true);
 					setToken(response.data.token);
 					localStorage.setItem("token", response.data.token);
 					localStorage.setItem("userData", JSON.stringify(response.data.data));
-					localStorage.setItem("userType", selectedUserType); // Store userType in localStorage
+					localStorage.setItem("userType", selectedUserType);
 					setUserData(response.data.data);
 
 					refreshAuthState(); // Refresh authentication state after login
 
-					if (
-						userRole.toLowerCase() === "admin" &&
-						selectedUserType === "finance"
-					) {
-						navigate("/fees");
-					} else if (userRole.toLowerCase() === "finance") {
+					if (userRole === "finance") {
 						navigate("/fees");
 					} else {
 						navigate("/");
@@ -89,8 +81,9 @@ const LogIn = () => {
 				}
 			}
 		} catch (error) {
+			console.error("Login error:", error); // Log error for debugging
 			if (error.response && error.response.status === 401) {
-				setErrorMessage("Credentials input incorrect, please try again");
+				setErrorMessage("Credentials input incorrect, please try again.");
 			} else {
 				setErrorMessage("An error occurred. Please try again later.");
 			}
@@ -107,6 +100,7 @@ const LogIn = () => {
 				setForgotPasswordMessage("Password reset link sent to your email.");
 			}
 		} catch (error) {
+			console.error("Forgot Password error:", error); // Log error for debugging
 			setForgotPasswordMessage(
 				"An error occurred. Please try again later or contact support."
 			);

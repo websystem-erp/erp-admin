@@ -13,6 +13,13 @@ if (!userId) {
 }
 
 const API_ENDPOINTS = {
+	// verify otp
+	VERIFY_OTP: (roleId) => `${API_BASE_URL}/admin/verify-email/${roleId}`,
+	// Onboarding
+	CREATE_CAMPUS: `${API_BASE_URL}/campus/reg/campus`,
+	CREATE_BRANCH: `${API_BASE_URL}/campus/reg/branch`,
+	CREATE_ROLE: `${API_BASE_URL}/admin/reg`,
+
 	// admin
 	CREATE_ADMIN: `${API_BASE_URL}/admin/reg`,
 	VERIFY_EMAIL: `${API_BASE_URL}/admin/verify-email/1`,
