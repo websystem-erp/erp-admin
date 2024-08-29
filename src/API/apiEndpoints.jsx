@@ -19,6 +19,7 @@ const API_ENDPOINTS = {
 	//campus
 	FECTH_CAMPUS_BY_ID: (campusId) =>
 		`${API_BASE_URL}/campus/fetch-campus/${campusId}`,
+	UPDATE_CAMPUS: `${API_BASE_URL}/campus/update-campus`,
 
 	// Onboarding
 	CREATE_CAMPUS: `${API_BASE_URL}/campus/reg/campus`,
