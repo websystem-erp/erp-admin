@@ -25,6 +25,8 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/admin/reset-password/${token}/${userId}`,
 	ADMIN_LOGOUT: `${API_BASE_URL}/admin/logout`,
 	DELETE_ADMIN: (userId) => `${API_BASE_URL}/admin/${userId}`,
+	
+	
 	// EMPLOYEE/TEACHERS
 	REGISTER_TEACHER: `${API_BASE_URL}/teacher/${userId}/reg`,
 	FETCH_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/fetchAll`,
@@ -34,11 +36,15 @@ const API_ENDPOINTS = {
 	DELETE_TEACHERS: (id) => `${API_BASE_URL}/teacher/${userId}/delete/${id}`,
 	DELETE_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/deleteAllTeacher`,
 	LOGIN_TEACHERS: `${API_BASE_URL}/teacher/login`,
+	
+	
 	// ATTENDANCE
 	MARK_FACULTY_TEACHERS: `${API_BASE_URL}/attendance/markFacultyAttendance`,
 	ALL_FACULTY_ATTENDANCE_DATE: (date) =>
 		`${API_BASE_URL}/attendance/fetchFacultyAttendance/${date}`,
 	UPDATE_ATTENDANCE: `${API_BASE_URL}/attendance/updateFacultyAttendance`,
+	
+	
 	// STUDENTS
 	REGISTER_STUDENTS: `${API_BASE_URL}/student/${userId}/reg`,
 	FETCH_STUDENT: (studentID) =>
@@ -50,6 +56,9 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/student/${userId}/deleteStudent/${eventId}`,
 	DELETE_ALL_STUDENTSS: `${API_BASE_URL}/student/${userId}/deleteAllStudent`,
 	LOGIN_STUDENTS: `${API_BASE_URL}/student/login`,
+	
+	
+	
 	// SUBJECTS
 	CREATE_SUBJECT: (departmentId) =>
 		`${API_BASE_URL}/subject/${departmentId}/reg`,
@@ -59,27 +68,35 @@ const API_ENDPOINTS = {
 		`${API_BASE_URL}/subject/update/${parseInt(subjectId, 10)}`,
 	DELETE_SUBJECT: (subjectId) =>
 		`${API_BASE_URL}/subject/delete-subject/${parseInt(subjectId, 10)}`,
+	
+	
 	// EVENT
 	CREATE_EVENT: `${API_BASE_URL}/event/create`,
 	FETCH_ALL_EVENTS: `${API_BASE_URL}/event/fetchAll`,
 	UPDATE_EVENT: (eventId) => `${API_BASE_URL}/event/update-event/${eventId}`,
 	DELETE_ALL_EVENT: `${API_BASE_URL}/event/deleteAll`,
 	DELETE_EVENT: (eventId) => `${API_BASE_URL}/event/delete-event/${eventId}`,
+	
+	
 	// LEAVE
 	APPLY_LEAVE: `${API_BASE_URL}/Leave/apply-leave`,
 	FETCH_ALL_LEAVES_TEACHER_ID: `${API_BASE_URL}/leave/fetch-leaves/`,
 	FETCH_ALL_PENDING_LEAVES: `${API_BASE_URL}/leave/pending-leaves`,
 	UPDATE_LEAVES: (teacherId, action) =>
 		`${API_BASE_URL}/leave/change-status/${teacherId}/${action}`,
+	
+	
 	// DEPARTMENT
 	CREATE_DEPARTMENTS: `${API_BASE_URL}/department/${userId}/reg`,
 	UPDATE_DEPARTMENTS: (departmentId) =>
 		`${API_BASE_URL}/department/update/${departmentId}`,
 	DELETE_DEPARTMENT: (departmentId) =>
 		`${API_BASE_URL}/department/delete/${departmentId}`,
-	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll`,
+	FETCH_ALL_DEPARTMENTS: `${API_BASE_URL}/department/fetchAll/${userId}`,
 	FETCH_DEPARTMENTS: (departmentId) =>
 		`${API_BASE_URL}/department/fetch/${departmentId}`,
+	
+	
 	//SUPPORT
 	CREATE_SUPPORT: `${API_BASE_URL}/support/create`,
 	//Fees
