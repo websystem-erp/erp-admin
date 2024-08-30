@@ -51,6 +51,8 @@ const API_ENDPOINTS = {
 	MARK_FACULTY_TEACHERS: `${API_BASE_URL}/attendance/markFacultyAttendance`,
 	ALL_FACULTY_ATTENDANCE_DATE: (date) =>
 		`${API_BASE_URL}/attendance/fetchFacultyAttendance/${date}`,
+	FACULTY_ATTENDANCE_BY_DATE_ID: (date, id) =>
+		`${API_BASE_URL}/attendance/faculty-attendanceById/${date}/${id}`,
 	UPDATE_ATTENDANCE: `${API_BASE_URL}/attendance/updateFacultyAttendance`,
 	// STUDENTS
 	REGISTER_STUDENTS: `${API_BASE_URL}/student/${userId}/reg`,
