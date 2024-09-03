@@ -30,7 +30,7 @@ const OnboardingForm = ({ onClose }) => {
 		<div className="mb-8">
 			<h2 className="sr-only">Steps</h2>
 			<div>
-				<ol className="flex items-center gap-2 text-xs font-medium text-gray-500 sm:gap-4">
+				<ol className="flex items-center justify-between gap-2 text-xs font-medium text-gray-500 sm:gap-4">
 					{["Campus", "Branch", "Admin", "Review"].map((label, index) => (
 						<li key={label} className="flex items-center justify-center gap-2">
 							<span
@@ -71,7 +71,7 @@ const OnboardingForm = ({ onClose }) => {
 
 	return (
 		<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-			<div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-fit">
+			<div className="bg-white p-8 rounded-lg shadow-xl md:w-[30vw] w-[90vw] ">
 				<div className="flex justify-between items-center mb-6">
 					<h2 className="text-2xl font-bold text-gray-700">
 						School Onboarding
