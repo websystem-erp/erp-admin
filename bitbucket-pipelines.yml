@@ -1,0 +1,48 @@
+image: node:16
+
+pipelines:
+  default:
+    - step:
+        name: Install Dependencies
+        caches:
+          - node
+        script:
+          - npm install
+  branches:
+    master:
+      - step:
+          name: Build
+          caches:
+            - node
+          script:
+            - npm install
+            - npm run build
+            - ls -la dist  # Check the contents of the dist directory
+            - apt-get update
+            - apt-get install zip -y
+            - zip -r dist.zip dist
+          artifacts:
+            - dist.zip
+      - step:
+          name: Deploy to Production
+          deployment: Production
+          trigger: manual
+          clone:
+            enabled: false
+          script:
+            - pipe: atlassian/aws-s3-deploy:1.1.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-south-1'
+                S3_BUCKET: 'school-erp-admin'
+                LOCAL_PATH: 'dist.zip'
+            - pipe: atlassian/aws-code-deploy:0.4.0
+              variables:
+                AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+                AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                AWS_DEFAULT_REGION: 'ap-south-1'
+                APPLICATION_NAME: 'SchoolERPApp'
+                DEPLOYMENT_GROUP: 'SchoolERP-DeploymentGroup'
+                S3_BUCKET: 'school-erp-admin'
+                S3_KEY: 'dist.zip'
