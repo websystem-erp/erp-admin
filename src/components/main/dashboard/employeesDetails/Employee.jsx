@@ -7,6 +7,7 @@ import ModalDetails from "../../../popup/ModalDetails";
 import EmployeeAddForm from "../../../Forms/EmployeeAddForm";
 import API_ENDPOINTS from "../../../../API/apiEndpoints";
 import axios from "axios";
+import EmployeeUpload from "../../../Employees/EmployeeUpload";
 
 const Employee = () => {
 	const [teachers, setTeachers] = useState([]);
@@ -141,6 +142,33 @@ const Employee = () => {
 		}
 	};
 
+	const handleEmployeesUpload = async (uploadedEmployees) => {
+		try {
+			for (const employee of uploadedEmployees) {
+				// Check if the password field exists and is a string before trimming
+				if (
+					!employee.password ||
+					typeof employee.password !== "string" ||
+					employee.password.trim() === ""
+				) {
+					console.error(
+						`Password is missing or invalid for employee: ${employee.name}`
+					);
+					continue; // Skip this employee or handle it as needed
+				}
+
+				// Assuming the rest of the employee data is valid, proceed with the upload
+				const response = await axios.post(
+					API_ENDPOINTS.REGISTER_TEACHER,
+					employee
+				);
+				setTeachers((prevState) => [...prevState, response.data.data]);
+			}
+		} catch (error) {
+			console.error("Error uploading employees:", error);
+		}
+	};
+
 	return (
 		<>
 			{isLoading ? (
@@ -149,6 +177,7 @@ const Employee = () => {
 				<div className="bg-white p-8 rounded-md w-fit sm:w-full">
 					<div className="flex items-center justify-between pb-6">
 						<h2 className="text-gray-600 font-semibold">Employee Details</h2>
+						<EmployeeUpload onEmployeesUpload={handleEmployeesUpload} />
 						<ListTableBtn
 							text={"Add Employee"}
 							buttonColor={"bg-linear-green"}
@@ -175,7 +204,7 @@ const Employee = () => {
 								name={teacher.name}
 								role={teacher.role}
 								id={
-									teacher.subject.length > 0
+									Array.isArray(teacher.subject) && teacher.subject.length > 0
 										? teacher.subject[0].department.name
 										: "N/A"
 								}
@@ -193,6 +222,7 @@ const Employee = () => {
 										contactNumber: teacher.contactNumber,
 										departmentId: teacher.departmentId,
 										departmentName:
+											Array.isArray(teacher.subject) &&
 											teacher.subject.length > 0
 												? teacher.subject[0].department.name
 												: "N/A",

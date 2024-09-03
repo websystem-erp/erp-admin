@@ -1,170 +1,257 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import DailyAttendancePercentage from "./DailyAttendancePercentage";
+import moment from "moment";
+import AttendanceCalendar from "./AttendanceCalendar";
+import AttendanceModal from "./AttendanceModal";
+import EmployeeCard from "./EmployeeCard";
 
 const Attendance = () => {
 	const [teachers, setTeachers] = useState([]);
 	const [departments, setDepartments] = useState([]);
 	const [selectedDepartment, setSelectedDepartment] = useState("");
-	const [selectedDate, setSelectedDate] = useState(new Date());
+	const [selectedDate, setSelectedDate] = useState(moment());
 	const [attendance, setAttendance] = useState({});
-	const [attendanceStatus, setAttendanceStatus] = useState([]);
-	const [attendanceFetched, setAttendanceFetched] = useState(false);
-	const [attendanceMarked, setAttendanceMarked] = useState(false);
-	const [selectAll, setSelectAll] = useState(false);
-	const [presentPercentage, setPresentPercentage] = useState(0);
-	const [absentPercentage, setAbsentPercentage] = useState(0);
+	const [monthlyAttendance, setMonthlyAttendance] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState(null);
+	const [showModal, setShowModal] = useState(false);
+	const [selectedEvent, setSelectedEvent] = useState(null);
+	const [oldestTeacherDate, setOldestTeacherDate] = useState(null);
+	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
 
 	useEffect(() => {
-		const fetchDepartments = async () => {
+		const fetchInitialData = async () => {
 			try {
-				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
-				setDepartments(response.data.data);
-			} catch (error) {
-				console.error("Error fetching departments:", error);
+				setIsLoading(true);
+				await Promise.all([fetchTeachers(), fetchDepartments()]);
+			} catch (err) {
+				setError("Failed to fetch initial data. Please try again.");
+			} finally {
+				setIsLoading(false);
 			}
 		};
-
-		const fetchTeachers = async () => {
-			try {
-				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_TEACHERS);
-				setTeachers(response.data.data);
-			} catch (error) {
-				console.error("Error fetching teachers:", error);
-			}
-		};
-
-		fetchDepartments();
-		fetchTeachers();
+		fetchInitialData();
 	}, []);
 
 	useEffect(() => {
-		fetchAttendanceStatus();
-	}, [selectedDate]);
+		if (teachers.length > 0 && oldestTeacherDate) {
+			fetchAttendanceData();
+		}
+	}, [selectedDate, teachers, oldestTeacherDate]);
+
+	const fetchTeachers = async () => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_TEACHERS);
+			const sortedTeachers = response.data.data.sort(
+				(a, b) => new Date(a.created_at) - new Date(b.created_at)
+			);
+			setTeachers(sortedTeachers);
+			if (sortedTeachers.length > 0) {
+				setOldestTeacherDate(
+					moment(sortedTeachers[0].created_at).startOf("day")
+				);
+			}
+		} catch (error) {
+			throw new Error("Failed to fetch teachers");
+		}
+	};
+
+	const fetchDepartments = async () => {
+		try {
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
+			setDepartments(response.data.data || []);
+		} catch (error) {
+			throw new Error("Failed to fetch departments");
+		}
+	};
+
+	const fetchAttendanceData = async () => {
+		setIsLoading(true);
+		setError(null);
+		try {
+			const formattedDate = selectedDate.format("YYYY-MM-DD");
+			const response = await axios.get(
+				API_ENDPOINTS.ALL_FACULTY_ATTENDANCE_DATE(formattedDate)
+			);
+			if (response.data.success) {
+				const newAttendance = {};
+				response.data.attendanceStatus.forEach((status) => {
+					newAttendance[status.id] = status.status;
+				});
+				setAttendance(newAttendance);
+			}
+			await fetchMonthlyAttendance();
+		} catch (error) {
+			if (error.response && error.response.status === 404) {
+				// Attendance doesn't exist for this date, set all to absent
+				const newAttendance = {};
+				teachers.forEach((teacher) => {
+					newAttendance[teacher.id] = "Absent";
+				});
+				setAttendance(newAttendance);
+			} else {
+				setError("Failed to fetch attendance data. Please try again.");
+			}
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const fetchMonthlyAttendance = async () => {
+		const endDate = moment().endOf("day");
+		const startDate = moment.max(
+			oldestTeacherDate,
+			endDate.clone().subtract(30, "days").startOf("day")
+		);
+		const monthlyData = [];
+
+		for (
+			let date = moment(startDate);
+			date <= endDate;
+			date = date.clone().add(1, "d")
+		) {
+			const formattedDate = date.format("YYYY-MM-DD");
+			try {
+				const apiUrl = API_ENDPOINTS.ALL_FACULTY_ATTENDANCE_DATE(formattedDate);
+				const response = await axios.get(apiUrl);
+				if (response.data && response.data.attendanceStatus) {
+					const presentEmployees = response.data.attendanceStatus.filter(
+						(e) => e.status === "Present"
+					);
+					const absentEmployees = response.data.attendanceStatus.filter(
+						(e) => e.status === "Absent"
+					);
+					monthlyData.push({
+						date: formattedDate,
+						attendanceMarked: true,
+						presentEmployees,
+						absentEmployees,
+					});
+				}
+			} catch (error) {
+				if (error.response && error.response.status !== 404) {
+					console.error(
+						`Error fetching attendance for ${formattedDate}:`,
+						error
+					);
+				}
+				monthlyData.push({
+					date: formattedDate,
+					attendanceMarked: false,
+					presentEmployees: [],
+					absentEmployees: [],
+				});
+			}
+		}
+		setMonthlyAttendance(monthlyData);
+	};
 
 	const handleDepartmentChange = (event) => {
 		setSelectedDepartment(event.target.value);
 	};
 
 	const handleDateChange = (date) => {
-		setSelectedDate(date);
-		setAttendanceFetched(false);
-		setAttendanceMarked(false);
+		setSelectedDate(moment(date));
 	};
 
-	const handleAttendanceChange = (teacherId) => {
+	const handleAttendanceChange = (teacherId, status) => {
 		setAttendance((prev) => ({
 			...prev,
-			[teacherId]: !prev[teacherId],
+			[teacherId]: status,
 		}));
 	};
 
-	const handleSelectAllChange = (event) => {
-		const checked = event.target.checked;
-		setSelectAll(checked);
-		const newAttendance = {};
-		if (checked) {
-			filteredTeachers.forEach((teacher) => {
-				newAttendance[teacher.id] = true;
-			});
-		}
-		setAttendance(newAttendance);
+	const handleSubmit = async () => {
+		setShowUpdateDialog(true);
 	};
 
-	const postAttendance = async () => {
-		const selectedTeachers = Object.keys(attendance).filter(
-			(teacherId) => attendance[teacherId]
+	const submitAttendance = async () => {
+		const presentTeachers = Object.keys(attendance).filter(
+			(teacherId) => attendance[teacherId] === "Present"
 		);
 		const attendanceData = {
-			date: selectedDate.toISOString().split("T")[0],
-			selectedTeachers: selectedTeachers.map(Number),
+			date: selectedDate.format("YYYY-MM-DD"),
+			selectedTeachers: presentTeachers.map(Number),
 		};
 
 		try {
-			const apiUrl = API_ENDPOINTS.MARK_FACULTY_TEACHERS;
-			await axios.post(apiUrl, attendanceData);
-			alert("Attendance marked successfully!");
-			setAttendance({});
-			setAttendanceFetched(false);
-			fetchAttendanceStatus(); // Refetch attendance status to update the UI
-		} catch (error) {
-			if (error.response && error.response.status === 409) {
-				alert("Attendance is already marked for this date!");
-				setAttendanceMarked(true);
+			const apiUrl = API_ENDPOINTS.UPDATE_ATTENDANCE;
+			console.log("Submitting attendance to:", apiUrl);
+			console.log("Attendance data:", attendanceData);
+
+			const response = await axios.post(apiUrl, attendanceData);
+
+			if (response.data.success) {
+				alert("Attendance updated successfully!");
+				fetchAttendanceData();
 			} else {
-				console.error("Error marking attendance:", error);
-				alert(
-					`Error marking attendance: ${
-						error.response?.data?.message || error.message
-					}`
-				);
+				throw new Error(response.data.message);
 			}
-		}
-	};
-
-	const fetchAttendanceStatus = async () => {
-		try {
-			const formattedDate = selectedDate.toISOString().split("T")[0];
-			const apiUrl = API_ENDPOINTS.ALL_FACULTY_ATTENDANCE_DATE(formattedDate);
-			const response = await axios.get(apiUrl);
-			setAttendanceStatus(response.data.attendanceStatus || []);
-			setAttendanceFetched(true);
-			setAttendanceMarked(
-				response.data.attendanceStatus &&
-					response.data.attendanceStatus.length > 0
-			);
-			calculateDailyAttendancePercentage(response.data.attendanceStatus || []);
 		} catch (error) {
-			console.error("Error fetching attendance status:", error);
-			setAttendanceStatus([]);
-			setAttendanceFetched(true);
+			console.error("Error updating attendance:", error);
+			alert(`Error updating attendance: ${error.message}`);
+		} finally {
+			setShowUpdateDialog(false);
 		}
 	};
 
-	const calculateDailyAttendancePercentage = (attendanceStatus) => {
-		const totalTeachers = teachers.length;
-		const presentTeachers = attendanceStatus.filter(
-			(teacher) => teacher.status === "Present"
-		).length;
-
-		if (totalTeachers === 0) {
-			setPresentPercentage(0);
-			setAbsentPercentage(0);
-			return;
-		}
-
-		const presentPercentage = (presentTeachers / totalTeachers) * 100;
-		const absentPercentage = 100 - presentPercentage;
-
-		setPresentPercentage(presentPercentage);
-		setAbsentPercentage(absentPercentage);
+	const handleEventSelect = (event) => {
+		setSelectedEvent(event);
+		setShowModal(true);
 	};
 
-	const filteredTeachers = selectedDepartment
-		? teachers.filter((teacher) =>
-				teacher.subject.some(
-					(subject) => subject.department.id === parseInt(selectedDepartment)
-				)
-		  )
-		: teachers;
+	const handleSaveEdit = async (requestBody) => {
+		try {
+			const apiUrl = API_ENDPOINTS.UPDATE_ATTENDANCE;
+			await axios.put(apiUrl, requestBody);
+			alert("Attendance updated successfully!");
+			setShowModal(false);
+			fetchAttendanceData();
+		} catch (error) {
+			console.error("Error updating attendance:", error);
+			alert(`Error updating attendance: ${error.message}`);
+		}
+	};
 
-	const presentTeachers = attendanceStatus.filter(
-		(teacher) => teacher.status === "Present"
-	);
-	const absentTeachers = attendanceStatus.filter(
-		(teacher) => teacher.status === "Absent"
-	);
+	const filteredTeachers = useMemo(() => {
+		return selectedDepartment
+			? teachers.filter((teacher) =>
+					teacher.subject.some(
+						(subject) => subject.department.id === parseInt(selectedDepartment)
+					)
+			  )
+			: teachers;
+	}, [teachers, selectedDepartment]);
+
+	const calendarEvents = useMemo(() => {
+		return monthlyAttendance.map((day) => ({
+			title: day.attendanceMarked
+				? `Present: ${day.presentEmployees.length}, Absent: ${day.absentEmployees.length}`
+				: "No data",
+			start: new Date(day.date),
+			end: new Date(day.date),
+			attendanceMarked: day.attendanceMarked,
+			presentCount: day.presentEmployees.length,
+			absentCount: day.absentEmployees.length,
+			presentEmployees: day.presentEmployees,
+			absentEmployees: day.absentEmployees,
+			allDay: true,
+		}));
+	}, [monthlyAttendance]);
+
+	if (isLoading) {
+		return <div className="text-center mt-8">Loading...</div>;
+	}
+
+	if (error) {
+		return <div className="text-center mt-8 text-red-500">{error}</div>;
+	}
 
 	return (
-		<>
-			<DailyAttendancePercentage
-				presentPercentage={presentPercentage}
-				absentPercentage={absentPercentage}
-				selectedDate={selectedDate}
-			/>
+		<div className="container mx-auto p-4">
+			<h1 className="text-2xl font-bold mb-4">Employee Attendance</h1>
+
 			<div className="w-full flex gap-4 mb-4">
 				<select
 					onChange={handleDepartmentChange}
@@ -178,118 +265,76 @@ const Attendance = () => {
 						</option>
 					))}
 				</select>
-				<DatePicker
-					selected={selectedDate}
-					onChange={handleDateChange}
+				<input
+					type="date"
+					value={selectedDate.format("YYYY-MM-DD")}
+					onChange={(e) => handleDateChange(e.target.value)}
 					className="border p-2 rounded"
 				/>
 			</div>
-			<div>
-				<fieldset>
-					<div className="text-lg font-medium text-gray-900">
-						Selected Date: {selectedDate.toLocaleDateString()}
-					</div>
 
-					<div className="mt-4 space-y-2">
-						<label
-							htmlFor="select-all"
-							className="flex cursor-pointer items-start gap-4"
-						>
-							<div className="flex items-center">
-								<input
-									type="checkbox"
-									className="size-4 rounded border-gray-300"
-									id="select-all"
-									checked={selectAll}
-									onChange={handleSelectAllChange}
-									disabled={filteredTeachers.length === 0}
-								/>
-							</div>
-
-							<div>
-								<strong className="font-medium text-gray-900">
-									Select All
-								</strong>
-							</div>
-						</label>
-						{filteredTeachers.length === 0 && <p>No teachers found.</p>}
+			{filteredTeachers.length === 0 ? (
+				<p>No employees found. Please add employees to mark attendance.</p>
+			) : (
+				<div>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 						{filteredTeachers.map((teacher) => (
-							<label
+							<EmployeeCard
 								key={teacher.id}
-								htmlFor={`teacher-${teacher.id}`}
-								className="flex cursor-pointer items-start gap-4"
-							>
-								<div className="flex items-center">
-									<input
-										type="checkbox"
-										className="size-4 rounded border-gray-300"
-										id={`teacher-${teacher.id}`}
-										checked={!!attendance[teacher.id]}
-										onChange={() => handleAttendanceChange(teacher.id)}
-									/>
-								</div>
-
-								<div>
-									<strong className="font-medium text-gray-900">
-										{teacher.name}
-									</strong>
-								</div>
-							</label>
+								employee={teacher}
+								attendance={attendance[teacher.id] || "Absent"}
+								onAttendanceChange={handleAttendanceChange}
+								selectedDate={selectedDate}
+							/>
 						))}
 					</div>
-				</fieldset>
-				<button
-					onClick={postAttendance}
-					className={`mt-4 px-4 py-2 rounded ${
-						attendanceMarked
-							? "bg-gray-400 cursor-not-allowed"
-							: "bg-linear-blue text-white"
-					}`}
-					disabled={attendanceMarked}
-				>
-					Submit Attendance
-				</button>
-			</div>
-			<div className="mt-4">
-				<h2 className="text-lg font-medium text-gray-900">
-					Attendance Status for {selectedDate.toLocaleDateString()}
-				</h2>
-				{attendanceFetched && attendanceStatus.length === 0 ? (
-					<p>Attendance not marked for the selected date.</p>
-				) : (
-					<>
-						<div>
-							<h3 className="text-md font-medium text-green-600">
-								Present Faculty
-							</h3>
-							{presentTeachers.length === 0 ? (
-								<p>No teachers are present.</p>
-							) : (
-								<ul>
-									{presentTeachers.map((teacher) => (
-										<li key={teacher.id}>{teacher.name}</li>
-									))}
-								</ul>
-							)}
+					<button
+						onClick={handleSubmit}
+						className="mt-4 mb-16 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+					>
+						Update Attendance
+					</button>
+				</div>
+			)}
+
+			<AttendanceCalendar
+				events={calendarEvents}
+				onSelectEvent={handleEventSelect}
+			/>
+
+			{showModal && selectedEvent && (
+				<AttendanceModal
+					event={selectedEvent}
+					onClose={() => setShowModal(false)}
+					onSave={handleSaveEdit}
+				/>
+			)}
+
+			{showUpdateDialog && (
+				<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+					<div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+						<h3 className="text-lg font-bold">Update Attendance</h3>
+						<p className="mt-2">
+							Are you sure you want to update the attendance for this date?
+						</p>
+						<div className="mt-3 flex justify-end space-x-2">
+							<button
+								onClick={() => setShowUpdateDialog(false)}
+								className="px-4 py-2 bg-gray-300 text-black rounded hover:bg-gray-400"
+							>
+								Cancel
+							</button>
+							<button
+								onClick={submitAttendance}
+								className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
+							>
+								Update
+							</button>
 						</div>
-						<div className="mt-2">
-							<h3 className="text-md font-medium text-red-600">
-								Absent Faculty
-							</h3>
-							{absentTeachers.length === 0 ? (
-								<p>All teachers are present.</p>
-							) : (
-								<ul>
-									{absentTeachers.map((teacher) => (
-										<li key={teacher.id}>{teacher.name}</li>
-									))}
-								</ul>
-							)}
-						</div>
-					</>
-				)}
-			</div>
-		</>
+					</div>
+				</div>
+			)}
+		</div>
 	);
 };
 

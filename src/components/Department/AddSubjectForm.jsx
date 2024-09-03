@@ -27,13 +27,6 @@ const AddSubjectForm = ({
 				onChange={handleChange}
 				type="text"
 			/>
-			<InputField
-				label="Total Lectures"
-				name="totalLectures"
-				value={formValues.totalLectures}
-				onChange={handleChange}
-				type="number"
-			/>
 			<div className="mb-4">
 				<label className="block text-white">Teacher</label>
 				<select

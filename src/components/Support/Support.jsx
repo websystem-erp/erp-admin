@@ -1,120 +1,101 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 
 // Define the function to get user ID from localStorage
 const getUserIdFromLocalStorage = () => {
-  const userData = JSON.parse(localStorage.getItem("userData"));
-  return userData && userData.id ? userData.id : null;
+	const userData = JSON.parse(localStorage.getItem("userData"));
+	return userData && userData.id ? userData.id : null;
 };
 
 const Support = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    option: "Feedback",
-    message: "",
-    errorPage: "", // New field for error page selection
-  });
-  const [photo, setPhoto] = useState(null); // State for the photo file
-  const [responseMessage, setResponseMessage] = useState("");
-  const [complaintNo, setComplaintNo] = useState("");
-  const userId = getUserIdFromLocalStorage();
-  const fileInputRef = useRef(null);
+	const [formData, setFormData] = useState({
+		name: "",
+		email: "",
+		phone: "",
+		option: "Feedback",
+		message: "",
+	});
+	const [responseMessage, setResponseMessage] = useState("");
+	const [complaintNo, setComplaintNo] = useState("");
 
-  // Fetch user details and autofill form
-  useEffect(() => {
-    if (userId) {
-      const fetchUserDetails = async () => {
-        try {
-          const response = await axios.get(
-            API_ENDPOINTS.FETCH_ADMIN_BY_ID(userId)
-          );
-          const { name, email } = response.data.data;
-          setFormData((prevData) => ({
-            ...prevData,
-            name: name || "",
-            email: email || "",
-            phone: "",
-          }));
-        } catch (error) {
-          console.error("Error fetching user details:", error);
-        }
-      };
-      fetchUserDetails();
-    }
-  }, [userId]);
+	const userId = getUserIdFromLocalStorage();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+	// Fetch user details and autofill form
+	useEffect(() => {
+		if (userId) {
+			const fetchUserDetails = async () => {
+				try {
+					const response = await axios.get(
+						API_ENDPOINTS.FETCH_ADMIN_BY_ID(userId)
+					);
+					const { name, email } = response.data.data; // Adjusting based on the actual API response structure
+					setFormData({
+						...formData,
+						name: name || "",
+						email: email || "",
+						phone: "", // If your API doesn't provide phone, leave it as an empty string or adjust based on your needs
+					});
+				} catch (error) {
+					console.error("Error fetching user details:", error);
+				}
+			};
+			fetchUserDetails();
+		}
+	}, [userId]);
 
-  const handlePhotoChange = (e) => {
-    setPhoto(e.target.files[0]);
-  };
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setFormData({
+			...formData,
+			[name]: value,
+		});
+	};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+	const handleSubmit = async (e) => {
+		e.preventDefault();
 
-    const userData = JSON.parse(localStorage.getItem("userData"));
+		const queryData = {
+			name: formData.name,
+			email: formData.email,
+			contactNo: formData.phone,
+			query: `${formData.option}: ${formData.message}`,
+		};
 
-    // Handle the photo upload
-    let photoUrl = "";
-    if (photo) {
-      const formData = new FormData();
-      formData.append("file", photo);
-      formData.append("cloud_name", "dcpvd9tay"); // Replace with actual Cloudinary info
-      formData.append("upload_preset", "pdf_preset");
+		console.log("Submitting query data:", queryData); // Log the payload for debugging
 
-      try {
-        const cloudResponse = await axios.post(
-          "https://api.cloudinary.com/v1_1/dcpvd9tay/auto/upload",
-          formData
-        );
-        photoUrl = cloudResponse.data.url;
-      } catch (error) {
-        console.error("Error uploading photo:", error);
-      }
-    }
+		try {
+			const response = await axios.post(
+				API_ENDPOINTS.CREATE_SUPPORT,
+				queryData
+			);
+			console.log("API Response:", response.data);
+			setResponseMessage(response.data.message);
+			setComplaintNo(response.data.queryData?.complaintNo || "N/A");
+		} catch (error) {
+			console.error("Error sending query:", error);
+			if (error.response) {
+				console.error(
+					"Server responded with a status code:",
+					error.response.status
+				);
+				console.error("Response data:", error.response.data);
+			} else if (error.request) {
+				console.error("No response received:", error.request);
+			} else {
+				console.error("Error setting up the request:", error.message);
+			}
+			setResponseMessage("An error occurred. Please try again later.");
+		}
+	};
 
-    const queryData = {
-      name: userData.name,
-      email: userData.email,
-      contactNo: "00000000000",
-      type: "admin",
-      query: formData.message,
-      campusName: userData.school,
-      errorpage: formData.errorPage, // Include error page in the payload
-      photo: photoUrl, // Include uploaded photo URL
-    };
-
-    console.log("Submitting query data:", queryData);
-
-    try {
-      const response = await axios.post(
-        API_ENDPOINTS.CREATE_SUPPORT,
-        queryData
-      );
-      setResponseMessage(response.data.message);
-      setComplaintNo(response.data.queryData?.complaintNo || "N/A");
-    } catch (error) {
-      console.error("Error sending query:", error);
-      setResponseMessage("An error occurred. Please try again later.");
-    }
-  };
-
-  return (
-    <section className="bg-gray-100">
-      <div className="mx-auto max-w-screen-xl px-4 py-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-5">
-          <div className="lg:col-span-2 lg:py-12">
-		  <h6 className="text-black font-bold text-4xl">Need Assistance?</h6>
+	return (
+		<section className="bg-gray-100">
+			<div className="mx-auto max-w-screen-xl px-4 py-4 sm:px-6 lg:px-8">
+				<div className="grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-5">
+					<div className="lg:col-span-2 lg:py-12">
+						<h6 className="text-black font-bold text-4xl">Need Assistance?</h6>
 						<h6 className="text-black font-bold text-2xl">
 							We're Here to Help!
 						</h6>
@@ -147,82 +128,162 @@ const Support = () => {
 							queries, feedback, or complaints. Our team will get back to you as
 							soon as possible.
 						</p>
-          </div>
+					</div>
 
-          <div className="rounded-lg bg-white p-8 shadow-lg lg:col-span-3 lg:p-12">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              
+					<div className="rounded-lg bg-white p-8 shadow-lg lg:col-span-3 lg:p-12">
+						<form className="space-y-4" onSubmit={handleSubmit}>
+							<div>
+								<label className="sr-only" htmlFor="name">
+									Name
+								</label>
+								<input
+									className="w-full rounded-lg border-gray-200 p-3 text-sm"
+									placeholder="Name"
+									type="text"
+									id="name"
+									name="name"
+									value={formData.name}
+									onChange={handleChange}
+								/>
+							</div>
 
-              {/* Error Page Dropdown */}
-              <div>
-                <label className="block mb-2">Select Error Page</label>
-                <select
-                  name="errorPage"
-                  value={formData.errorPage}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border-gray-200 p-3 text-sm"
-                >
-                  <option value="">Select page</option>
-				  <option value="dashboard">Dashboard</option>
-                  <option value="employees">Employees</option>
-                  <option value="students">Students</option>
-                  <option value="finance">Finance</option>
-                  <option value="department">Department</option>
-                  <option value="attendance">Attendance</option>
-				  <option value="event-management">Event management</option>
-                </select>
-              </div>
+							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<div>
+									<label className="sr-only" htmlFor="email">
+										Email
+									</label>
+									<input
+										className="w-full rounded-lg border-gray-200 p-3 text-sm"
+										placeholder="Email address"
+										type="email"
+										id="email"
+										name="email"
+										value={formData.email}
+										onChange={handleChange}
+									/>
+								</div>
 
-              {/* Photo Upload */}
-              <div>
-                <label className="block mb-2">Upload Photo</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  ref={fileInputRef}
-                  className="w-full rounded-lg border-gray-200 p-3 text-sm"
-                />
-              </div>
-			  <div>
-                <label className="sr-only" htmlFor="message">
-                  Message
-                </label>
-                <textarea
-                  className="w-full rounded-lg border-gray-200 p-3 text-sm"
-                  placeholder="Message"
-                  rows="8"
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                ></textarea>
-              </div>
+								<div>
+									<label className="sr-only" htmlFor="phone">
+										Phone
+									</label>
+									<input
+										className="w-full rounded-lg border-gray-200 p-3 text-sm"
+										placeholder="Phone Number"
+										type="tel"
+										id="phone"
+										name="phone"
+										value={formData.phone}
+										onChange={handleChange}
+									/>
+								</div>
+							</div>
 
-              <div className="mt-4">
-                <button
-                  type="submit"
-                  className="inline-block w-full rounded-lg bg-black px-5 py-3 font-medium text-white sm:w-auto"
-                >
-                  Send Enquiry
-                </button>
-              </div>
-            </form>
-            {responseMessage && (
-              <div className="mt-4 text-center">
-                <p className="text-green-500">{responseMessage}</p>
-                {complaintNo && (
-                  <p className="text-green-500">
-                    Your {formData.option} number is: {complaintNo}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+							<div className="grid grid-cols-1 gap-4 text-center sm:grid-cols-3">
+								<div>
+									<label
+										htmlFor="Option3"
+										className="block w-full cursor-pointer rounded-lg border border-gray-200 p-3 text-gray-600 hover:border-black has-[:checked]:border-black has-[:checked]:bg-black has-[:checked]:text-white"
+										tabIndex="0"
+									>
+										<input
+											className="sr-only"
+											id="Option3"
+											type="radio"
+											tabIndex="-1"
+											name="option"
+											value="Feedback"
+											checked={formData.option === "Feedback"}
+											onChange={handleChange}
+										/>
+
+										<span className="text-sm"> Feedback </span>
+									</label>
+								</div>
+
+								<div>
+									<label
+										htmlFor="Option1"
+										className="block w-full cursor-pointer rounded-lg border border-gray-200 p-3 text-gray-600 hover:border-black has-[:checked]:border-black has-[:checked]:bg-black has-[:checked]:text-white"
+										tabIndex="0"
+									>
+										<input
+											className="sr-only"
+											id="Option1"
+											type="radio"
+											tabIndex="-1"
+											name="option"
+											value="Enquiry"
+											checked={formData.option === "Enquiry"}
+											onChange={handleChange}
+										/>
+
+										<span className="text-sm"> Enquiry </span>
+									</label>
+								</div>
+
+								<div>
+									<label
+										htmlFor="Option2"
+										className="block w-full cursor-pointer rounded-lg border border-gray-200 p-3 text-gray-600 hover:border-black has-[:checked]:border-black has-[:checked]:bg-black has-[:checked]:text-white"
+										tabIndex="0"
+									>
+										<input
+											className="sr-only"
+											id="Option2"
+											type="radio"
+											tabIndex="-1"
+											name="option"
+											value="Complaint"
+											checked={formData.option === "Complaint"}
+											onChange={handleChange}
+										/>
+
+										<span className="text-sm"> Complaint </span>
+									</label>
+								</div>
+							</div>
+
+							<div>
+								<label className="sr-only" htmlFor="message">
+									Message
+								</label>
+
+								<textarea
+									className="w-full rounded-lg border-gray-200 p-3 text-sm"
+									placeholder="Message"
+									rows="8"
+									id="message"
+									name="message"
+									value={formData.message}
+									onChange={handleChange}
+								></textarea>
+							</div>
+
+							<div className="mt-4">
+								<button
+									type="submit"
+									className="inline-block w-full rounded-lg bg-black px-5 py-3 font-medium text-white sm:w-auto"
+								>
+									Send Enquiry
+								</button>
+							</div>
+						</form>
+						{responseMessage && (
+							<div className="mt-4 text-center">
+								<p className="text-green-500">{responseMessage}</p>
+								{complaintNo && (
+									<p className="text-green-500">
+										Your {formData.option} number is: {complaintNo}
+									</p>
+								)}
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
+		</section>
+	);
 };
 
 export default Support;

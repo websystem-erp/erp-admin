@@ -37,9 +37,14 @@ const LogIn = () => {
 					navigate("/login");
 				}
 			} else {
+<<<<<<< HEAD
 				localStorage.removeItem("token");
 				localStorage.removeItem("userData");
 				localStorage.removeItem("userType");
+=======
+				localStorage.clear(); // Clear all related data
+				navigate("/login"); // Redirect to login
+>>>>>>> 5de341ef6c346f0dc640138d74afc8dc3f731063
 			}
 		}
 	}, [setIsLoggedIn, setToken, setUserData, navigate]);
@@ -54,6 +59,7 @@ const LogIn = () => {
 		try {
 			const response = await axios.post(API_ENDPOINTS.ADMIN_LOGIN, credentials);
 			if (response.data.success) {
+<<<<<<< HEAD
 				const userRole = response.data.data.role;
 				const selectedUserType = userType.toLowerCase();
 				// Log admin details
@@ -62,22 +68,38 @@ const LogIn = () => {
 					userRole.toLowerCase() === "admin" ||
 					(userRole.toLowerCase() === "finance" &&
 						selectedUserType === "finance")
+=======
+				const userRole = response.data.data.role.toLowerCase();
+				const selectedUserType = userType.toLowerCase();
+
+				if (
+					userRole === "admin" ||
+					(userRole === "finance" && selectedUserType === "finance")
+>>>>>>> 5de341ef6c346f0dc640138d74afc8dc3f731063
 				) {
 					setIsLoggedIn(true);
 					setToken(response.data.token);
 					localStorage.setItem("token", response.data.token);
 					localStorage.setItem("userData", JSON.stringify(response.data.data));
+<<<<<<< HEAD
 					localStorage.setItem("userType", selectedUserType); // Store userType in localStorage
+=======
+					localStorage.setItem("userType", selectedUserType);
+>>>>>>> 5de341ef6c346f0dc640138d74afc8dc3f731063
 					setUserData(response.data.data);
 
 					refreshAuthState(); // Refresh authentication state after login
 
+<<<<<<< HEAD
 					if (
 						userRole.toLowerCase() === "admin" &&
 						selectedUserType === "finance"
 					) {
 						navigate("/fees");
 					} else if (userRole.toLowerCase() === "finance") {
+=======
+					if (userRole === "finance") {
+>>>>>>> 5de341ef6c346f0dc640138d74afc8dc3f731063
 						navigate("/fees");
 					} else {
 						navigate("/");
@@ -89,8 +111,14 @@ const LogIn = () => {
 				}
 			}
 		} catch (error) {
+<<<<<<< HEAD
 			if (error.response && error.response.status === 401) {
 				setErrorMessage("Credentials input incorrect, please try again");
+=======
+			console.error("Login error:", error); // Log error for debugging
+			if (error.response && error.response.status === 401) {
+				setErrorMessage("Credentials input incorrect, please try again.");
+>>>>>>> 5de341ef6c346f0dc640138d74afc8dc3f731063
 			} else {
 				setErrorMessage("An error occurred. Please try again later.");
 			}
@@ -107,6 +135,10 @@ const LogIn = () => {
 				setForgotPasswordMessage("Password reset link sent to your email.");
 			}
 		} catch (error) {
+<<<<<<< HEAD
+=======
+			console.error("Forgot Password error:", error); // Log error for debugging
+>>>>>>> 5de341ef6c346f0dc640138d74afc8dc3f731063
 			setForgotPasswordMessage(
 				"An error occurred. Please try again later or contact support."
 			);
