@@ -37,14 +37,8 @@ const LogIn = () => {
 					navigate("/login");
 				}
 			} else {
-<<<<<<< HEAD
-				localStorage.removeItem("token");
-				localStorage.removeItem("userData");
-				localStorage.removeItem("userType");
-=======
 				localStorage.clear(); // Clear all related data
 				navigate("/login"); // Redirect to login
->>>>>>> 5de341ef6c346f0dc640138d74afc8dc3f731063
 			}
 		}
 	}, [setIsLoggedIn, setToken, setUserData, navigate]);
