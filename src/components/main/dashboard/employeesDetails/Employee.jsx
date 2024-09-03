@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ListTable from "../../../List/ListTable";
 import CommonTable from "../../../List/CommonTable";
 import ListTableBtn from "../../../List/ListTableBtn";
@@ -16,6 +16,8 @@ const Employee = () => {
 	const [formModalOpen, setFormModalOpen] = useState(false);
 	const [selectedProfile, setSelectedProfile] = useState(null);
 	const [isEditing, setIsEditing] = useState(false);
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const dropdownRef = useRef(null);
 
 	const defaultMalePhoto =
 		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
@@ -24,7 +26,17 @@ const Employee = () => {
 
 	useEffect(() => {
 		fetchTeachers();
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
 	}, []);
+
+	const handleClickOutside = (event) => {
+		if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+			setIsDropdownOpen(false);
+		}
+	};
 
 	const fetchTeachers = async () => {
 		try {
@@ -66,6 +78,7 @@ const Employee = () => {
 
 	const handleFormModal = () => {
 		setFormModalOpen(true);
+		setIsDropdownOpen(false);
 	};
 
 	const handleEmployeeAdded = () => {
@@ -145,7 +158,6 @@ const Employee = () => {
 	const handleEmployeesUpload = async (uploadedEmployees) => {
 		try {
 			for (const employee of uploadedEmployees) {
-				// Check if the password field exists and is a string before trimming
 				if (
 					!employee.password ||
 					typeof employee.password !== "string" ||
@@ -154,19 +166,32 @@ const Employee = () => {
 					console.error(
 						`Password is missing or invalid for employee: ${employee.name}`
 					);
-					continue; // Skip this employee or handle it as needed
+					continue;
 				}
 
-				// Assuming the rest of the employee data is valid, proceed with the upload
 				const response = await axios.post(
 					API_ENDPOINTS.REGISTER_TEACHER,
 					employee
 				);
+
 				setTeachers((prevState) => [...prevState, response.data.data]);
 			}
+			setIsDropdownOpen(false);
+			return { success: true, message: "Employees uploaded successfully" };
 		} catch (error) {
 			console.error("Error uploading employees:", error);
+			if (error.response && error.response.data) {
+				return error.response.data; // This should contain {message, success}
+			} else {
+				return {
+					success: false,
+					message: error.message || "Error uploading employees",
+				};
+			}
 		}
+	};
+	const toggleDropdown = () => {
+		setIsDropdownOpen(!isDropdownOpen);
 	};
 
 	return (
@@ -177,21 +202,49 @@ const Employee = () => {
 				<div className="bg-white p-8 rounded-md w-fit sm:w-full">
 					<div className="flex items-center justify-between pb-6">
 						<h2 className="text-gray-600 font-semibold">Employee Details</h2>
-						<EmployeeUpload onEmployeesUpload={handleEmployeesUpload} />
-						<ListTableBtn
-							text={"Add Employee"}
-							buttonColor={"bg-linear-green"}
-							borderRadius={"rounded"}
-							onClick={handleFormModal}
-						/>
-						<Modal
-							modalOpen={formModalOpen}
-							setModalOpen={setFormModalOpen}
-							responsiveWidth={"md:w-fit"}
-						>
-							<EmployeeAddForm onEmployeeAdded={handleEmployeeAdded} />
-						</Modal>
+						<div className="relative" ref={dropdownRef}>
+							<div className="inline-flex items-center overflow-hidden rounded-md border bg-emerald-700">
+								<button
+									className="h-full px-4 py-2 text-white hover:bg-emerald-600  flex justify-between items-center gap-2"
+									onClick={toggleDropdown}
+								>
+									<div>Add Employee</div>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className={`size-4 transform ${
+											isDropdownOpen ? "rotate-180" : ""
+										} transition-transform duration-200`}
+										viewBox="0 0 20 20"
+										fill="currentColor"
+									>
+										<path
+											fillRule="evenodd"
+											d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+											clipRule="evenodd"
+										/>
+									</svg>
+								</button>
+							</div>
+
+							{isDropdownOpen && (
+								<div
+									className="absolute end-0 z-10 mt-2 w-56 rounded-md border border-gray-100 bg-white shadow-lg"
+									role="menu"
+								>
+									<div className="p-2">
+										<EmployeeUpload onEmployeesUpload={handleEmployeesUpload} />
+										<ListTableBtn
+											text={"Add Employee"}
+											buttonColor={"bg-linear-green"}
+											borderRadius={"rounded-md"}
+											onClick={handleFormModal}
+										/>
+									</div>
+								</div>
+							)}
+						</div>
 					</div>
+
 					<ListTable
 						ListName={"Name"}
 						ListRole={"Role"}
@@ -234,6 +287,7 @@ const Employee = () => {
 							/>
 						))}
 					/>
+
 					{selectedProfile && (
 						<Modal
 							modalOpen={modalOpen}
@@ -348,7 +402,7 @@ const Employee = () => {
 											</div>
 											<button
 												onClick={handleSaveProfile}
-												className="bg-linear-green text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+												className="bg-emerald-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
 											>
 												Save
 											</button>
@@ -379,9 +433,17 @@ const Employee = () => {
 												modalTitle={"Contact Number : "}
 												modalDesc={selectedProfile.contactNumber}
 											/>
+											<ModalDetails
+												modalTitle={"Permanent Address : "}
+												modalDesc={selectedProfile.permanent_address}
+											/>
+											<ModalDetails
+												modalTitle={"Current Address : "}
+												modalDesc={selectedProfile.currentAddress}
+											/>
 											<button
 												onClick={handleEditProfile}
-												className="bg-linear-blue hover:bg-linear-blue text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+												className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
 											>
 												Edit
 											</button>
@@ -391,6 +453,14 @@ const Employee = () => {
 							</div>
 						</Modal>
 					)}
+
+					<Modal
+						modalOpen={formModalOpen}
+						setModalOpen={setFormModalOpen}
+						responsiveWidth={"md:w-fit"}
+					>
+						<EmployeeAddForm onEmployeeAdded={handleEmployeeAdded} />
+					</Modal>
 				</div>
 			)}
 		</>

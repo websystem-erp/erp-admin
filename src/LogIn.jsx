@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import API_ENDPOINTS from "./API/apiEndpoints";
 import AuthContext from "./context/AuthContext";
 
-const LogIn = () => {
+const LogIn = ({ onStartOnboarding }) => {
 	const { setIsLoggedIn, setToken, setUserData, refreshAuthState } =
-		useContext(AuthContext); // Added refreshAuthState
+		useContext(AuthContext);
 	const [credentials, setCredentials] = useState({ email: "", password: "" });
-	const [userType, setUserType] = useState("admin"); // State for user type
+	const [userType, setUserType] = useState("admin");
 	const [errorMessage, setErrorMessage] = useState("");
 	const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 	const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -37,8 +37,8 @@ const LogIn = () => {
 					navigate("/login");
 				}
 			} else {
-				localStorage.clear(); // Clear all related data
-				navigate("/login"); // Redirect to login
+				localStorage.clear();
+				navigate("/login");
 			}
 		}
 	}, [setIsLoggedIn, setToken, setUserData, navigate]);
@@ -67,7 +67,7 @@ const LogIn = () => {
 					localStorage.setItem("userType", selectedUserType);
 					setUserData(response.data.data);
 
-					refreshAuthState(); // Refresh authentication state after login
+					refreshAuthState();
 
 					if (userRole === "finance") {
 						navigate("/fees");
@@ -81,9 +81,12 @@ const LogIn = () => {
 				}
 			}
 		} catch (error) {
-			console.error("Login error:", error); // Log error for debugging
-			if (error.response && error.response.status === 401) {
-				setErrorMessage("Credentials input incorrect, please try again.");
+			console.error("Login error:", error);
+			if (error.response && error.response.data) {
+				setErrorMessage(
+					error.response.data.message ||
+						"An error occurred. Please try again later."
+				);
 			} else {
 				setErrorMessage("An error occurred. Please try again later.");
 			}
@@ -100,7 +103,7 @@ const LogIn = () => {
 				setForgotPasswordMessage("Password reset link sent to your email.");
 			}
 		} catch (error) {
-			console.error("Forgot Password error:", error); // Log error for debugging
+			console.error("Forgot Password error:", error);
 			setForgotPasswordMessage(
 				"An error occurred. Please try again later or contact support."
 			);
@@ -108,120 +111,143 @@ const LogIn = () => {
 	};
 
 	return (
-		<div className="flex items-center h-screen w-full">
-			<div className="w-full bg-white rounded shadow-lg p-8 m-4 md:max-w-sm md:mx-auto">
-				{showForgotPassword ? (
-					<>
-						<h2 className="block w-full text-xl uppercase font-bold mb-4">
-							Forgot Password
-						</h2>
-						<form onSubmit={handleForgotPassword}>
-							<div className="mb-4 md:w/full">
-								<label
-									htmlFor="forgotPasswordEmail"
-									className="block text-xs mb-1"
-								>
-									Email
-								</label>
-								<input
-									className="w-full border rounded p-2 outline-none focus:shadow-outline"
-									type="email"
-									name="forgotPasswordEmail"
-									id="forgotPasswordEmail"
-									placeholder="Email"
-									value={forgotPasswordEmail}
-									onChange={(e) => setForgotPasswordEmail(e.target.value)}
-								/>
-							</div>
-							<button
-								type="submit"
-								className="bg-green-500 hover:bg-green-700 text-white uppercase text-sm font-semibold px-4 py-2 rounded"
-							>
-								Send Reset Link
-							</button>
-							{forgotPasswordMessage && (
-								<p className="text-red-500 text-xs mt-2">
-									{forgotPasswordMessage}
-								</p>
-							)}
-						</form>
-						<button
-							className="text-blue-500 text-xs mt-2"
-							onClick={() => setShowForgotPassword(false)}
+		<div className="flex items-center justify-center min-h-screen bg-gray-100">
+			<div className="w-full max-w-md">
+				<form
+					className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+					onSubmit={handleSubmit}
+				>
+					<h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+					<div className="mb-4">
+						<label
+							className="block text-gray-700 text-sm font-bold mb-2"
+							htmlFor="email"
 						>
-							Back to Login
+							Email
+						</label>
+						<input
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="email"
+							type="email"
+							placeholder="Email"
+							name="email"
+							value={credentials.email}
+							onChange={handleChange}
+							required
+						/>
+					</div>
+					<div className="mb-6">
+						<label
+							className="block text-gray-700 text-sm font-bold mb-2"
+							htmlFor="password"
+						>
+							Password
+						</label>
+						<input
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+							id="password"
+							type="password"
+							placeholder="******************"
+							name="password"
+							value={credentials.password}
+							onChange={handleChange}
+							required
+						/>
+					</div>
+					<div className="mb-6">
+						<label
+							className="block text-gray-700 text-sm font-bold mb-2"
+							htmlFor="userType"
+						>
+							User Type
+						</label>
+						<select
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="userType"
+							name="userType"
+							value={userType}
+							onChange={(e) => setUserType(e.target.value)}
+						>
+							<option value="admin">Admin</option>
+							<option value="finance">Finance</option>
+						</select>
+					</div>
+					<div className="flex items-center justify-between">
+						<button
+							className="bg-sky-500 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+							type="submit"
+						>
+							Sign In
 						</button>
-					</>
-				) : (
-					<>
-						<h2 className="block w-full text-xl uppercase font-bold mb-4">
-							Login
-						</h2>
-						<form className="mb-4" onSubmit={handleSubmit}>
-							<div className="mb-4 md:w/full">
-								<label htmlFor="email" className="block text-xs mb-1">
-									Username or Email
-								</label>
-								<input
-									className="w-full border rounded p-2 outline-none focus:shadow-outline"
-									type="text"
-									name="email"
-									id="email"
-									placeholder="Username or Email"
-									value={credentials.email}
-									onChange={handleChange}
-								/>
-							</div>
-							<div className="mb-6 md:w/full">
-								<label htmlFor="password" className="block text-xs mb-1">
-									Password
-								</label>
-								<input
-									className="w-full border rounded p-2 outline-none focus:shadow-outline"
-									type="password"
-									name="password"
-									id="password"
-									placeholder="Password"
-									value={credentials.password}
-									onChange={handleChange}
-								/>
-							</div>
-							<div className="mb-4 md:w/full">
-								<label htmlFor="userType" className="block text-xs mb-1">
-									Select User Type
-								</label>
-								<select
-									className="w-full border rounded p-2 outline-none focus:shadow-outline"
-									name="userType"
-									id="userType"
-									value={userType}
-									onChange={(e) => setUserType(e.target.value)}
+						<button
+							className="inline-block align-baseline font-bold text-sm text-sky-500 hover:text-sky-800"
+							onClick={() => setShowForgotPassword(true)}
+							type="button"
+						>
+							Forgot Password?
+						</button>
+					</div>
+				</form>
+				{errorMessage && (
+					<div
+						className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+						role="alert"
+					>
+						<span className="block sm:inline">{errorMessage}</span>
+					</div>
+				)}
+				<div className="text-center">
+					<p className="text-gray-600 text-sm">Don't have an account?</p>
+					<button
+						onClick={onStartOnboarding}
+						className="mt-2 text-sky-500 hover:text-sky-700 font-semibold"
+					>
+						Start School Onboarding
+					</button>
+				</div>
+				<div className="mt-4 text-center">
+					<Link to="/" className="text-sm text-gray-600 hover:text-gray-800">
+						Back to Home
+					</Link>
+				</div>
+			</div>
+			{showForgotPassword && (
+				<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+					<div className="bg-white p-8 rounded-md shadow-xl max-w-md w-full">
+						<h3 className="text-xl font-semibold mb-4">Reset Password</h3>
+						<form onSubmit={handleForgotPassword}>
+							<input
+								type="email"
+								value={forgotPasswordEmail}
+								onChange={(e) => setForgotPasswordEmail(e.target.value)}
+								placeholder="Enter your email"
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4"
+								required
+							/>
+							<div className="flex justify-end">
+								<button
+									type="button"
+									onClick={() => setShowForgotPassword(false)}
+									className="mr-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
 								>
-									<option value="admin">Admin</option>
-									<option value="finance">Finance</option>
-								</select>
-							</div>
-							<div className="flex flex-col gap-4 ">
-								<a
-									className="cursor-pointer text-sm text-right"
-									onClick={() => setShowForgotPassword(true)}
-								>
-									Forgot Password ?
-								</a>
+									Cancel
+								</button>
 								<button
 									type="submit"
-									className="bg-green-500 hover:bg-green-700 text-white uppercase text-sm font-semibold px-4 py-2 rounded"
+									className="px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
 								>
-									Login
+									Reset Password
 								</button>
 							</div>
-							{errorMessage && (
-								<p className="text-red-500 text-xs mt-2">{errorMessage}</p>
-							)}
 						</form>
-					</>
-				)}
-			</div>
+						{forgotPasswordMessage && (
+							<p className="mt-4 text-sm text-green-600">
+								{forgotPasswordMessage}
+							</p>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

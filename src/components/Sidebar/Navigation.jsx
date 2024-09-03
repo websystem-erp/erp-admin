@@ -64,7 +64,6 @@ const Navigation = ({ isSidebarExpanded, toggleSidebar }) => {
 	};
 
 	const handleLogoClick = () => {
-		// Simulate a click on the hidden file input
 		document.getElementById("fileInput").click();
 	};
 
@@ -72,7 +71,6 @@ const Navigation = ({ isSidebarExpanded, toggleSidebar }) => {
 		const file = event.target.files[0];
 		if (!file) return;
 
-		// Create form data for the upload
 		const formData = new FormData();
 		formData.append("file", file);
 		formData.append(
@@ -94,8 +92,6 @@ const Navigation = ({ isSidebarExpanded, toggleSidebar }) => {
 				const newLogoUrl = response.data.secure_url;
 				setCampusLogo(newLogoUrl);
 				console.log("Uploaded logo URL:", newLogoUrl);
-
-				// Update campus details with the new logo URL
 				updateCampusLogo(newLogoUrl);
 			}
 		} catch (error) {
@@ -109,10 +105,9 @@ const Navigation = ({ isSidebarExpanded, toggleSidebar }) => {
 			return;
 		}
 
-		// Update only the logo, keep other fields from fetched campus details
 		const requestBody = {
-			...campusDetails, // Spread the existing campus details
-			logo: logoUrl, // Update only the logo
+			...campusDetails,
+			logo: logoUrl,
 		};
 
 		fetch(API_ENDPOINTS.UPDATE_CAMPUS, {

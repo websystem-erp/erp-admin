@@ -4,6 +4,7 @@ import LogIn from "./LogIn";
 import Layout from "./Layout";
 import FeesDashboard from "./components/Dashboard/FeesDashboard";
 import ResetPassword from "./ResetPassword";
+import LandingPage from "./LandingPage";
 import "./App.css";
 import AuthContext from "./context/AuthContext";
 
@@ -18,9 +19,16 @@ function App() {
 		refreshAuthState();
 	};
 
+	const handleStartOnboarding = () => {
+		// Implement your onboarding logic here
+		console.log("Starting onboarding process");
+	};
+
 	if (isLoading) {
 		return <div>Loading...</div>; // You can replace this with a more sophisticated loading component
 	}
+
+	const userType = localStorage.getItem("userType");
 
 	return (
 		<Routes>
@@ -31,10 +39,10 @@ function App() {
 			<Route
 				path="/fees"
 				element={
-					isLoggedIn ? (
+					isLoggedIn && userType === "finance" ? (
 						<FeesDashboard userData={userData} logout={logout} />
 					) : (
-						<Navigate to="/login" />
+						<Navigate to="/" />
 					)
 				}
 			/>
@@ -43,12 +51,30 @@ function App() {
 				element={<ResetPassword />}
 			/>
 			<Route
+				path="/"
+				element={
+					isLoggedIn ? (
+						userType === "finance" ? (
+							<Navigate to="/fees" />
+						) : (
+							<Layout logout={logout} userData={userData} />
+						)
+					) : (
+						<LandingPage onStartOnboarding={handleStartOnboarding} />
+					)
+				}
+			/>
+			<Route
 				path="/*"
 				element={
 					isLoggedIn ? (
-						<Layout logout={logout} userData={userData} />
+						userType === "finance" ? (
+							<Navigate to="/fees" />
+						) : (
+							<Layout logout={logout} userData={userData} />
+						)
 					) : (
-						<Navigate to="/login" />
+						<Navigate to="/" />
 					)
 				}
 			/>
