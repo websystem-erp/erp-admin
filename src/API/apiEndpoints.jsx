@@ -48,12 +48,16 @@ const API_ENDPOINTS = {
 	DELETE_ALL_TEACHERS: `${API_BASE_URL}/teacher/${userId}/deleteAllTeacher`,
 	LOGIN_TEACHERS: `${API_BASE_URL}/teacher/login`,
 	// ATTENDANCE
-	MARK_FACULTY_TEACHERS: `${API_BASE_URL}/attendance/markFacultyAttendance`,
-	ALL_FACULTY_ATTENDANCE_DATE: (date) =>
-		`${API_BASE_URL}/attendance/fetchFacultyAttendance/${date}`,
+	MARK_FACULTY_TEACHERS: (userId) =>
+		`${API_BASE_URL}/attendance/markFacultyAttendance/${userId}`,
+	FACULTY_ATTENDANCE_DATE: (userId, date) =>
+		`${API_BASE_URL}/attendance/fetchFacultyAttendance/${userId}/${date}`,
 	FACULTY_ATTENDANCE_BY_DATE_ID: (date, id) =>
 		`${API_BASE_URL}/attendance/faculty-attendanceById/${date}/${id}`,
-	UPDATE_ATTENDANCE: `${API_BASE_URL}/attendance/updateFacultyAttendance`,
+	UPDATE_ATTENDANCE: (userId) =>
+		`${API_BASE_URL}/attendance/updateFacultyAttendance/${userId}`,
+	SELECTED_DATE_ATTENDANCE: (userId) =>
+		`${API_BASE_URL}/attendance/getAttendenceByDate/${userId}`,
 	// STUDENTS
 	REGISTER_STUDENTS: `${API_BASE_URL}/student/${userId}/reg`,
 	FETCH_STUDENT: (studentID) =>

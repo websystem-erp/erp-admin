@@ -13,12 +13,20 @@ const Attendance = () => {
 	const [selectedDate, setSelectedDate] = useState(moment());
 	const [attendance, setAttendance] = useState({});
 	const [monthlyAttendance, setMonthlyAttendance] = useState([]);
+	const [attendanceMarked, setAttendanceMarked] = useState(false); // Added state variable
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [showModal, setShowModal] = useState(false);
 	const [selectedEvent, setSelectedEvent] = useState(null);
 	const [oldestTeacherDate, setOldestTeacherDate] = useState(null);
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+
+	// Function to get userId from localStorage
+	const getUserIdFromLocalStorage = () => {
+		const userData = JSON.parse(localStorage.getItem("userData"));
+		return userData && userData.id ? userData.id : null;
+	};
+	const userId = getUserIdFromLocalStorage();
 
 	useEffect(() => {
 		const fetchInitialData = async () => {
@@ -72,7 +80,7 @@ const Attendance = () => {
 		try {
 			const formattedDate = selectedDate.format("YYYY-MM-DD");
 			const response = await axios.get(
-				API_ENDPOINTS.ALL_FACULTY_ATTENDANCE_DATE(formattedDate)
+				API_ENDPOINTS.FACULTY_ATTENDANCE_DATE(userId, formattedDate)
 			);
 			if (response.data.success) {
 				const newAttendance = {};
@@ -80,6 +88,7 @@ const Attendance = () => {
 					newAttendance[status.id] = status.status;
 				});
 				setAttendance(newAttendance);
+				setAttendanceMarked(true); // Attendance has been marked
 			}
 			await fetchMonthlyAttendance();
 		} catch (error) {
@@ -90,6 +99,7 @@ const Attendance = () => {
 					newAttendance[teacher.id] = "Absent";
 				});
 				setAttendance(newAttendance);
+				setAttendanceMarked(false); // Attendance has not been marked
 			} else {
 				setError("Failed to fetch attendance data. Please try again.");
 			}
@@ -113,7 +123,10 @@ const Attendance = () => {
 		) {
 			const formattedDate = date.format("YYYY-MM-DD");
 			try {
-				const apiUrl = API_ENDPOINTS.ALL_FACULTY_ATTENDANCE_DATE(formattedDate);
+				const apiUrl = API_ENDPOINTS.FACULTY_ATTENDANCE_DATE(
+					userId,
+					formattedDate
+				);
 				const response = await axios.get(apiUrl);
 				if (response.data && response.data.attendanceStatus) {
 					const presentEmployees = response.data.attendanceStatus.filter(
@@ -176,21 +189,36 @@ const Attendance = () => {
 		};
 
 		try {
-			const apiUrl = API_ENDPOINTS.UPDATE_ATTENDANCE;
-			console.log("Submitting attendance to:", apiUrl);
-			console.log("Attendance data:", attendanceData);
+			let apiUrl;
+			let response;
 
-			const response = await axios.post(apiUrl, attendanceData);
+			if (attendanceMarked) {
+				// Attendance has been marked, use update endpoint with PUT
+				apiUrl = API_ENDPOINTS.UPDATE_ATTENDANCE(userId);
+				console.log("Updating attendance at:", apiUrl);
+				response = await axios.put(apiUrl, attendanceData);
+			} else {
+				// Attendance has not been marked, use mark endpoint with POST
+				apiUrl = API_ENDPOINTS.MARK_FACULTY_TEACHERS(userId);
+				console.log("Marking attendance at:", apiUrl);
+				response = await axios.post(apiUrl, attendanceData);
+			}
 
 			if (response.data.success) {
-				alert("Attendance updated successfully!");
+				alert(
+					`Attendance ${attendanceMarked ? "updated" : "marked"} successfully!`
+				);
 				fetchAttendanceData();
 			} else {
 				throw new Error(response.data.message);
 			}
 		} catch (error) {
 			console.error("Error updating attendance:", error);
-			alert(`Error updating attendance: ${error.message}`);
+			alert(
+				`Error updating attendance: ${
+					error.response?.data?.message || error.message
+				}`
+			);
 		} finally {
 			setShowUpdateDialog(false);
 		}
@@ -203,7 +231,7 @@ const Attendance = () => {
 
 	const handleSaveEdit = async (requestBody) => {
 		try {
-			const apiUrl = API_ENDPOINTS.UPDATE_ATTENDANCE;
+			const apiUrl = API_ENDPOINTS.UPDATE_ATTENDANCE(userId);
 			await axios.put(apiUrl, requestBody);
 			alert("Attendance updated successfully!");
 			setShowModal(false);
@@ -292,7 +320,7 @@ const Attendance = () => {
 						onClick={handleSubmit}
 						className="mt-4 mb-16 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
 					>
-						Update Attendance
+						{attendanceMarked ? "Update Attendance" : "Mark Attendance"}
 					</button>
 				</div>
 			)}
@@ -313,9 +341,12 @@ const Attendance = () => {
 			{showUpdateDialog && (
 				<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
 					<div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-						<h3 className="text-lg font-bold">Update Attendance</h3>
+						<h3 className="text-lg font-bold">
+							{attendanceMarked ? "Update Attendance" : "Mark Attendance"}
+						</h3>
 						<p className="mt-2">
-							Are you sure you want to update the attendance for this date?
+							Are you sure you want to {attendanceMarked ? "update" : "mark"}{" "}
+							the attendance for this date?
 						</p>
 						<div className="mt-3 flex justify-end space-x-2">
 							<button
@@ -328,7 +359,7 @@ const Attendance = () => {
 								onClick={submitAttendance}
 								className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700"
 							>
-								Update
+								{attendanceMarked ? "Update" : "Mark"}
 							</button>
 						</div>
 					</div>

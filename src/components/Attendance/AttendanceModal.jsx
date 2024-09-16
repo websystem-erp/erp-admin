@@ -22,18 +22,18 @@ const AttendanceModal = ({ event, onClose, onSave }) => {
 		);
 	}, []);
 
-	const handleSaveEdit = useCallback(() => {
-		const presentEmployees = editedAttendance
-			.filter((employee) => employee.status === "Present")
-			.map((employee) => employee.id);
-
-		const requestBody = {
-			selectedTeachers: presentEmployees,
-			date: moment(event.start).format("YYYY-MM-DD"),
-		};
-
-		onSave(requestBody);
-	}, [editedAttendance, event.start, onSave]);
+	const handleSaveEdit = async (requestBody) => {
+		try {
+			const apiUrl = API_ENDPOINTS.UPDATE_ATTENDANCE(userId);
+			await axios.put(apiUrl, requestBody);
+			alert("Attendance updated successfully!");
+			setShowModal(false);
+			fetchAttendanceData();
+		} catch (error) {
+			console.error("Error updating attendance:", error);
+			alert(`Error updating attendance: ${error.message}`);
+		}
+	};
 
 	return (
 		<div className="fixed z-10 inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">

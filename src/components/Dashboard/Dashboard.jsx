@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_ENDPOINTS from "../../API/apiEndpoints";
 import CardContainer from "../main/dashboard/CardContainer";
-import DailyAttendancePercentage from "../Attendance/DailyAttendancePercentage";
 import Employee from "../main/dashboard/employeesDetails/Employee";
 import Modal from "../popup/Modal";
 import ListTable from "../List/ListTable";
@@ -223,10 +222,7 @@ const Dashboard = () => {
 					{isLoading ? <p>Loading...</p> : <FeesListTable />}
 				</div>
 			</Modal>
-			<DailyAttendancePercentage
-				selectedDate={currentDate}
-				onClick={handleDailyAttendanceClick}
-			/>
+
 			<Employee />
 		</>
 	);
