@@ -1,53 +1,44 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Icon } from "@iconify/react";
-import DepartmentCourseCard from "./DepartmentCourseCard";
-import API_ENDPOINTS from "../../API/apiEndpoints"; // Adjust the import path as needed
+import API_ENDPOINTS from "../../API/apiEndpoints";
+import DepartmentCourse from "./DepartmentCourse";
 import DepartmentForm from "./DepartmentForm";
+import SubjectsModal from "./SubjectsModal";
 
 const Department = () => {
 	const [isLoading, setIsLoading] = useState(true);
-	const [programs, setPrograms] = useState([]);
+	const [departments, setDepartments] = useState([]);
 	const [openForm, setOpenForm] = useState(false);
 	const [formValues, setFormValues] = useState({
 		name: "",
 		code: "",
 	});
 	const [errorMessage, setErrorMessage] = useState("");
+	const [showSubjectsModal, setShowSubjectsModal] = useState(false);
+	const [selectedDepartment, setSelectedDepartment] = useState(null);
 
 	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
-				if (response.status === 200 && Array.isArray(response.data.data)) {
-					const fetchedDepartments = response.data.data;
-					const fetchSubjectsPromises = fetchedDepartments.map((department) =>
-						axios.get(
-							API_ENDPOINTS.FETCH_ALL_SUBJECTS_IN_DEPARTMENT(department.id)
-						)
-					);
-
-					const subjectsResponses = await Promise.all(fetchSubjectsPromises);
-					const updatedDepartments = fetchedDepartments.map(
-						(department, index) => ({
-							...department,
-							subjects: subjectsResponses[index].data.data,
-						})
-					);
-
-					setPrograms(updatedDepartments);
-				} else {
-					console.error("Unexpected data format:", response.data);
-				}
-			} catch (error) {
-				console.error("Error fetching departments:", error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		fetchData();
+		fetchDepartments();
 	}, []);
+
+	const fetchDepartments = async () => {
+		try {
+			setIsLoading(true);
+			const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
+			if (response.status === 200 && Array.isArray(response.data.data)) {
+				setDepartments(response.data.data);
+			} else {
+				console.error("Unexpected data format:", response.data);
+				setErrorMessage("Failed to fetch departments. Unexpected data format.");
+			}
+		} catch (error) {
+			console.error("Error fetching departments:", error);
+			setErrorMessage("Failed to fetch departments. Please try again later.");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const onClose = useCallback(() => {
 		setOpenForm(false);
@@ -66,38 +57,26 @@ const Department = () => {
 	const handleSubmit = useCallback(
 		async (e) => {
 			e.preventDefault();
-
-			const duplicate = programs.find(
-				(program) =>
-					program.name.toLowerCase() === formValues.name.toLowerCase() ||
-					program.code.toLowerCase() === formValues.code.toLowerCase()
-			);
-
-			if (duplicate) {
-				setErrorMessage(
-					"A department with this code or name already exists. Please use a different code or name."
-				);
-				return;
-			}
-
-			const requestData = { ...formValues };
-
+			setErrorMessage("");
 			try {
 				const response = await axios.post(
 					API_ENDPOINTS.CREATE_DEPARTMENTS,
-					requestData
+					formValues
 				);
 				if (response.status === 201) {
-					setPrograms((prevPrograms) => [...prevPrograms, response.data.data]);
+					setDepartments((prevDepartments) => [
+						...prevDepartments,
+						response.data.data,
+					]);
 					onClose();
 				} else {
-					console.error("Unexpected response status:", response);
+					setErrorMessage("Unexpected response when creating department.");
 				}
 			} catch (error) {
 				if (error.response) {
 					if (error.response.status === 409) {
 						setErrorMessage(
-							"A department with this code or name already exists. Please use a different code or name."
+							"A department with this code or name already exists."
 						);
 					} else if (error.response.status === 500) {
 						setErrorMessage(
@@ -108,52 +87,75 @@ const Department = () => {
 					}
 				} else {
 					setErrorMessage(
-						"An error occurred while creating the department. Please check your network connection and try again."
+						"Network error. Please check your connection and try again."
 					);
 				}
 			}
 		},
-		[formValues, programs, onClose]
+		[formValues, onClose]
 	);
 
+	const handleDeleteDepartment = useCallback(async (departmentId) => {
+		try {
+			await axios.delete(API_ENDPOINTS.DELETE_DEPARTMENT(departmentId));
+			setDepartments((prevDepartments) =>
+				prevDepartments.filter((dept) => dept.id !== departmentId)
+			);
+		} catch (error) {
+			console.error("Error deleting department:", error);
+			setErrorMessage("Failed to delete department. Please try again.");
+		}
+	}, []);
+
+	const handleOpenSubjectsModal = useCallback((department) => {
+		console.log("Opening subjects modal for department:", department);
+		setSelectedDepartment(department);
+		setShowSubjectsModal(true);
+	}, []);
+
+	const handleCloseSubjectsModal = useCallback(() => {
+		setShowSubjectsModal(false);
+		setSelectedDepartment(null);
+	}, []);
+
 	return (
-		<>
+		<div className="bg-white p-8 rounded-md w-full">
+			<div className="flex items-center justify-between pb-6 flex-wrap gap-2">
+				<h2 className="text-gray-600 font-semibold text-2xl">Departments</h2>
+				<button
+					onClick={handleForm}
+					className="bg-linear-blue text-white font-bold py-2 px-4 rounded w-full md:w-fit"
+				>
+					Add New Department
+				</button>
+			</div>
+
+			{errorMessage && (
+				<div
+					className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+					role="alert"
+				>
+					<strong className="font-bold">Error: </strong>
+					<span className="block sm:inline">{errorMessage}</span>
+				</div>
+			)}
+
 			{isLoading ? (
-				<p>Loading...</p>
+				<p>Loading departments...</p>
 			) : (
-				<div className="bg-white p-8 rounded-md w-fit sm:w-full">
-					<div className="flex items-center justify-between pb-6">
-						<h2 className="text-gray-600 font-semibold">Department</h2>
-					</div>
-					<div className="">
-						<div className="p-4 w-fit text-gray-400 hover:bg-gray-800 rounded-lg m-4">
-							<div
-								className="border-dashed border-2 w-fit p-4 rounded-lg flex justify-center items-center flex-col cursor-pointer"
-								onClick={handleForm}
-							>
-								<Icon icon="mingcute:add-fill" height={36} />
-								<h5 className="font-semibold w-full text-start">
-									Add New Course
-								</h5>
-							</div>
-						</div>
-						<div className="flex flex-wrap">
-							{programs.map((program, index) => (
-								<DepartmentCourseCard
-									key={index}
-									courseName={program.name}
-									courseCode={program.code}
-									price={"₹ 1,00,000/-"}
-									duration={"3 Months"}
-									subjects={program.subjects}
-									departmentId={program.id} // Pass departmentId
-									onClick={() =>
-										console.log(`Clicked on department ${program.id}`)
-									}
-								/>
-							))}
-						</div>
-					</div>
+				<div className="flex flex-wrap justify-between ">
+					{departments.map((department) => (
+						<DepartmentCourse
+							key={department.id}
+							title={department.name}
+							code={department.code}
+							price={"₹ 1,00,000/-"}
+							duration={"3 Months"}
+							departmentId={department.id}
+							onDelete={handleDeleteDepartment}
+							onGoToCourse={() => handleOpenSubjectsModal(department)}
+						/>
+					))}
 				</div>
 			)}
 
@@ -166,7 +168,16 @@ const Department = () => {
 					errorMessage={errorMessage}
 				/>
 			)}
-		</>
+
+			{showSubjectsModal && selectedDepartment && (
+				<SubjectsModal
+					isOpen={showSubjectsModal}
+					onClose={handleCloseSubjectsModal}
+					departmentId={selectedDepartment.id}
+					departmentName={selectedDepartment.name}
+				/>
+			)}
+		</div>
 	);
 };
 

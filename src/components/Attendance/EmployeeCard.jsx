@@ -10,7 +10,7 @@ const EmployeeCard = ({
 	selectedDate,
 }) => {
 	const [attendanceStatus, setAttendanceStatus] = useState([]);
-	const [selectedOption, setSelectedOption] = useState("");
+	const [selectedOption, setSelectedOption] = useState(attendance);
 
 	const defaultMalePhoto =
 		"https://res.cloudinary.com/duyau9qkl/image/upload/v1717910208/images/w7y88n61dxedxzewwzpn.png";
@@ -138,7 +138,6 @@ const EmployeeCard = ({
 									value="Absent"
 									checked={selectedOption === "Absent"}
 									onChange={() => handleRadioChange("Absent")}
-									required
 								/>
 								<label
 									htmlFor={`absent-radio-${employee.id}`}
@@ -160,7 +159,6 @@ const EmployeeCard = ({
 									value="Present"
 									checked={selectedOption === "Present"}
 									onChange={() => handleRadioChange("Present")}
-									required
 								/>
 								<label
 									htmlFor={`present-radio-${employee.id}`}

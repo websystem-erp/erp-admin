@@ -13,7 +13,7 @@ const Attendance = () => {
 	const [selectedDate, setSelectedDate] = useState(moment());
 	const [attendance, setAttendance] = useState({});
 	const [monthlyAttendance, setMonthlyAttendance] = useState([]);
-	const [attendanceMarked, setAttendanceMarked] = useState(false); // Added state variable
+	const [attendanceMarked, setAttendanceMarked] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [showModal, setShowModal] = useState(false);
@@ -33,6 +33,7 @@ const Attendance = () => {
 			try {
 				setIsLoading(true);
 				await Promise.all([fetchTeachers(), fetchDepartments()]);
+				await fetchMonthlyAttendance(); // Fetch monthly attendance after initial data
 			} catch (err) {
 				setError("Failed to fetch initial data. Please try again.");
 			} finally {
@@ -45,6 +46,7 @@ const Attendance = () => {
 	useEffect(() => {
 		if (teachers.length > 0 && oldestTeacherDate) {
 			fetchAttendanceData();
+			fetchMonthlyAttendance(); // Fetch monthly attendance when selectedDate changes
 		}
 	}, [selectedDate, teachers, oldestTeacherDate]);
 
@@ -89,16 +91,14 @@ const Attendance = () => {
 				});
 				setAttendance(newAttendance);
 				setAttendanceMarked(true); // Attendance has been marked
+			} else {
+				setAttendance({});
+				setAttendanceMarked(false); // Attendance has not been marked
 			}
-			await fetchMonthlyAttendance();
 		} catch (error) {
 			if (error.response && error.response.status === 404) {
-				// Attendance doesn't exist for this date, set all to absent
-				const newAttendance = {};
-				teachers.forEach((teacher) => {
-					newAttendance[teacher.id] = "Absent";
-				});
-				setAttendance(newAttendance);
+				// Attendance doesn't exist for this date, clear attendance statuses
+				setAttendance({});
 				setAttendanceMarked(false); // Attendance has not been marked
 			} else {
 				setError("Failed to fetch attendance data. Please try again.");
@@ -109,55 +109,53 @@ const Attendance = () => {
 	};
 
 	const fetchMonthlyAttendance = async () => {
-		const endDate = moment().endOf("day");
-		const startDate = moment.max(
-			oldestTeacherDate,
-			endDate.clone().subtract(30, "days").startOf("day")
-		);
-		const monthlyData = [];
+		try {
+			// Calculate the start and end dates of the selected month
+			const startDate = selectedDate.clone().startOf("month");
+			const endDate = selectedDate.clone().endOf("month");
 
-		for (
-			let date = moment(startDate);
-			date <= endDate;
-			date = date.clone().add(1, "d")
-		) {
-			const formattedDate = date.format("YYYY-MM-DD");
-			try {
-				const apiUrl = API_ENDPOINTS.FACULTY_ATTENDANCE_DATE(
-					userId,
-					formattedDate
-				);
-				const response = await axios.get(apiUrl);
-				if (response.data && response.data.attendanceStatus) {
-					const presentEmployees = response.data.attendanceStatus.filter(
+			// Format the dates as "DD-MM-YYYY"
+			const formattedStartDate = startDate.format("DD-MM-YYYY");
+			const formattedEndDate = endDate.format("DD-MM-YYYY");
+
+			// Prepare the request payload
+			const requestData = {
+				startDate: formattedStartDate,
+				endDate: formattedEndDate,
+			};
+
+			const apiUrl = API_ENDPOINTS.SELECTED_DATE_ATTENDANCE(userId);
+
+			// Make the POST request
+			const response = await axios.post(apiUrl, requestData);
+
+			if (response.data && response.data.success) {
+				const attendanceData = response.data.data; // Adjust based on actual response structure
+
+				const monthlyData = attendanceData.map((day) => {
+					const presentEmployees = day.attendanceStatus.filter(
 						(e) => e.status === "Present"
 					);
-					const absentEmployees = response.data.attendanceStatus.filter(
+					const absentEmployees = day.attendanceStatus.filter(
 						(e) => e.status === "Absent"
 					);
-					monthlyData.push({
-						date: formattedDate,
+					return {
+						date: day.date, // Ensure date is in a format that can be used
 						attendanceMarked: true,
 						presentEmployees,
 						absentEmployees,
-					});
-				}
-			} catch (error) {
-				if (error.response && error.response.status !== 404) {
-					console.error(
-						`Error fetching attendance for ${formattedDate}:`,
-						error
-					);
-				}
-				monthlyData.push({
-					date: formattedDate,
-					attendanceMarked: false,
-					presentEmployees: [],
-					absentEmployees: [],
+					};
 				});
+
+				setMonthlyAttendance(monthlyData);
+			} else {
+				// Handle the case where no attendance data is returned
+				setMonthlyAttendance([]);
 			}
+		} catch (error) {
+			console.error("Error fetching monthly attendance:", error);
+			setMonthlyAttendance([]);
 		}
-		setMonthlyAttendance(monthlyData);
 	};
 
 	const handleDepartmentChange = (event) => {
@@ -209,6 +207,7 @@ const Attendance = () => {
 					`Attendance ${attendanceMarked ? "updated" : "marked"} successfully!`
 				);
 				fetchAttendanceData();
+				fetchMonthlyAttendance(); // Refresh monthly attendance data
 			} else {
 				throw new Error(response.data.message);
 			}
@@ -236,6 +235,7 @@ const Attendance = () => {
 			alert("Attendance updated successfully!");
 			setShowModal(false);
 			fetchAttendanceData();
+			fetchMonthlyAttendance(); // Refresh monthly attendance data
 		} catch (error) {
 			console.error("Error updating attendance:", error);
 			alert(`Error updating attendance: ${error.message}`);
@@ -243,29 +243,37 @@ const Attendance = () => {
 	};
 
 	const filteredTeachers = useMemo(() => {
+		const date = selectedDate.clone().startOf("day");
 		return selectedDepartment
-			? teachers.filter((teacher) =>
-					teacher.subject.some(
-						(subject) => subject.department.id === parseInt(selectedDepartment)
-					)
+			? teachers.filter(
+					(teacher) =>
+						teacher.subject.some(
+							(subject) =>
+								subject.department.id === parseInt(selectedDepartment)
+						) && moment(teacher.created_at).isSameOrBefore(date, "day")
 			  )
-			: teachers;
-	}, [teachers, selectedDepartment]);
+			: teachers.filter((teacher) =>
+					moment(teacher.created_at).isSameOrBefore(date, "day")
+			  );
+	}, [teachers, selectedDepartment, selectedDate]);
 
 	const calendarEvents = useMemo(() => {
-		return monthlyAttendance.map((day) => ({
-			title: day.attendanceMarked
-				? `Present: ${day.presentEmployees.length}, Absent: ${day.absentEmployees.length}`
-				: "No data",
-			start: new Date(day.date),
-			end: new Date(day.date),
-			attendanceMarked: day.attendanceMarked,
-			presentCount: day.presentEmployees.length,
-			absentCount: day.absentEmployees.length,
-			presentEmployees: day.presentEmployees,
-			absentEmployees: day.absentEmployees,
-			allDay: true,
-		}));
+		return monthlyAttendance.map((day) => {
+			const dateObj = moment(day.date, "YYYY-MM-DD");
+			return {
+				title: day.attendanceMarked
+					? `Present: ${day.presentEmployees.length}, Absent: ${day.absentEmployees.length}`
+					: "No data",
+				start: dateObj.toDate(),
+				end: dateObj.toDate(),
+				attendanceMarked: day.attendanceMarked,
+				presentCount: day.presentEmployees.length,
+				absentCount: day.absentEmployees.length,
+				presentEmployees: day.presentEmployees,
+				absentEmployees: day.absentEmployees,
+				allDay: true,
+			};
+		});
 	}, [monthlyAttendance]);
 
 	if (isLoading) {
@@ -302,7 +310,7 @@ const Attendance = () => {
 			</div>
 
 			{filteredTeachers.length === 0 ? (
-				<p>No employees found. Please add employees to mark attendance.</p>
+				<p>No employees found for the selected date.</p>
 			) : (
 				<div>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -310,7 +318,7 @@ const Attendance = () => {
 							<EmployeeCard
 								key={teacher.id}
 								employee={teacher}
-								attendance={attendance[teacher.id] || "Absent"}
+								attendance={attendance[teacher.id]} // Now can be undefined
 								onAttendanceChange={handleAttendanceChange}
 								selectedDate={selectedDate}
 							/>
