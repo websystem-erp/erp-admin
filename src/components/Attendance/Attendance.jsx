@@ -333,10 +333,10 @@ const Attendance = () => {
 				</div>
 			)}
 
-			<AttendanceCalendar
+			{/* <AttendanceCalendar
 				events={calendarEvents}
 				onSelectEvent={handleEventSelect}
-			/>
+			/> */}
 
 			{showModal && selectedEvent && (
 				<AttendanceModal

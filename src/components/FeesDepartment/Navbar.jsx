@@ -135,7 +135,7 @@ const Navbar = ({ logout, userData, toggleSidebar }) => {
 							/>
 							<button
 								type="submit"
-								className="mt-4 p-2 bg-blue-500 text-white rounded-lg bg-linear-blue w-full"
+								className="mt-4 p-2 bg-linear-blue text-white rounded-lg bg-linear-blue w-full"
 							>
 								Submit
 							</button>

@@ -14,7 +14,7 @@ const FilterOptions = ({
 						<select
 							name={field}
 							className={`w-full px-3 py-2 border rounded ${
-								filters[field] ? "bg-blue-100 border-blue-500" : ""
+								filters[field] ? "bg-sky-100 border-sky-500" : ""
 							}`}
 							onChange={onFilterChange}
 							value={filters[field] || ""}

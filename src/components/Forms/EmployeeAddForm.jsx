@@ -348,7 +348,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 			</div>
 			<button
 				type="submit"
-				className="px-4 py-4 text-sm font-medium text-white bg-linear-blue w-full my-4 rounded hover:bg-blue-700"
+				className="px-4 py-4 text-sm font-medium text-white bg-linear-blue w-full my-4 rounded"
 				disabled={loading}
 			>
 				{loading ? "Submitting..." : "Submit"}

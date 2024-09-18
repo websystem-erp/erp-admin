@@ -23,7 +23,7 @@ const SearchBar = ({ searchQuery, onSearchChange, onSearchSubmit }) => {
 				/>
 				<button
 					type="submit"
-					className="w-fit bg-linear-blue bg-blue-500 text-white py-2 px-8 rounded-full"
+					className="w-fit bg-linear-blue  text-white py-2 px-8 rounded-full"
 				>
 					Search
 				</button>

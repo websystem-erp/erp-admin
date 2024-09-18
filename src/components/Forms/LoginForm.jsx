@@ -68,7 +68,7 @@ const LoginForm = () => {
 
 					<button
 						type="submit"
-						className="mt-4 rounded-lg bg-blue-600 py-3 font-bold text-white w-full"
+						className="mt-4 rounded-lg bg-sky-600 py-3 font-bold text-white w-full"
 					>
 						Login
 					</button>
