@@ -155,138 +155,78 @@ const Employee = () => {
 		}
 	};
 
-	const handleEmployeesUpload = async (uploadedEmployees) => {
-		try {
-			for (const employee of uploadedEmployees) {
-				if (
-					!employee.password ||
-					typeof employee.password !== "string" ||
-					employee.password.trim() === ""
-				) {
-					console.error(
-						`Password is missing or invalid for employee: ${employee.name}`
-					);
-					continue;
-				}
-
-				const response = await axios.post(
-					API_ENDPOINTS.REGISTER_TEACHER,
-					employee
-				);
-
-				setTeachers((prevState) => [...prevState, response.data.data]);
-			}
-			setIsDropdownOpen(false);
-			return { success: true, message: "Employees uploaded successfully" };
-		} catch (error) {
-			console.error("Error uploading employees:", error);
-			if (error.response && error.response.data) {
-				return error.response.data; // This should contain {message, success}
-			} else {
-				return {
-					success: false,
-					message: error.message || "Error uploading employees",
-				};
-			}
-		}
-	};
-	const toggleDropdown = () => {
-		setIsDropdownOpen(!isDropdownOpen);
-	};
-
 	return (
 		<>
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (
 				<div className="bg-white p-8 rounded-md w-fit sm:w-full">
-					<div className="flex items-center justify-between pb-6">
+					<div className="flex items-center justify-between pb-6 ">
 						<h2 className="text-gray-600 font-semibold">Employee Details</h2>
-						<div className="relative" ref={dropdownRef}>
-							<div className="inline-flex items-center overflow-hidden rounded-md border bg-emerald-700">
-								<button
-									className="h-full px-4 py-2 text-white hover:bg-emerald-600  flex justify-between items-center gap-2"
-									onClick={toggleDropdown}
-								>
-									<div>Add Employee</div>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										className={`size-4 transform ${
-											isDropdownOpen ? "rotate-180" : ""
-										} transition-transform duration-200`}
-										viewBox="0 0 20 20"
-										fill="currentColor"
-									>
-										<path
-											fillRule="evenodd"
-											d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-											clipRule="evenodd"
-										/>
-									</svg>
-								</button>
-							</div>
-
-							{isDropdownOpen && (
-								<div
-									className="absolute end-0 z-10 mt-2 w-56 rounded-md border border-gray-100 bg-white shadow-lg"
-									role="menu"
-								>
-									<div className="p-2">
-										<EmployeeUpload onEmployeesUpload={handleEmployeesUpload} />
-										<ListTableBtn
-											text={"Add Employee"}
-											buttonColor={"bg-linear-green"}
-											borderRadius={"rounded-md"}
-											onClick={handleFormModal}
-										/>
-									</div>
-								</div>
-							)}
+						<div>
+							<ListTableBtn
+								text={"Add Employee"}
+								buttonColor={"bg-emerald-600"}
+								borderRadius={"rounded-md"}
+								onClick={handleFormModal}
+							/>
 						</div>
 					</div>
 
-					<ListTable
-						ListName={"Name"}
-						ListRole={"Role"}
-						ListDepartment={"Department"}
-						ListAction={"Actions"}
-						showDataList={teachers.map((teacher) => (
-							<CommonTable
-								key={teacher.id}
-								profile={teacher.photo || getDefaultPhoto(teacher.gender)}
-								name={teacher.name}
-								role={teacher.role}
-								id={
-									Array.isArray(teacher.subject) && teacher.subject.length > 0
-										? teacher.subject[0].department.name
-										: "N/A"
-								}
-								dangerAction={"Remove"}
-								action1={"View Profile"}
-								buttonHide={"hidden"}
-								onViewProfile={() =>
-									handleViewProfile({
-										photo: teacher.photo || getDefaultPhoto(teacher.gender),
-										name: teacher.name,
-										role: teacher.role,
-										id: teacher.id,
-										gender: teacher.gender,
-										dob: teacher.dob,
-										contactNumber: teacher.contactNumber,
-										departmentId: teacher.departmentId,
-										departmentName:
-											Array.isArray(teacher.subject) &&
-											teacher.subject.length > 0
-												? teacher.subject[0].department.name
-												: "N/A",
-										permanent_address: teacher.permanent_address,
-										currentAddress: teacher.currentAddress,
-									})
-								}
-								onDelete={() => handleDeleteProfile(teacher.id)}
-							/>
-						))}
-					/>
+					{teachers.length === 0 ? (
+						<div className="text-center py-8">
+							<p className="text-gray-600 mb-4">No employees registered yet.</p>
+							<button
+								onClick={handleFormModal}
+								className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors"
+							>
+								Add Employees
+							</button>
+						</div>
+					) : (
+						<ListTable
+							ListName={"Name"}
+							ListRole={"Role"}
+							ListDepartment={"Department"}
+							ListAction={"Actions"}
+							showDataList={teachers.map((teacher) => (
+								<CommonTable
+									key={teacher.id}
+									profile={teacher.photo || getDefaultPhoto(teacher.gender)}
+									name={teacher.name}
+									role={teacher.role}
+									id={
+										Array.isArray(teacher.subject) && teacher.subject.length > 0
+											? teacher.subject[0].department.name
+											: "N/A"
+									}
+									dangerAction={"Remove"}
+									action1={"View Profile"}
+									buttonHide={"hidden"}
+									onViewProfile={() =>
+										handleViewProfile({
+											photo: teacher.photo || getDefaultPhoto(teacher.gender),
+											name: teacher.name,
+											role: teacher.role,
+											id: teacher.id,
+											gender: teacher.gender,
+											dob: teacher.dob,
+											contactNumber: teacher.contactNumber,
+											departmentId: teacher.departmentId,
+											departmentName:
+												Array.isArray(teacher.subject) &&
+												teacher.subject.length > 0
+													? teacher.subject[0].department.name
+													: "N/A",
+											permanent_address: teacher.permanent_address,
+											currentAddress: teacher.currentAddress,
+										})
+									}
+									onDelete={() => handleDeleteProfile(teacher.id)}
+								/>
+							))}
+						/>
+					)}
 
 					{selectedProfile && (
 						<Modal

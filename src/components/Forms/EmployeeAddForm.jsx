@@ -5,7 +5,10 @@ import FloatingInput from "./FloatingInput";
 import { Icon } from "@iconify/react";
 
 const EmployeeAddForm = ({ onEmployeeAdded }) => {
+	const [employeeType, setEmployeeType] = useState("Faculty");
 	const [formData, setFormData] = useState({
+		employeeType: "Faculty",
+		otherType: "",
 		name: "",
 		email: "",
 		password: "",
@@ -16,15 +19,10 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		contactNumber: "",
 		permanent_address: "",
 		currentAddress: "",
-		subject: {
-			subjectName: "",
-			subjectCode: "",
-			totalLectures: 0,
-			totalLectureTaken: 0,
-		},
 		photo: "",
 	});
 
+	const [errors, setErrors] = useState({});
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [photoLoading, setPhotoLoading] = useState(false);
@@ -35,13 +33,6 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		document.documentElement.classList.add("no-scroll");
 		document.body.classList.add("no-scroll");
 
-		return () => {
-			document.documentElement.classList.remove("no-scroll");
-			document.body.classList.remove("no-scroll");
-		};
-	}, []);
-
-	useEffect(() => {
 		const fetchDepartments = async () => {
 			try {
 				const response = await axios.get(API_ENDPOINTS.FETCH_ALL_DEPARTMENTS);
@@ -52,25 +43,80 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		};
 
 		fetchDepartments();
+
+		return () => {
+			document.documentElement.classList.remove("no-scroll");
+			document.body.classList.remove("no-scroll");
+		};
 	}, []);
+
+	const validateForm = () => {
+		const newErrors = {};
+		const requiredFields = [
+			"name",
+			"email",
+			"gender",
+			"dob",
+			"contactNumber",
+			"permanent_address",
+		];
+		const emailRegex = /\S+@\S+\.\S+/;
+		const phoneRegex = /^\d{10}$/;
+
+		requiredFields.forEach((field) => {
+			if (!formData[field].trim()) {
+				newErrors[field] = `${
+					field.replace("_", " ").charAt(0).toUpperCase() + field.slice(1)
+				} is required`;
+			}
+		});
+
+		if (formData.employeeType === "Other" && !formData.otherType.trim()) {
+			newErrors.otherType = "Other type is required";
+		}
+
+		if (!emailRegex.test(formData.email)) {
+			newErrors.email = "Email is invalid";
+		}
+
+		if (!phoneRegex.test(formData.contactNumber)) {
+			newErrors.contactNumber = "Contact number must be 10 digits";
+		}
+
+		if (formData.employeeType === "Faculty") {
+			if (!formData.password || formData.password.length < 8) {
+				newErrors.password = "Password must be at least 8 characters";
+			}
+			if (!formData.role.trim()) newErrors.role = "Role is required";
+			if (!formData.departmentName)
+				newErrors.departmentName = "Department is required";
+		}
+
+		if (!isCurrentAddressSame && !formData.currentAddress.trim()) {
+			newErrors.currentAddress = "Current Address is required";
+		}
+
+		setErrors(newErrors);
+		return Object.keys(newErrors).length === 0;
+	};
+
+	const handleEmployeeTypeChange = (type) => {
+		setEmployeeType(type);
+		setFormData((prevData) => ({
+			...prevData,
+			employeeType: type,
+			role: type === "Other" ? "" : prevData.role,
+			departmentName: type === "Other" ? "" : prevData.departmentName,
+			password: type === "Other" ? "" : prevData.password,
+		}));
+	};
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		setFormData({
-			...formData,
-			[name]: value,
-		});
-	};
-
-	const handleSubjectChange = (e) => {
-		const { name, value } = e.target;
-		setFormData({
-			...formData,
-			subject: {
-				...formData.subject,
-				[name]: value,
-			},
-		});
+		setFormData((prevData) => ({ ...prevData, [name]: value }));
+		if (errors[name]) {
+			setErrors((prevErrors) => ({ ...prevErrors, [name]: null }));
+		}
 	};
 
 	const handlePhotoUpload = async (e) => {
@@ -105,22 +151,20 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 	};
 
 	const handleCheckboxChange = () => {
-		setIsCurrentAddressSame(!isCurrentAddressSame);
-		if (!isCurrentAddressSame) {
-			setFormData((prevData) => ({
-				...prevData,
-				currentAddress: prevData.permanent_address,
-			}));
-		} else {
-			setFormData((prevData) => ({
-				...prevData,
-				currentAddress: "",
-			}));
+		setIsCurrentAddressSame((prev) => !prev);
+		setFormData((prevData) => ({
+			...prevData,
+			currentAddress: !isCurrentAddressSame ? prevData.permanent_address : "",
+		}));
+		if (errors.currentAddress) {
+			setErrors((prevErrors) => ({ ...prevErrors, currentAddress: null }));
 		}
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		if (!validateForm()) return;
+
 		setLoading(true);
 		setError(null);
 
@@ -129,19 +173,29 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 		);
 
 		try {
-			const response = await axios.post(
-				API_ENDPOINTS.REGISTER_TEACHER,
-				{
-					...formData,
-					departmentId: selectedDepartment ? selectedDepartment.id : null,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
+			let response;
+			if (formData.employeeType === "Faculty") {
+				response = await axios.post(
+					API_ENDPOINTS.REGISTER_TEACHER,
+					{
+						...formData,
+						departmentId: selectedDepartment ? selectedDepartment.id : null,
 					},
-				}
-			);
-			console.log("Response:", response.data);
+					{
+						headers: {
+							Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
+						},
+					}
+				);
+			} else {
+				// TODO: Implement API endpoint for registering other employee types
+				console.warn(
+					"API for registering other employee types is not implemented yet"
+				);
+				// Placeholder for when the API is implemented:
+				// response = await axios.post(API_ENDPOINTS.REGISTER_OTHER_EMPLOYEE, formData);
+			}
+			console.log("Response:", response?.data);
 			onEmployeeAdded();
 		} catch (error) {
 			console.error(
@@ -159,13 +213,42 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 			onSubmit={handleSubmit}
 			className="max-w-lg mx-auto p-4 bg-white rounded shadow"
 		>
-			{error && <div className="error-message">{error}</div>}
+			<div className="flex justify-center mb-4">
+				{["Faculty", "Other"].map((type) => (
+					<button
+						key={type}
+						type="button"
+						onClick={() => handleEmployeeTypeChange(type)}
+						className={`px-4 py-2 rounded ${
+							employeeType === type
+								? "bg-emerald-500 text-white"
+								: "bg-gray-200 text-gray-700"
+						} ${type === "Faculty" ? "mr-2" : ""}`}
+					>
+						{type === "Faculty" ? "Register Faculty" : "Others"}
+					</button>
+				))}
+			</div>
+			{error && <div className="error-message text-red-500">{error}</div>}
+			{employeeType === "Other" && (
+				<FloatingInput
+					type="text"
+					id="otherType"
+					formTitle="Other Type"
+					value={formData.otherType}
+					handleChange={handleChange}
+					formName="otherType"
+				/>
+			)}
+			{errors.otherType && (
+				<p className="text-red-500 text-xs">{errors.otherType}</p>
+			)}
 			<div className="flex gap-4 justify-between items-center">
-				<div className="">
+				<div>
 					{formData.photo ? (
 						<img
 							src={formData.photo}
-							alt="Student Photo"
+							alt="Employee Photo"
 							className="w-24 h-24 rounded-full object-cover cursor-pointer"
 							onClick={() => document.getElementById("photoUpload").click()}
 						/>
@@ -204,6 +287,7 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 						handleChange={handleChange}
 						formName="name"
 					/>
+					{errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
 
 					<FloatingInput
 						type="date"
@@ -213,59 +297,64 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 						handleChange={handleChange}
 						formName="dob"
 					/>
+					{errors.dob && <p className="text-red-500 text-xs">{errors.dob}</p>}
 				</div>
 			</div>
 			<div className="flex gap-2">
-				<div className=" mt-2 w-auto flex-1">
+				<div className="mt-2 w-auto flex-1">
 					<select
 						name="gender"
 						id="gender"
 						value={formData.gender}
 						onChange={handleChange}
-						className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 pt-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0"
+						className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 pt-4 text-sm focus:border-emerald-600 focus:outline-none focus:ring-0"
 					>
 						<option value="">Gender</option>
 						<option value="Male">Male</option>
 						<option value="Female">Female</option>
 						<option value="Other">Other</option>
 					</select>
+					{errors.gender && (
+						<p className="text-red-500 text-xs">{errors.gender}</p>
+					)}
 				</div>
-				<div className="flex-1">
-					<FloatingInput
-						type="text"
-						id="role"
-						formTitle="Role"
-						value={formData.role}
-						handleChange={handleChange}
-						formName="role"
-					/>
+				{employeeType === "Faculty" && (
+					<div className="flex-1">
+						<FloatingInput
+							type="text"
+							id="role"
+							formTitle="Role"
+							value={formData.role}
+							handleChange={handleChange}
+							formName="role"
+						/>
+						{errors.role && (
+							<p className="text-red-500 text-xs">{errors.role}</p>
+						)}
+					</div>
+				)}
+			</div>
+			{employeeType === "Faculty" && (
+				<div className="mt-1.5">
+					<select
+						name="departmentName"
+						id="departmentName"
+						value={formData.departmentName}
+						onChange={handleChange}
+						className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 py-4 text-sm focus:border-emerald-600 focus:outline-none focus:ring-0"
+					>
+						<option value="">Department</option>
+						{departments.map((dept) => (
+							<option key={dept.id} value={dept.name}>
+								{dept.name}
+							</option>
+						))}
+					</select>
+					{errors.departmentName && (
+						<p className="text-red-500 text-xs">{errors.departmentName}</p>
+					)}
 				</div>
-			</div>
-			<div className="mt-1.5">
-				<select
-					name="departmentName"
-					id="departmentName"
-					value={formData.departmentName}
-					onChange={handleChange}
-					className="w-full rounded-lg border-gray-300 text-gray-700 sm:text-sm border-1 peer block appearance-none border bg-transparent px-2.5 pb-2.5 py-4 text-sm  focus:border-blue-600 focus:outline-none focus:ring-0"
-				>
-					<option value="">Department</option>
-					{departments.map((dept) => (
-						<option key={dept.id} value={dept.name}>
-							{dept.name}
-						</option>
-					))}
-				</select>
-			</div>
-			<FloatingInput
-				type="text"
-				id="contactNumber"
-				formTitle="Contact Number"
-				value={formData.contactNumber}
-				handleChange={handleChange}
-				formName="contactNumber"
-				required
-			/>
+			)}
 			<FloatingInput
 				type="email"
 				id="email"
@@ -275,15 +364,35 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 				formName="email"
 				required
 			/>
+			{errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
 			<FloatingInput
-				type="password"
-				id="password"
-				formTitle="Password"
-				value={formData.password}
+				type="tel"
+				id="contactNumber"
+				formTitle="Contact Number"
+				value={formData.contactNumber}
 				handleChange={handleChange}
-				formName="password"
+				formName="contactNumber"
 				required
 			/>
+			{errors.contactNumber && (
+				<p className="text-red-500 text-xs">{errors.contactNumber}</p>
+			)}
+			{employeeType === "Faculty" && (
+				<>
+					<FloatingInput
+						type="password"
+						id="password"
+						formTitle="Password"
+						value={formData.password}
+						handleChange={handleChange}
+						formName="password"
+						required
+					/>
+					{errors.password && (
+						<p className="text-red-500 text-xs">{errors.password}</p>
+					)}
+				</>
+			)}
 			<FloatingInput
 				type="text"
 				id="permanent_address"
@@ -292,19 +401,26 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 				handleChange={handleChange}
 				formName="permanent_address"
 			/>
+			{errors.permanent_address && (
+				<p className="text-red-500 text-xs">{errors.permanent_address}</p>
+			)}
 			{!isCurrentAddressSame && (
-				<FloatingInput
-					type="text"
-					id="currentAddress"
-					formTitle="Current Address"
-					value={formData.currentAddress}
-					handleChange={handleChange}
-					formName="currentAddress"
-				/>
+				<>
+					<FloatingInput
+						type="text"
+						id="currentAddress"
+						formTitle="Current Address"
+						value={formData.currentAddress}
+						handleChange={handleChange}
+						formName="currentAddress"
+					/>
+					{errors.currentAddress && (
+						<p className="text-red-500 text-xs">{errors.currentAddress}</p>
+					)}
+				</>
 			)}
 			<label className="flex mt-2 cursor-pointer items-start gap-4">
 				<div className="flex items-center">
-					&#8203;
 					<input
 						type="checkbox"
 						className="size-4 rounded border-gray-300"
@@ -312,43 +428,16 @@ const EmployeeAddForm = ({ onEmployeeAdded }) => {
 						onChange={handleCheckboxChange}
 					/>
 				</div>
-
 				<div>
 					<strong className="font-light text-xs text-gray-900">
 						Current address same as permanent address
 					</strong>
 				</div>
 			</label>
-			<h6 className="my-4 font-bold">Subject Details</h6>
-			<div className="flex gap-2">
-				<FloatingInput
-					type="text"
-					id="subjectName"
-					formTitle="Subject"
-					value={formData.subject.subjectName}
-					handleChange={handleSubjectChange}
-					formName="subjectName"
-				/>
-				<FloatingInput
-					type="text"
-					id="subjectCode"
-					formTitle="Subject Code"
-					value={formData.subject.subjectCode}
-					handleChange={handleSubjectChange}
-					formName="subjectCode"
-				/>
-				<FloatingInput
-					type="number"
-					id="totalLectureTaken"
-					formTitle="Total Lecture"
-					value={formData.subject.totalLectureTaken}
-					handleChange={handleSubjectChange}
-					formName="totalLectureTaken"
-				/>
-			</div>
+
 			<button
 				type="submit"
-				className="px-4 py-4 text-sm font-medium text-white bg-linear-blue w-full my-4 rounded"
+				className="px-4 py-4 text-sm font-medium text-white bg-emerald-600 w-full my-4 rounded"
 				disabled={loading}
 			>
 				{loading ? "Submitting..." : "Submit"}
