@@ -116,7 +116,7 @@ const Employees = () => {
 		<>
 			<div className="p-4 flex flex-wrap">
 				<div className="w-full px-2">
-					<h3 className="font-bold text-2xl mb-4">Requests</h3>
+					<h3 className="font-bold text-2xl mb-4">Requests.</h3>
 					<CardSlider cards={cards} />
 				</div>
 			</div>
