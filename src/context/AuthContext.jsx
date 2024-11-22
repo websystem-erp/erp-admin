@@ -1,55 +1,61 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
-import { jwtDecode } from "jwt-decode";
+import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
 
-const AuthContext = createContext();
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [token, setToken] = useState(null);
 	const [userData, setUserData] = useState(null);
+	const [token, setToken] = useState(null);
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
-	const refreshAuthState = useCallback(() => {
-		const storedToken = localStorage.getItem("token");
-		const storedUserData = localStorage.getItem("userData");
+	useEffect(() => {
+		const initializeAuth = () => {
+			const storedToken = localStorage.getItem("token");
+			const storedUserData = localStorage.getItem("userData");
 
-		if (storedToken && storedUserData) {
-			const decodedToken = jwtDecode(storedToken);
-			if (decodedToken.exp * 1000 > Date.now()) {
-				setIsLoggedIn(true);
+			if (storedToken && storedUserData) {
+				const parsedUserData = JSON.parse(storedUserData);
 				setToken(storedToken);
-				setUserData(JSON.parse(storedUserData));
-			} else {
-				// Token expired, clear everything
-				localStorage.removeItem("token");
-				localStorage.removeItem("userData");
-				setIsLoggedIn(false);
-				setToken(null);
-				setUserData(null);
+				setUserData(parsedUserData);
+				setIsLoggedIn(true);
+				axios.defaults.headers.common[
+					"Authorization"
+				] = `Bearer ${storedToken}`;
 			}
-		} else {
-			setIsLoggedIn(false);
-			setToken(null);
-			setUserData(null);
-		}
-		setIsLoading(false);
+			setIsLoading(false);
+		};
+
+		initializeAuth();
 	}, []);
 
-	useEffect(() => {
-		refreshAuthState();
-	}, [refreshAuthState]);
+	const handleLogin = ({ token, userData }) => {
+		localStorage.setItem("token", token);
+		localStorage.setItem("userData", JSON.stringify(userData));
+		setToken(token);
+		setUserData(userData);
+		setIsLoggedIn(true);
+		axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+	};
+
+	const handleLogout = () => {
+		localStorage.removeItem("token");
+		localStorage.removeItem("userData");
+		setToken(null);
+		setUserData(null);
+		setIsLoggedIn(false);
+		delete axios.defaults.headers.common["Authorization"];
+	};
 
 	return (
 		<AuthContext.Provider
 			value={{
-				isLoggedIn,
-				setIsLoggedIn,
-				token,
-				setToken,
 				userData,
-				setUserData,
-				refreshAuthState,
+				token,
+				isLoggedIn,
 				isLoading,
+				handleLogin,
+				handleLogout,
 			}}
 		>
 			{children}
@@ -57,4 +63,4 @@ export const AuthProvider = ({ children }) => {
 	);
 };
 
-export default AuthContext;
+export { AuthContext as default };
