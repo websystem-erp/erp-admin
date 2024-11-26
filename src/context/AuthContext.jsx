@@ -1,7 +1,14 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 
-export const AuthContext = createContext(null);
+export const AuthContext = createContext({
+	userData: null,
+	token: null,
+	isLoggedIn: false,
+	isLoading: true,
+	handleLogin: () => {},
+	handleLogout: () => {},
+});
 
 export const AuthProvider = ({ children }) => {
 	const [userData, setUserData] = useState(null);
@@ -10,23 +17,17 @@ export const AuthProvider = ({ children }) => {
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		const initializeAuth = () => {
-			const storedToken = localStorage.getItem("token");
-			const storedUserData = localStorage.getItem("userData");
+		const storedToken = localStorage.getItem("token");
+		const storedUserData = localStorage.getItem("userData");
 
-			if (storedToken && storedUserData) {
-				const parsedUserData = JSON.parse(storedUserData);
-				setToken(storedToken);
-				setUserData(parsedUserData);
-				setIsLoggedIn(true);
-				axios.defaults.headers.common[
-					"Authorization"
-				] = `Bearer ${storedToken}`;
-			}
-			setIsLoading(false);
-		};
-
-		initializeAuth();
+		if (storedToken && storedUserData) {
+			const parsedUserData = JSON.parse(storedUserData);
+			setToken(storedToken);
+			setUserData(parsedUserData);
+			setIsLoggedIn(true);
+			axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+		}
+		setIsLoading(false);
 	}, []);
 
 	const handleLogin = ({ token, userData }) => {
@@ -63,4 +64,4 @@ export const AuthProvider = ({ children }) => {
 	);
 };
 
-export { AuthContext as default };
+export { AuthProvider as default };

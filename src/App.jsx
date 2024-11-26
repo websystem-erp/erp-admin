@@ -1,12 +1,13 @@
 import React, { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthContext } from "./context/AuthContext";
-import LogIn from "./LogIn"; // Make sure this path matches your file structure
-import Layout from "./Layout";
-import FeesDashboard from "./components/Dashboard/FeesDashboard";
+import LogIn from "./LogIn";
+import Dashboard from "./components/Dashboard/Dashboard";
 import CollegeDashboard from "./components/Dashboard/CollegeDashboard";
+import FeesDashboard from "./components/Dashboard/FeesDashboard";
+import LandingPage from "./LandingPage";
 
-function App() {
+const App = () => {
 	const { isLoggedIn, userData, isLoading, handleLogout } =
 		useContext(AuthContext);
 
@@ -18,64 +19,45 @@ function App() {
 		);
 	}
 
-	const isCollege = userData?.campusType === "COLLEGE";
-	const isFinance = userData?.role === "finance";
+	const AuthRoute = () => {
+		if (!isLoggedIn) return <Navigate to="/landing" />;
+
+		switch (true) {
+			case userData?.role === "finance":
+				return <FeesDashboard userData={userData} logout={handleLogout} />;
+			case userData?.campusType === "COLLEGE":
+				return <CollegeDashboard userData={userData} logout={handleLogout} />;
+			case userData?.campusType === "SCHOOL":
+				return <Navigate to="/school-dashboard" />;
+			default:
+				return <Navigate to="/landing" />;
+		}
+	};
 
 	return (
 		<Routes>
 			<Route
+				path="/landing"
+				element={!isLoggedIn ? <LandingPage /> : <Navigate to="/" />}
+			/>
+			<Route
 				path="/login"
-				element={
-					!isLoggedIn ? (
-						<LogIn />
-					) : (
-						<Navigate to={isCollege ? "/college-dashboard" : "/"} />
-					)
-				}
+				element={!isLoggedIn ? <LogIn /> : <Navigate to="/" />}
 			/>
-
 			<Route
-				path="/college-dashboard"
+				path="/school-dashboard"
 				element={
-					isLoggedIn && isCollege ? (
-						<CollegeDashboard userData={userData} logout={handleLogout} />
+					isLoggedIn && userData?.campusType === "SCHOOL" ? (
+						<Dashboard userData={userData} logout={handleLogout} />
 					) : (
-						<Navigate to="/login" />
+						<Navigate to="/landing" />
 					)
 				}
 			/>
-
-			<Route
-				path="/fees"
-				element={
-					isLoggedIn && isFinance ? (
-						<FeesDashboard userData={userData} logout={handleLogout} />
-					) : (
-						<Navigate to="/login" />
-					)
-				}
-			/>
-
-			<Route
-				path="/"
-				element={
-					isLoggedIn ? (
-						isCollege ? (
-							<Navigate to="/college-dashboard" />
-						) : isFinance ? (
-							<Navigate to="/fees" />
-						) : (
-							<Layout logout={handleLogout} userData={userData} />
-						)
-					) : (
-						<Navigate to="/login" />
-					)
-				}
-			/>
-
-			<Route path="*" element={<Navigate to="/" />} />
+			<Route path="/" element={<AuthRoute />} />
+			<Route path="*" element={<Navigate to="/landing" />} />
 		</Routes>
 	);
-}
+};
 
 export default App;

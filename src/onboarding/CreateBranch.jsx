@@ -1,24 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useOnboarding } from "../context/OnboardingContext";
+import Toast from "../components/toast/Toast";
 
 const CreateBranch = ({ onNext, onPrevious }) => {
-	const [branchData, setBranchData] = useState({
-		branchName: localStorage.getItem("branchName") || "",
-		location: localStorage.getItem("branchLocation") || "",
-	});
+	const { onboardingData, updateOnboardingData } = useOnboarding();
+	const [toast, setToast] = useState(null);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		setBranchData((prevData) => ({
-			...prevData,
-			[name]: value,
-		}));
+		updateOnboardingData({ [name]: value });
+	};
+
+	const validateForm = () => {
+		if (!onboardingData.branchName?.trim()) {
+			setToast({ message: "Branch name is required", type: "error" });
+			return false;
+		}
+		if (!onboardingData.branchLocation?.trim()) {
+			setToast({ message: "Branch location is required", type: "error" });
+			return false;
+		}
+		return true;
 	};
 
 	const handleNext = () => {
-		localStorage.setItem("branchName", branchData.branchName);
-		localStorage.setItem("branchLocation", branchData.location);
-
-		onNext(); // Move to the next step
+		if (!validateForm()) return;
+		onNext();
 	};
 
 	return (
@@ -30,13 +37,13 @@ const CreateBranch = ({ onNext, onPrevious }) => {
 					htmlFor="branchName"
 					className="block text-sm font-medium text-gray-700"
 				>
-					Branch Name
+					Branch Name *
 				</label>
 				<input
 					id="branchName"
 					name="branchName"
 					type="text"
-					value={branchData.branchName}
+					value={onboardingData.branchName}
 					onChange={handleChange}
 					className="mt-1 block w-full border border-gray-300 rounded-md p-2"
 					required
@@ -45,16 +52,16 @@ const CreateBranch = ({ onNext, onPrevious }) => {
 
 			<div className="mb-4">
 				<label
-					htmlFor="location"
+					htmlFor="branchLocation"
 					className="block text-sm font-medium text-gray-700"
 				>
-					Location
+					Location *
 				</label>
 				<input
-					id="location"
-					name="location"
+					id="branchLocation"
+					name="branchLocation"
 					type="text"
-					value={branchData.location}
+					value={onboardingData.branchLocation}
 					onChange={handleChange}
 					className="mt-1 block w-full border border-gray-300 rounded-md p-2"
 					required
@@ -77,6 +84,16 @@ const CreateBranch = ({ onNext, onPrevious }) => {
 					Next
 				</button>
 			</div>
+
+			{toast && (
+				<div className="fixed bottom-4 right-4 z-50">
+					<Toast
+						message={toast.message}
+						type={toast.type}
+						onClose={() => setToast(null)}
+					/>
+				</div>
+			)}
 		</form>
 	);
 };
