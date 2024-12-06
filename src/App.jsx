@@ -1,64 +1,97 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthContext } from "./context/AuthContext";
 import LogIn from "./LogIn";
-import Dashboard from "./components/Dashboard/Dashboard";
-import CollegeDashboard from "./components/Dashboard/CollegeDashboard";
+import Layout from "./Layout";
 import FeesDashboard from "./components/Dashboard/FeesDashboard";
+import ResetPassword from "./ResetPassword";
 import LandingPage from "./LandingPage";
+import OnboardingForm from "./onboarding/OnboardingForm";
+import "./App.css";
+import AuthContext from "./context/AuthContext";
 
-const App = () => {
-	const { isLoggedIn, userData, isLoading, handleLogout } =
+function App() {
+	const { isLoggedIn, userData, isLoading, refreshAuthState } =
 		useContext(AuthContext);
+	const [showOnboarding, setShowOnboarding] = useState(false);
 
-	if (isLoading) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				Loading...
-			</div>
-		);
-	}
-
-	const AuthRoute = () => {
-		if (!isLoggedIn) return <Navigate to="/landing" />;
-
-		switch (true) {
-			case userData?.role === "finance":
-				return <FeesDashboard userData={userData} logout={handleLogout} />;
-			case userData?.campusType === "COLLEGE":
-				return <CollegeDashboard userData={userData} logout={handleLogout} />;
-			case userData?.campusType === "SCHOOL":
-				return <Navigate to="/school-dashboard" />;
-			default:
-				return <Navigate to="/landing" />;
-		}
+	const logout = () => {
+		localStorage.removeItem("token");
+		localStorage.removeItem("userData");
+		localStorage.removeItem("userType");
+		refreshAuthState();
 	};
 
-	return (
-		<Routes>
-			<Route
-				path="/landing"
-				element={!isLoggedIn ? <LandingPage /> : <Navigate to="/" />}
-			/>
-			<Route
-				path="/login"
-				element={!isLoggedIn ? <LogIn /> : <Navigate to="/" />}
-			/>
-			<Route
-				path="/school-dashboard"
-				element={
-					isLoggedIn && userData?.campusType === "SCHOOL" ? (
-						<Dashboard userData={userData} logout={handleLogout} />
-					) : (
-						<Navigate to="/landing" />
-					)
-				}
-			/>
-			<Route path="/" element={<AuthRoute />} />
-			<Route path="*" element={<Navigate to="/landing" />} />
-		</Routes>
-	);
-};
+	const handleStartOnboarding = () => {
+		setShowOnboarding(true);
+	};
 
+	if (isLoading) {
+		return <div>Loading...</div>;
+	}
+
+	const userType = localStorage.getItem("userType");
+
+	return (
+		<>
+			<Routes>
+				<Route
+					path="/login"
+					element={
+						!isLoggedIn ? (
+							<LogIn onStartOnboarding={handleStartOnboarding} />
+						) : (
+							<Navigate to="/" />
+						)
+					}
+				/>
+				<Route
+					path="/fees"
+					element={
+						isLoggedIn && userType === "finance" ? (
+							<FeesDashboard userData={userData} logout={logout} />
+						) : (
+							<Navigate to="/" />
+						)
+					}
+				/>
+				<Route
+					path="/reset-password/:token/:userId"
+					element={<ResetPassword />}
+				/>
+				<Route
+					path="/"
+					element={
+						isLoggedIn ? (
+							userType === "finance" ? (
+								<Navigate to="/fees" />
+							) : (
+								<Layout logout={logout} userData={userData} />
+							)
+						) : (
+							<LandingPage onStartOnboarding={handleStartOnboarding} />
+						)
+					}
+				/>
+				<Route
+					path="/*"
+					element={
+						isLoggedIn ? (
+							userType === "finance" ? (
+								<Navigate to="/fees" />
+							) : (
+								<Layout logout={logout} userData={userData} />
+							)
+						) : (
+							<Navigate to="/" />
+						)
+					}
+				/>
+			</Routes>
+			{showOnboarding && (
+				<OnboardingForm onClose={() => setShowOnboarding(false)} />
+			)}
+		</>
+	);
+}
 
 export default App;

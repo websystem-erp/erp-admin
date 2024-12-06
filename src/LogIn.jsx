@@ -1,221 +1,255 @@
-import React, { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { AuthContext } from "./context/AuthContext";
-import { useApiEndpoints } from "./API/apiEndpoints";
-import OnboardingForm from "./onboarding/OnboardingForm";
+import { jwtDecode } from "jwt-decode";
+import API_ENDPOINTS from "./API/apiEndpoints";
+import AuthContext from "./context/AuthContext";
 
-const Login = () => {
+const LogIn = ({ onStartOnboarding }) => {
+	const { setIsLoggedIn, setToken, setUserData, refreshAuthState } =
+		useContext(AuthContext);
+	const [credentials, setCredentials] = useState({ email: "", password: "" });
+	const [userType, setUserType] = useState("admin");
+	const [errorMessage, setErrorMessage] = useState("");
+	const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+	const [showForgotPassword, setShowForgotPassword] = useState(false);
+	const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
 	const navigate = useNavigate();
-	const { handleLogin } = useContext(AuthContext);
-	const endpoints = useApiEndpoints();
-	const [mode, setMode] = useState("login");
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
-	const [credentials, setCredentials] = useState({
-		email: "",
-		password: "",
-	});
 
-	const handleInputChange = (e) => {
-		setCredentials({ ...credentials, [e.target.name]: e.target.value });
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+		const storedUserData = localStorage.getItem("userData");
+		const storedUserType = localStorage.getItem("userType");
+		if (token && storedUserData) {
+			const decodedToken = jwtDecode(token);
+			if (decodedToken.exp * 1000 > Date.now()) {
+				setIsLoggedIn(true);
+				setToken(token);
+				setUserData(JSON.parse(storedUserData));
+				if (storedUserType === "finance") {
+					navigate("/fees");
+				} else if (storedUserType === "admin") {
+					navigate("/");
+				} else {
+					setErrorMessage(
+						`Unauthorized role: ${storedUserType}. Please log in with the appropriate role.`
+					);
+					navigate("/login");
+				}
+			} else {
+				localStorage.clear();
+				navigate("/login");
+			}
+		}
+	}, [setIsLoggedIn, setToken, setUserData, navigate]);
+
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		setCredentials({ ...credentials, [name]: value });
 	};
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setIsLoading(true);
-		setError("");
-
 		try {
-			const response = await axios.post(endpoints.ADMIN_LOGIN, credentials);
+			const response = await axios.post(API_ENDPOINTS.ADMIN_LOGIN, credentials);
+			if (response.data.success) {
+				const userRole = response.data.data.role.toLowerCase();
+				const selectedUserType = userType.toLowerCase();
 
-			if (response.data) {
-				const { token, userData } = response.data;
-				await handleLogin({ token, userData });
+				if (
+					userRole === "admin" ||
+					(userRole === "finance" && selectedUserType === "finance")
+				) {
+					setIsLoggedIn(true);
+					setToken(response.data.token);
+					localStorage.setItem("token", response.data.token);
+					localStorage.setItem("userData", JSON.stringify(response.data.data));
+					localStorage.setItem("userType", selectedUserType);
+					setUserData(response.data.data);
 
-				switch (true) {
-					case userData.role === "finance":
-						navigate("/fees-dashboard");
-						break;
-					case userData.campusType === "COLLEGE":
-						navigate("/college-dashboard");
-						break;
-					case userData.campusType === "SCHOOL":
-						navigate("/school-dashboard");
-						break;
-					default:
-						navigate("/landing");
+					refreshAuthState();
+
+					if (userRole === "finance") {
+						navigate("/fees");
+					} else {
+						navigate("/");
+					}
+				} else {
+					setErrorMessage(
+						`Unauthorized role: ${userRole}. Please log in with the appropriate role.`
+					);
 				}
 			}
-		} catch (err) {
-			setError(err.response?.data?.message || "Invalid credentials");
-			console.error("Login error:", err);
-		} finally {
-			setIsLoading(false);
+		} catch (error) {
+			console.error("Login error:", error);
+			if (error.response && error.response.data) {
+				setErrorMessage(
+					error.response.data.message ||
+						"An error occurred. Please try again later."
+				);
+			} else {
+				setErrorMessage("An error occurred. Please try again later.");
+			}
 		}
 	};
 
 	const handleForgotPassword = async (e) => {
 		e.preventDefault();
-		setIsLoading(true);
-		setError("");
-
 		try {
-			const response = await axios.post(endpoints.ADMIN_FORGOT_PASSWORD, {
-				email: credentials.email,
+			const response = await axios.post(API_ENDPOINTS.ADMIN_FORGOT_PASSWORD, {
+				email: forgotPasswordEmail,
 			});
-
-			if (response.data?.success) {
-				alert("Password reset instructions sent to your email");
-				setMode("login");
+			if (response.data.success) {
+				setForgotPasswordMessage("Password reset link sent to your email.");
 			}
-		} catch (err) {
-			setError(err.response?.data?.message || "Failed to process request");
-		} finally {
-			setIsLoading(false);
+		} catch (error) {
+			console.error("Forgot Password error:", error);
+			setForgotPasswordMessage(
+				"An error occurred. Please try again later or contact support."
+			);
 		}
 	};
 
-	const renderLoginForm = () => (
-		<>
-			<h2 className="text-2xl font-bold text-center mb-6">Welcome Back</h2>
-			<form onSubmit={handleSubmit} className="space-y-4">
-				<div>
-					<label
-						htmlFor="email"
-						className="block text-sm font-medium text-gray-700"
-					>
-						Email
-					</label>
-					<input
-						id="email"
-						name="email"
-						type="email"
-						required
-						value={credentials.email}
-						onChange={handleInputChange}
-						className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
-					/>
-				</div>
-
-				<div>
-					<label
-						htmlFor="password"
-						className="block text-sm font-medium text-gray-700"
-					>
-						Password
-					</label>
-					<input
-						id="password"
-						name="password"
-						type="password"
-						required
-						value={credentials.password}
-						onChange={handleInputChange}
-						className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
-					/>
-				</div>
-
-				{error && (
-					<div className="p-2 text-sm text-red-600 bg-red-50 rounded">
-						{error}
-					</div>
-				)}
-
-				<button
-					type="submit"
-					disabled={isLoading}
-					className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 ${
-						isLoading ? "opacity-50 cursor-not-allowed" : ""
-					}`}
-				>
-					{isLoading ? "Signing in..." : "Sign In"}
-				</button>
-			</form>
-
-			<div className="mt-4 flex justify-between text-sm">
-				<button
-					onClick={() => setMode("forgot")}
-					className="text-sky-600 hover:text-sky-500"
-				>
-					Forgot password?
-				</button>
-				<button
-					onClick={() => setMode("register")}
-					className="font-medium text-sky-600 hover:text-sky-500"
-				>
-					Register New Institution
-				</button>
-			</div>
-		</>
-	);
-
-	const renderForgotPassword = () => (
-		<>
-			<h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
-			<form onSubmit={handleForgotPassword} className="space-y-4">
-				<div>
-					<label
-						htmlFor="reset-email"
-						className="block text-sm font-medium text-gray-700"
-					>
-						Email Address
-					</label>
-					<input
-						id="reset-email"
-						name="email"
-						type="email"
-						required
-						value={credentials.email}
-						onChange={handleInputChange}
-						className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500"
-					/>
-				</div>
-
-				{error && (
-					<div className="p-2 text-sm text-red-600 bg-red-50 rounded">
-						{error}
-					</div>
-				)}
-
-				<button
-					type="submit"
-					disabled={isLoading}
-					className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-				>
-					{isLoading ? "Sending..." : "Send Reset Link"}
-				</button>
-
-				<button
-					type="button"
-					onClick={() => setMode("login")}
-					className="w-full text-center text-sm text-sky-600 hover:text-sky-500"
-				>
-					Back to Login
-				</button>
-			</form>
-		</>
-	);
-
 	return (
-		<div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
-			<div className="sm:mx-auto sm:w-full sm:max-w-md">
-				<h1 className="text-center text-3xl font-extrabold text-gray-900">
-					School ERP System
-				</h1>
-			</div>
-
-			<div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-				<div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-					{mode === "login" && renderLoginForm()}
-					{mode === "forgot" && renderForgotPassword()}
-					{mode === "register" && (
-						<OnboardingForm onClose={() => setMode("login")} />
-					)}
+		<div className="flex items-center justify-center min-h-screen bg-gray-100">
+			<div className="w-full max-w-md">
+				<form
+					className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+					onSubmit={handleSubmit}
+				>
+					<h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+					<div className="mb-4">
+						<label
+							className="block text-gray-700 text-sm font-bold mb-2"
+							htmlFor="email"
+						>
+							Email
+						</label>
+						<input
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="email"
+							type="email"
+							placeholder="Email"
+							name="email"
+							value={credentials.email}
+							onChange={handleChange}
+							required
+						/>
+					</div>
+					<div className="mb-6">
+						<label
+							className="block text-gray-700 text-sm font-bold mb-2"
+							htmlFor="password"
+						>
+							Password
+						</label>
+						<input
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+							id="password"
+							type="password"
+							placeholder="******************"
+							name="password"
+							value={credentials.password}
+							onChange={handleChange}
+							required
+						/>
+					</div>
+					<div className="mb-6">
+						<label
+							className="block text-gray-700 text-sm font-bold mb-2"
+							htmlFor="userType"
+						>
+							User Type
+						</label>
+						<select
+							className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+							id="userType"
+							name="userType"
+							value={userType}
+							onChange={(e) => setUserType(e.target.value)}
+						>
+							<option value="admin">Admin</option>
+							<option value="finance">Finance</option>
+						</select>
+					</div>
+					<div className="flex items-center justify-between">
+						<button
+							className="bg-sky-500 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+							type="submit"
+						>
+							Sign In
+						</button>
+						<button
+							className="inline-block align-baseline font-bold text-sm text-sky-500 hover:text-sky-800"
+							onClick={() => setShowForgotPassword(true)}
+							type="button"
+						>
+							Forgot Password?
+						</button>
+					</div>
+				</form>
+				{errorMessage && (
+					<div
+						className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+						role="alert"
+					>
+						<span className="block sm:inline">{errorMessage}</span>
+					</div>
+				)}
+				<div className="text-center">
+					<p className="text-gray-600 text-sm">Don't have an account?</p>
+					<button
+						onClick={onStartOnboarding}
+						className="mt-2 text-sky-500 hover:text-sky-700 font-semibold"
+					>
+						Start School Onboarding
+					</button>
+				</div>
+				<div className="mt-4 text-center">
+					<Link to="/" className="text-sm text-gray-600 hover:text-gray-800">
+						Back to Home
+					</Link>
 				</div>
 			</div>
+			{showForgotPassword && (
+				<div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+					<div className="bg-white p-8 rounded-md shadow-xl max-w-md w-full">
+						<h3 className="text-xl font-semibold mb-4">Reset Password</h3>
+						<form onSubmit={handleForgotPassword}>
+							<input
+								type="email"
+								value={forgotPasswordEmail}
+								onChange={(e) => setForgotPasswordEmail(e.target.value)}
+								placeholder="Enter your email"
+								className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4"
+								required
+							/>
+							<div className="flex justify-end">
+								<button
+									type="button"
+									onClick={() => setShowForgotPassword(false)}
+									className="mr-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+								>
+									Cancel
+								</button>
+								<button
+									type="submit"
+									className="px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-md hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500"
+								>
+									Reset Password
+								</button>
+							</div>
+						</form>
+						{forgotPasswordMessage && (
+							<p className="mt-4 text-sm text-green-600">
+								{forgotPasswordMessage}
+							</p>
+						)}
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };
 
-export default Login;
+export default LogIn;

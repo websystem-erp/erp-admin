@@ -1,62 +1,55 @@
-import React, { createContext, useState, useEffect } from "react";
-import axios from "axios";
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import { jwtDecode } from "jwt-decode";
 
-export const AuthContext = createContext({
-	userData: null,
-	token: null,
-	isLoggedIn: false,
-	isLoading: true,
-	handleLogin: () => {},
-	handleLogout: () => {},
-});
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-	const [userData, setUserData] = useState(null);
-	const [token, setToken] = useState(null);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [token, setToken] = useState(null);
+	const [userData, setUserData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	useEffect(() => {
+	const refreshAuthState = useCallback(() => {
 		const storedToken = localStorage.getItem("token");
 		const storedUserData = localStorage.getItem("userData");
 
 		if (storedToken && storedUserData) {
-			const parsedUserData = JSON.parse(storedUserData);
-			setToken(storedToken);
-			setUserData(parsedUserData);
-			setIsLoggedIn(true);
-			axios.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
+			const decodedToken = jwtDecode(storedToken);
+			if (decodedToken.exp * 1000 > Date.now()) {
+				setIsLoggedIn(true);
+				setToken(storedToken);
+				setUserData(JSON.parse(storedUserData));
+			} else {
+				// Token expired, clear everything
+				localStorage.removeItem("token");
+				localStorage.removeItem("userData");
+				setIsLoggedIn(false);
+				setToken(null);
+				setUserData(null);
+			}
+		} else {
+			setIsLoggedIn(false);
+			setToken(null);
+			setUserData(null);
 		}
 		setIsLoading(false);
 	}, []);
 
-	const handleLogin = ({ token, userData }) => {
-		localStorage.setItem("token", token);
-		localStorage.setItem("userData", JSON.stringify(userData));
-		setToken(token);
-		setUserData(userData);
-		setIsLoggedIn(true);
-		axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-	};
-
-	const handleLogout = () => {
-		localStorage.removeItem("token");
-		localStorage.removeItem("userData");
-		setToken(null);
-		setUserData(null);
-		setIsLoggedIn(false);
-		delete axios.defaults.headers.common["Authorization"];
-	};
+	useEffect(() => {
+		refreshAuthState();
+	}, [refreshAuthState]);
 
 	return (
 		<AuthContext.Provider
 			value={{
-				userData,
-				token,
 				isLoggedIn,
+				setIsLoggedIn,
+				token,
+				setToken,
+				userData,
+				setUserData,
+				refreshAuthState,
 				isLoading,
-				handleLogin,
-				handleLogout,
 			}}
 		>
 			{children}
@@ -64,4 +57,4 @@ export const AuthProvider = ({ children }) => {
 	);
 };
 
-export { AuthProvider as default };
+export default AuthContext;
